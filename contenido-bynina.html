@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contenido By Nina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+  :root{
+    --bg:#f5f4ef;
+    --card:#ffffff;
+    --ink:#25231f;
+    --ink-soft:#847d70;
+    --line:#e6e2d8;
+    --green:#2f6b4f;
+    --green-soft:#dcece2;
+    --red:#7a3230;
+    --red-soft:#f2ded9;
+    --purple:#5b4e9e;
+    --purple-soft:#e3ddf4;
+    --rust:#8b4a2b;
+    --rust-soft:#eeddd0;
+    --amber:#8b6a1a;
+    --amber-soft:#f2e6c9;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    padding:0 0 60px 0;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:20px 14px;}
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  h1{
+    font-family:'Poppins',sans-serif;
+    font-weight:700;
+    font-size:22px;
+    margin:0;
+    color:var(--ink);
+  }
+  .conn{font-size:12px;color:var(--ink-soft);}
+  .conn.off{color:var(--red);}
+
+  .addbar{
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:16px;
+  }
+  .btn{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    border:none;
+    border-radius:10px;
+    padding:10px 16px;
+    cursor:pointer;
+  }
+  .btn-primary{background:var(--purple);color:#fff;}
+  .btn-ghost{background:var(--card);color:var(--ink);border:1px solid var(--line);}
+  .btn-sm{padding:6px 10px;font-size:12px;border-radius:8px;}
+
+  .board{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:14px;
+  }
+  @media (max-width:760px){
+    .board{grid-template-columns:1fr; gap:20px;}
+  }
+  .col-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:10px;
+    font-family:'Poppins',sans-serif;
+    font-weight:600;
+    font-size:14px;
+  }
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .dot-crudo{background:var(--ink-soft);}
+  .dot-editado{background:var(--amber);}
+  .dot-final{background:var(--green);}
+  .count{color:var(--ink-soft);font-weight:400;font-size:13px;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:10px;
+    cursor:pointer;
+  }
+  .card:active{opacity:0.85;}
+  .card-title{font-weight:600;font-size:14px;margin:0 0 4px;}
+  .card-sub{font-size:12px;color:var(--ink-soft);margin:0 0 8px;}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+  .chip{font-size:10.5px;padding:3px 7px;border-radius:6px;border:1px solid var(--line);color:var(--ink-soft);}
+  .chip.on{background:var(--green-soft);color:var(--green);border-color:transparent;}
+  .card-foot{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink-soft);}
+  .card-foot a{color:var(--purple);text-decoration:none;}
+  .empty-col{font-size:13px;color:var(--ink-soft);padding:10px 0;}
+
+  .overlay{
+    position:fixed;inset:0;background:rgba(37,35,31,0.45);
+    display:none;align-items:flex-start;justify-content:center;
+    padding:20px 12px;overflow-y:auto;z-index:50;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:var(--card);border-radius:14px;padding:20px;
+    width:100%;max-width:420px;margin-top:20px;
+  }
+  .modal h2{font-family:'Poppins',sans-serif;font-size:17px;margin:0 0 14px;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12px;color:var(--ink-soft);margin-bottom:4px;}
+  .field select, .field input[type=text], .field textarea{
+    width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;
+    font-family:'Inter',sans-serif;font-size:14px;background:#fff;color:var(--ink);
+  }
+  .field textarea{min-height:70px;resize:vertical;}
+  .newopt{display:flex;gap:6px;margin-top:6px;}
+  .newopt input{flex:1;padding:7px 8px;border:1px solid var(--line);border-radius:7px;font-size:13px;}
+  .states{display:flex;gap:6px;margin-bottom:12px;}
+  .state-opt{
+    flex:1;text-align:center;padding:8px 4px;border-radius:8px;border:1px solid var(--line);
+    font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink-soft);
+  }
+  .state-opt.sel-crudo{background:var(--card);border-color:var(--ink-soft);color:var(--ink);}
+  .state-opt.sel-editado{background:var(--amber-soft);border-color:var(--amber);color:var(--amber);}
+  .state-opt.sel-final{background:var(--green-soft);border-color:var(--green);color:var(--green);}
+  .toggles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+  .toggle{
+    display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);
+    border-radius:8px;font-size:13px;cursor:pointer;user-select:none;
+  }
+  .toggle.on{background:var(--green-soft);border-color:var(--green);color:var(--green);font-weight:600;}
+  .toggle input{accent-color:var(--green);}
+  .modal-actions{display:flex;justify-content:space-between;gap:8px;margin-top:16px;}
+  .modal-actions .right{display:flex;gap:8px;}
+
+  .tabs{display:flex;gap:8px;}
+  .tabs .btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+  .cal-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px;}
+  .cal-label{font-family:'Poppins',sans-serif;font-weight:600;font-size:15px;text-transform:capitalize;}
+  .cal-grid{
+    display:grid;grid-template-columns:repeat(7,1fr);gap:6px;
+  }
+  .cal-dow{text-align:center;font-size:11px;color:var(--ink-soft);font-weight:600;padding-bottom:4px;}
+  .cal-day{
+    background:var(--card);border:1px solid var(--line);border-radius:8px;
+    min-height:64px;padding:5px;font-size:11px;
+  }
+  .cal-day.empty{background:transparent;border:none;}
+  .cal-daynum{font-size:11px;color:var(--ink-soft);margin-bottom:3px;}
+  .cal-item{
+    border-radius:5px;padding:2px 4px;margin-bottom:2px;font-size:10px;line-height:1.3;
+    cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .cal-item.feed{background:var(--purple-soft);color:var(--purple);}
+  .cal-item.tiktok{background:var(--rust-soft);color:var(--rust);}
+  .cal-legend{display:flex;gap:8px;justify-content:center;margin-top:14px;}
+  @media (max-width:600px){
+    .cal-day{min-height:48px;font-size:10px;}
+    .cal-item{font-size:9px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Contenido By Nina</h1>
+    <span class="conn" id="connStatus">Conectando…</span>
+  </header>
+
+  <div class="addbar" style="justify-content:space-between;">
+    <div class="tabs">
+      <button class="btn btn-ghost btn-sm" id="tab-board" onclick="setView('board')">Tablero</button>
+      <button class="btn btn-ghost btn-sm" id="tab-cal" onclick="setView('cal')">Calendario</button>
+    </div>
+    <button class="btn btn-primary" onclick="openModal(null)">+ Nueva pieza</button>
+  </div>
+
+  <div class="board" id="view-board">
+    <div>
+      <div class="col-head"><span class="dot dot-crudo"></span>Crudo <span class="count" id="cnt-crudo"></span></div>
+      <div id="col-crudo"></div>
+    </div>
+    <div>
+      <div class="col-head"><span class="dot dot-editado"></span>Editado <span class="count" id="cnt-editado"></span></div>
+      <div id="col-editado"></div>
+    </div>
+    <div>
+      <div class="col-head"><span class="dot dot-final"></span>Final <span class="count" id="cnt-final"></span></div>
+      <div id="col-final"></div>
+    </div>
+  </div>
+
+  <div id="view-cal" style="display:none;">
+    <div class="cal-nav">
+      <button class="btn btn-ghost btn-sm" onclick="shiftMonth(-1)">‹</button>
+      <span id="cal-label" class="cal-label"></span>
+      <button class="btn btn-ghost btn-sm" onclick="shiftMonth(1)">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-legend">
+      <span class="chip on" style="background:var(--purple-soft);color:var(--purple);border-color:transparent;">Feed</span>
+      <span class="chip on" style="background:var(--rust-soft);color:var(--rust);border-color:transparent;">TikTok</span>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modalTitle">Nueva pieza</h2>
+
+    <div class="field">
+      <label>Producto</label>
+      <select id="f-producto"></select>
+      <div class="newopt"><input type="text" id="new-producto" placeholder="Agregar producto nuevo"><button class="btn btn-ghost btn-sm" onclick="addOption('productos','new-producto','f-producto')">Agregar</button></div>
+    </div>
+
+    <div class="field">
+      <label>Ángulo</label>
+      <select id="f-angulo"></select>
+      <div class="newopt"><input type="text" id="new-angulo" placeholder="Agregar ángulo nuevo"><button class="btn btn-ghost btn-sm" onclick="addOption('angulos','new-angulo','f-angulo')">Agregar</button></div>
+    </div>
+
+    <div class="field">
+      <label>Creador</label>
+      <input type="text" id="f-creador" placeholder="Nombre">
+    </div>
+
+    <div class="field">
+      <label>Estado</label>
+      <div class="states">
+        <div class="state-opt" id="st-crudo" onclick="setEstado('crudo')">Crudo</div>
+        <div class="state-opt" id="st-editado" onclick="setEstado('editado')">Editado</div>
+        <div class="state-opt" id="st-final" onclick="setEstado('final')">Final</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Link a Drive</label>
+      <input type="text" id="f-drive" placeholder="https://drive.google.com/...">
+    </div>
+
+    <div class="toggles">
+      <label class="toggle" id="tg-feed"><input type="checkbox" onchange="toggleClass('tg-feed')"> Feed</label>
+      <label class="toggle" id="tg-tiktok"><input type="checkbox" onchange="toggleClass('tg-tiktok')"> TikTok</label>
+      <label class="toggle" id="tg-pautaFede"><input type="checkbox" onchange="toggleClass('tg-pautaFede')"> Pauta Fede</label>
+      <label class="toggle" id="tg-pautaAri"><input type="checkbox" onchange="toggleClass('tg-pautaAri')"> Pauta Ari</label>
+    </div>
+
+    <div class="toggles">
+      <div class="field" style="margin-bottom:0;">
+        <label>Fecha Feed</label>
+        <input type="date" id="f-fechaFeed">
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>Fecha TikTok</label>
+        <input type="date" id="f-fechaTiktok">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Notas / comentarios</label>
+      <textarea id="f-notas" placeholder="Observaciones, cómo funcionó, por qué se descartó, etc."></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="btnDelete" style="display:none;color:var(--red);" onclick="deleteCurrent()">Eliminar</button>
+      <div class="right">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveCurrent()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyBqZ9ZkYfcDfXVEIGVsZM5_cByJkBXhVeA",
+  authDomain:"bynina-c1eec.firebaseapp.com",
+  databaseURL:"https://bynina-c1eec-default-rtdb.firebaseio.com",
+  projectId:"bynina-c1eec",
+  storageBucket:"bynina-c1eec.appspot.com"
+});
+const db = firebase.database();
+const ROOT = "contenido_v1";
+
+// Aviso de conexión: ruta especial de Firebase que siempre refleja el estado real del socket.
+db.ref(".info/connected").on("value", snap => {
+  const el = document.getElementById("connStatus");
+  if (snap.val() === true) { el.textContent = "Sincronizado"; el.classList.remove("off"); }
+  else { el.textContent = "Sin conexión — reintentando…"; el.classList.add("off"); }
+});
+
+let items = {};
+let listas = { productos: [], angulos: [] };
+let currentId = null;
+let currentEstado = "crudo";
+let currentView = "board";
+let calMonth = new Date(); calMonth.setDate(1);
+
+// Listas editables de producto/ángulo, compartidas y guardadas en Firebase (mismo patrón que Marca en fábrica).
+db.ref(`${ROOT}/listas`).on("value", snap => {
+  const v = snap.val() || {};
+  listas.productos = v.productos ? Object.values(v.productos) : [];
+  listas.angulos = v.angulos ? Object.values(v.angulos) : [];
+  fillSelect("f-producto", listas.productos);
+  fillSelect("f-angulo", listas.angulos);
+});
+
+db.ref(`${ROOT}/items`).on("value", snap => {
+  items = snap.val() || {};
+  render();
+  renderCalendar();
+});
+
+function setView(v) {
+  currentView = v;
+  document.getElementById("view-board").style.display = v === "board" ? "grid" : "none";
+  document.getElementById("view-cal").style.display = v === "cal" ? "block" : "none";
+  document.getElementById("tab-board").classList.toggle("active", v === "board");
+  document.getElementById("tab-cal").classList.toggle("active", v === "cal");
+  if (v === "cal") renderCalendar();
+}
+
+function shiftMonth(n) {
+  calMonth.setMonth(calMonth.getMonth() + n);
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const grid = document.getElementById("cal-grid");
+  if (!grid) return;
+  const label = calMonth.toLocaleDateString("es-AR", { month: "long", year: "numeric" });
+  document.getElementById("cal-label").textContent = label;
+
+  // Indexa piezas por fecha (YYYY-MM-DD) para Feed y TikTok por separado.
+  const byDate = {};
+  Object.entries(items).forEach(([id, it]) => {
+    if (it.fechaFeed) (byDate[it.fechaFeed] = byDate[it.fechaFeed] || []).push({ id, tipo: "feed", it });
+    if (it.fechaTiktok) (byDate[it.fechaTiktok] = byDate[it.fechaTiktok] || []).push({ id, tipo: "tiktok", it });
+  });
+
+  const y = calMonth.getFullYear(), m = calMonth.getMonth();
+  const firstDow = (new Date(y, m, 1).getDay() + 6) % 7; // lunes=0
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+  grid.innerHTML = "";
+  ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"].forEach(d => {
+    const el = document.createElement("div");
+    el.className = "cal-dow";
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+  for (let i = 0; i < firstDow; i++) {
+    const el = document.createElement("div");
+    el.className = "cal-day empty";
+    grid.appendChild(el);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateKey = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    const cell = document.createElement("div");
+    cell.className = "cal-day";
+    const num = document.createElement("div");
+    num.className = "cal-daynum";
+    num.textContent = d;
+    cell.appendChild(num);
+    (byDate[dateKey] || []).forEach(entry => {
+      const chip = document.createElement("div");
+      chip.className = `cal-item ${entry.tipo}`;
+      chip.textContent = `${entry.tipo === "feed" ? "IG" : "TT"} · ${entry.it.producto || "s/producto"}`;
+      chip.onclick = () => openModal(entry.id);
+      cell.appendChild(chip);
+    });
+    grid.appendChild(cell);
+  }
+}
+
+function fillSelect(id, opts) {
+  const sel = document.getElementById(id);
+  const prev = sel.value;
+  sel.innerHTML = "";
+  opts.forEach(o => {
+    const op = document.createElement("option");
+    op.value = o; op.textContent = o;
+    sel.appendChild(op);
+  });
+  if (opts.includes(prev)) sel.value = prev;
+}
+
+function addOption(kind, inputId, selectId) {
+  const input = document.getElementById(inputId);
+  const val = input.value.trim();
+  if (!val) return;
+  if (listas[kind].some(o => o.toLowerCase() === val.toLowerCase())) {
+    fillSelect(selectId, listas[kind]);
+    document.getElementById(selectId).value = listas[kind].find(o => o.toLowerCase() === val.toLowerCase());
+    input.value = "";
+    return;
+  }
+  db.ref(`${ROOT}/listas/${kind}`).push(val);
+  input.value = "";
+}
+
+function render() {
+  const cols = { crudo: [], editado: [], final: [] };
+  Object.entries(items).forEach(([id, it]) => {
+    const est = it.estado || "crudo";
+    if (cols[est]) cols[est].push({ id, ...it });
+  });
+  Object.keys(cols).forEach(est => {
+    const list = cols[est].sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0));
+    document.getElementById(`cnt-${est}`).textContent = list.length ? `(${list.length})` : "";
+    const container = document.getElementById(`col-${est}`);
+    container.innerHTML = "";
+    if (!list.length) {
+      container.innerHTML = `<div class="empty-col">Sin piezas acá todavía.</div>`;
+      return;
+    }
+    list.forEach(it => container.appendChild(renderCard(it)));
+  });
+}
+
+function renderCard(it) {
+  const div = document.createElement("div");
+  div.className = "card";
+  div.onclick = () => openModal(it.id);
+  const chip = (on, label) => `<span class="chip ${on?'on':''}">${label}</span>`;
+  const driveLink = it.drive ? `<a href="${it.drive}" target="_blank" onclick="event.stopPropagation()">Ver en Drive</a>` : `<span></span>`;
+  div.innerHTML = `
+    <p class="card-title">${escapeHtml(it.producto || "Sin producto")}</p>
+    <p class="card-sub">${escapeHtml(it.angulo || "Sin ángulo")}</p>
+    <div class="chips">
+      ${chip(it.feed, "Feed")}
+      ${chip(it.tiktok, "TikTok")}
+      ${chip(it.pautaFede, "Pauta Fede")}
+      ${chip(it.pautaAri, "Pauta Ari")}
+    </div>
+    <div class="card-foot">
+      <span>${escapeHtml(it.creador || "")}</span>
+      ${driveLink}
+    </div>
+  `;
+  return div;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function openModal(id) {
+  currentId = id;
+  const it = id ? items[id] : {};
+  document.getElementById("modalTitle").textContent = id ? "Editar pieza" : "Nueva pieza";
+  document.getElementById("btnDelete").style.display = id ? "inline-block" : "none";
+  fillSelect("f-producto", listas.productos);
+  fillSelect("f-angulo", listas.angulos);
+  document.getElementById("f-producto").value = it.producto || listas.productos[0] || "";
+  document.getElementById("f-angulo").value = it.angulo || listas.angulos[0] || "";
+  document.getElementById("f-creador").value = it.creador || "";
+  document.getElementById("f-drive").value = it.drive || "";
+  document.getElementById("f-fechaFeed").value = it.fechaFeed || "";
+  document.getElementById("f-fechaTiktok").value = it.fechaTiktok || "";
+  document.getElementById("f-notas").value = it.notas || "";
+  setToggle("tg-feed", !!it.feed);
+  setToggle("tg-tiktok", !!it.tiktok);
+  setToggle("tg-pautaFede", !!it.pautaFede);
+  setToggle("tg-pautaAri", !!it.pautaAri);
+  setEstado(it.estado || "crudo");
+  document.getElementById("overlay").classList.add("show");
+}
+
+function closeModal() {
+  document.getElementById("overlay").classList.remove("show");
+  currentId = null;
+}
+
+function setEstado(est) {
+  currentEstado = est;
+  ["crudo","editado","final"].forEach(e => {
+    document.getElementById(`st-${e}`).className = "state-opt" + (e===est ? ` sel-${e}` : "");
+  });
+}
+
+function setToggle(id, on) {
+  const el = document.getElementById(id);
+  el.querySelector("input").checked = on;
+  el.className = "toggle" + (on ? " on" : "");
+}
+
+function toggleClass(id) {
+  const el = document.getElementById(id);
+  const on = el.querySelector("input").checked;
+  el.className = "toggle" + (on ? " on" : "");
+}
+
+function saveCurrent() {
+  const data = {
+    producto: document.getElementById("f-producto").value,
+    angulo: document.getElementById("f-angulo").value,
+    creador: document.getElementById("f-creador").value.trim(),
+    estado: currentEstado,
+    drive: document.getElementById("f-drive").value.trim(),
+    fechaFeed: document.getElementById("f-fechaFeed").value || null,
+    fechaTiktok: document.getElementById("f-fechaTiktok").value || null,
+    notas: document.getElementById("f-notas").value.trim(),
+    feed: document.getElementById("tg-feed").querySelector("input").checked,
+    tiktok: document.getElementById("tg-tiktok").querySelector("input").checked,
+    pautaFede: document.getElementById("tg-pautaFede").querySelector("input").checked,
+    pautaAri: document.getElementById("tg-pautaAri").querySelector("input").checked,
+    updatedAt: Date.now()
+  };
+  if (currentId) {
+    db.ref(`${ROOT}/items/${currentId}`).update(data);
+  } else {
+    data.createdAt = Date.now();
+    db.ref(`${ROOT}/items`).push(data);
+  }
+  closeModal();
+}
+
+function deleteCurrent() {
+  if (!currentId) return;
+  if (!confirm("¿Eliminar esta pieza de contenido?")) return;
+  db.ref(`${ROOT}/items/${currentId}`).remove();
+  closeModal();
+}
+
+setView("board");
+</script>
+</body>
+</html>
