@@ -176,12 +176,24 @@
     .cal-day{min-height:48px;font-size:10px;}
     .cal-item{font-size:9px;}
   }
+
+  .log-entry{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:10px 14px;margin-bottom:8px;font-size:13px;
+    display:flex;justify-content:space-between;gap:10px;align-items:baseline;
+  }
+  .log-who{font-weight:600;}
+  .log-when{font-size:11px;color:var(--ink-soft);white-space:nowrap;}
+  .persona-tag{
+    font-size:11px;color:var(--ink-soft);border:1px solid var(--line);
+    border-radius:6px;padding:3px 8px;margin-left:8px;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>Contenido By Nina</h1>
+    <h1>Contenido By Nina <span class="persona-tag" id="personaTag"></span></h1>
     <span class="conn" id="connStatus">Conectando…</span>
   </header>
 
@@ -189,6 +201,7 @@
     <div class="tabs">
       <button class="btn btn-ghost btn-sm" id="tab-board" onclick="setView('board')">Tablero</button>
       <button class="btn btn-ghost btn-sm" id="tab-cal" onclick="setView('cal')">Calendario</button>
+      <button class="btn btn-ghost btn-sm" id="tab-log" onclick="setView('log')">Historial</button>
     </div>
     <button class="btn btn-primary" onclick="openModal(null)">+ Nueva pieza</button>
   </div>
@@ -219,6 +232,10 @@
       <span class="chip on" style="background:var(--purple-soft);color:var(--purple);border-color:transparent;">Feed</span>
       <span class="chip on" style="background:var(--rust-soft);color:var(--rust);border-color:transparent;">TikTok</span>
     </div>
+  </div>
+
+  <div id="view-log" style="display:none;">
+    <div id="log-list"></div>
   </div>
 </div>
 
@@ -315,6 +332,22 @@ let currentEstado = "crudo";
 let currentView = "board";
 let calMonth = new Date(); calMonth.setDate(1);
 
+// Identifica quién está usando la app por el link (?persona=stef), como en bynina-control.
+const params = new URLSearchParams(window.location.search);
+const persona = (params.get("persona") || "ari").toLowerCase();
+const personaLabel = persona === "stef" ? "Stef" : "Ariel";
+document.getElementById("personaTag").textContent = personaLabel;
+
+function logAction(action, data) {
+  db.ref(`${ROOT}/log`).push({
+    actor: personaLabel,
+    action, // "creó" | "editó" | "eliminó"
+    producto: data.producto || "",
+    angulo: data.angulo || "",
+    timestamp: Date.now()
+  });
+}
+
 // Listas editables de producto/ángulo, compartidas y guardadas en Firebase (mismo patrón que Marca en fábrica).
 db.ref(`${ROOT}/listas`).on("value", snap => {
   const v = snap.val() || {};
@@ -330,13 +363,41 @@ db.ref(`${ROOT}/items`).on("value", snap => {
   renderCalendar();
 });
 
+let logEntries = {};
+db.ref(`${ROOT}/log`).limitToLast(200).on("value", snap => {
+  logEntries = snap.val() || {};
+  renderLog();
+});
+
+function renderLog() {
+  const el = document.getElementById("log-list");
+  if (!el) return;
+  const list = Object.values(logEntries).sort((a,b) => b.timestamp - a.timestamp);
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-col">Todavía no hay movimientos registrados.</div>`;
+    return;
+  }
+  el.innerHTML = list.map(l => {
+    const d = new Date(l.timestamp);
+    const when = d.toLocaleDateString("es-AR") + " " + d.toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit"});
+    const detalle = l.producto ? ` — ${escapeHtml(l.producto)}${l.angulo ? " / " + escapeHtml(l.angulo) : ""}` : "";
+    return `<div class="log-entry">
+      <span><span class="log-who">${escapeHtml(l.actor)}</span> ${l.action}${detalle}</span>
+      <span class="log-when">${when}</span>
+    </div>`;
+  }).join("");
+}
+
 function setView(v) {
   currentView = v;
   document.getElementById("view-board").style.display = v === "board" ? "grid" : "none";
   document.getElementById("view-cal").style.display = v === "cal" ? "block" : "none";
+  document.getElementById("view-log").style.display = v === "log" ? "block" : "none";
   document.getElementById("tab-board").classList.toggle("active", v === "board");
   document.getElementById("tab-cal").classList.toggle("active", v === "cal");
+  document.getElementById("tab-log").classList.toggle("active", v === "log");
   if (v === "cal") renderCalendar();
+  if (v === "log") renderLog();
 }
 
 function shiftMonth(n) {
@@ -528,9 +589,11 @@ function saveCurrent() {
   };
   if (currentId) {
     db.ref(`${ROOT}/items/${currentId}`).update(data);
+    logAction("editó", data);
   } else {
     data.createdAt = Date.now();
     db.ref(`${ROOT}/items`).push(data);
+    logAction("creó", data);
   }
   closeModal();
 }
@@ -538,7 +601,9 @@ function saveCurrent() {
 function deleteCurrent() {
   if (!currentId) return;
   if (!confirm("¿Eliminar esta pieza de contenido?")) return;
+  const it = items[currentId] || {};
   db.ref(`${ROOT}/items/${currentId}`).remove();
+  logAction("eliminó", it);
   closeModal();
 }
 
