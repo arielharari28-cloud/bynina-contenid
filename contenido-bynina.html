@@ -132,6 +132,26 @@
   .field textarea{min-height:70px;resize:vertical;}
   .newopt{display:flex;gap:6px;margin-top:6px;}
   .newopt input{flex:1;padding:7px 8px;border:1px solid var(--line);border-radius:7px;font-size:13px;}
+  .optlist{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+  .optchip{
+    display:flex;align-items:center;gap:5px;font-size:11.5px;
+    background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:3px 4px 3px 8px;
+    color:var(--ink-soft);
+  }
+  .optchip button{
+    border:none;background:none;color:var(--red);font-size:13px;line-height:1;
+    cursor:pointer;padding:2px 4px;
+  }
+  .card-thumb-row{display:flex;gap:8px;}
+  .card-thumb{
+    width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;
+    background:var(--bg);border:1px solid var(--line);
+  }
+  .card-thumb-ph{
+    width:44px;height:44px;border-radius:8px;flex-shrink:0;
+    background:var(--bg);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink-soft);
+  }
   .states{display:flex;gap:6px;margin-bottom:12px;}
   .state-opt{
     flex:1;text-align:center;padding:8px 4px;border-radius:8px;border:1px solid var(--line);
@@ -244,15 +264,17 @@
     <h2 id="modalTitle">Nueva pieza</h2>
 
     <div class="field">
-      <label>Producto</label>
+      <label>Producto o Categoría</label>
       <select id="f-producto"></select>
-      <div class="newopt"><input type="text" id="new-producto" placeholder="Agregar producto nuevo"><button class="btn btn-ghost btn-sm" onclick="addOption('productos','new-producto','f-producto')">Agregar</button></div>
+      <div class="newopt"><input type="text" id="new-producto" placeholder="Agregar producto/categoría nueva"><button class="btn btn-ghost btn-sm" onclick="addOption('productos','new-producto','f-producto')">Agregar</button></div>
+      <div class="optlist" id="optlist-productos"></div>
     </div>
 
     <div class="field">
       <label>Ángulo</label>
       <select id="f-angulo"></select>
       <div class="newopt"><input type="text" id="new-angulo" placeholder="Agregar ángulo nuevo"><button class="btn btn-ghost btn-sm" onclick="addOption('angulos','new-angulo','f-angulo')">Agregar</button></div>
+      <div class="optlist" id="optlist-angulos"></div>
     </div>
 
     <div class="field">
@@ -349,13 +371,33 @@ function logAction(action, data) {
 }
 
 // Listas editables de producto/ángulo, compartidas y guardadas en Firebase (mismo patrón que Marca en fábrica).
+let listasRaw = { productos: {}, angulos: {} };
 db.ref(`${ROOT}/listas`).on("value", snap => {
   const v = snap.val() || {};
-  listas.productos = v.productos ? Object.values(v.productos) : [];
-  listas.angulos = v.angulos ? Object.values(v.angulos) : [];
+  listasRaw.productos = v.productos || {};
+  listasRaw.angulos = v.angulos || {};
+  listas.productos = Object.values(listasRaw.productos);
+  listas.angulos = Object.values(listasRaw.angulos);
   fillSelect("f-producto", listas.productos);
   fillSelect("f-angulo", listas.angulos);
+  renderOptList("productos");
+  renderOptList("angulos");
 });
+
+function renderOptList(kind) {
+  const el = document.getElementById(`optlist-${kind}`);
+  if (!el) return;
+  const entries = Object.entries(listasRaw[kind]);
+  el.innerHTML = entries.map(([key, val]) => `
+    <span class="optchip">${escapeHtml(val)}<button onclick="removeOption('${kind}','${key}')" title="Eliminar">×</button></span>
+  `).join("");
+}
+
+function removeOption(kind, key) {
+  const val = listasRaw[kind][key];
+  if (!confirm(`¿Eliminar "${val}" de la lista? (las piezas que ya lo usan no se borran)`)) return;
+  db.ref(`${ROOT}/listas/${kind}/${key}`).remove();
+}
 
 db.ref(`${ROOT}/items`).on("value", snap => {
   items = snap.val() || {};
@@ -498,15 +540,33 @@ function render() {
   });
 }
 
+function driveFileId(url) {
+  if (!url) return null;
+  let m = url.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
+  if (m) return m[1];
+  m = url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+  if (m) return m[1];
+  return null;
+}
+
 function renderCard(it) {
   const div = document.createElement("div");
   div.className = "card";
   div.onclick = () => openModal(it.id);
   const chip = (on, label) => `<span class="chip ${on?'on':''}">${label}</span>`;
   const driveLink = it.drive ? `<a href="${it.drive}" target="_blank" onclick="event.stopPropagation()">Ver en Drive</a>` : `<span></span>`;
+  const fileId = driveFileId(it.drive);
+  const thumb = fileId
+    ? `<img class="card-thumb" src="https://drive.google.com/thumbnail?id=${fileId}&sz=w100" onerror="this.outerHTML='<div class=&quot;card-thumb-ph&quot;>🎬</div>'">`
+    : `<div class="card-thumb-ph">🎬</div>`;
   div.innerHTML = `
-    <p class="card-title">${escapeHtml(it.producto || "Sin producto")}</p>
-    <p class="card-sub">${escapeHtml(it.angulo || "Sin ángulo")}</p>
+    <div class="card-thumb-row">
+      ${thumb}
+      <div style="flex:1; min-width:0;">
+        <p class="card-title">${escapeHtml(it.producto || "Sin producto")}</p>
+        <p class="card-sub">${escapeHtml(it.angulo || "Sin ángulo")}</p>
+      </div>
+    </div>
     <div class="chips">
       ${chip(it.feed, "Feed")}
       ${chip(it.tiktok, "TikTok")}
