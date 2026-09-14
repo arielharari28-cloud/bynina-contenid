@@ -213,6 +213,15 @@
     padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;color:var(--ink);
   }
   #pauta-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+
+  .filterbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .filterbar select{
+    padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;color:var(--ink);
+  }
+  .cat-badge{
+    display:inline-block;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.02em;
+    color:var(--purple);background:var(--purple-soft);border-radius:5px;padding:2px 7px;margin-bottom:4px;
+  }
 </style>
 </head>
 <body>
@@ -232,13 +241,20 @@
     <button class="btn btn-primary" onclick="openModal(null)">+ Nueva pieza</button>
   </div>
 
+  <div class="filterbar" id="board-filters">
+    <select id="filter-producto" onchange="render()"><option value="">Todas las categorías</option></select>
+    <select id="filter-angulo" onchange="render()"><option value="">Todos los ángulos</option></select>
+    <select id="filter-creador" onchange="render()"><option value="">Todos los creadores</option></select>
+    <button class="btn btn-ghost btn-sm" onclick="clearFilters()">Limpiar filtros</button>
+  </div>
+
   <div class="board" id="view-board">
     <div>
-      <div class="col-head"><span class="dot dot-crudo"></span>Crudo <span class="count" id="cnt-crudo"></span></div>
+      <div class="col-head"><span class="dot dot-crudo"></span>Pendiente organizar <span class="count" id="cnt-crudo"></span></div>
       <div id="col-crudo"></div>
     </div>
     <div>
-      <div class="col-head"><span class="dot dot-editado"></span>Editado <span class="count" id="cnt-editado"></span></div>
+      <div class="col-head"><span class="dot dot-editado"></span>En proceso <span class="count" id="cnt-editado"></span></div>
       <div id="col-editado"></div>
     </div>
     <div>
@@ -297,14 +313,21 @@
 
     <div class="field">
       <label>Creador</label>
-      <input type="text" id="f-creador" placeholder="Nombre">
+      <select id="f-creador"></select>
+      <div class="newopt"><input type="text" id="new-creador" placeholder="Agregar creador nuevo"><button class="btn btn-ghost btn-sm" onclick="addOption('creadores','new-creador','f-creador')">Agregar</button></div>
+      <div class="optlist" id="optlist-creadores"></div>
+    </div>
+
+    <div class="field">
+      <label>Descripción</label>
+      <textarea id="f-descripcion" placeholder="Qué muestra el video, de qué se trata"></textarea>
     </div>
 
     <div class="field">
       <label>Estado</label>
       <div class="states">
-        <div class="state-opt" id="st-crudo" onclick="setEstado('crudo')">Crudo</div>
-        <div class="state-opt" id="st-editado" onclick="setEstado('editado')">Editado</div>
+        <div class="state-opt" id="st-crudo" onclick="setEstado('crudo')">Pendiente organizar</div>
+        <div class="state-opt" id="st-editado" onclick="setEstado('editado')">En proceso</div>
         <div class="state-opt" id="st-final" onclick="setEstado('final')">Final</div>
       </div>
     </div>
@@ -366,7 +389,7 @@ db.ref(".info/connected").on("value", snap => {
 });
 
 let items = {};
-let listas = { productos: [], angulos: [] };
+let listas = { productos: [], angulos: [], creadores: [] };
 let currentId = null;
 let currentEstado = "crudo";
 let currentView = "board";
@@ -389,18 +412,44 @@ function logAction(action, data) {
 }
 
 // Listas editables de producto/ángulo, compartidas y guardadas en Firebase (mismo patrón que Marca en fábrica).
-let listasRaw = { productos: {}, angulos: {} };
+let listasRaw = { productos: {}, angulos: {}, creadores: {} };
 db.ref(`${ROOT}/listas`).on("value", snap => {
   const v = snap.val() || {};
   listasRaw.productos = v.productos || {};
   listasRaw.angulos = v.angulos || {};
+  listasRaw.creadores = v.creadores || {};
   listas.productos = Object.values(listasRaw.productos);
   listas.angulos = Object.values(listasRaw.angulos);
+  listas.creadores = Object.values(listasRaw.creadores);
   fillSelect("f-producto", listas.productos);
   fillSelect("f-angulo", listas.angulos);
+  fillSelect("f-creador", listas.creadores);
+  fillFilterSelect("filter-producto", listas.productos, "Todas las categorías");
+  fillFilterSelect("filter-angulo", listas.angulos, "Todos los ángulos");
+  fillFilterSelect("filter-creador", listas.creadores, "Todos los creadores");
   renderOptList("productos");
   renderOptList("angulos");
+  renderOptList("creadores");
 });
+
+function fillFilterSelect(id, opts, allLabel) {
+  const sel = document.getElementById(id);
+  const prev = sel.value;
+  sel.innerHTML = `<option value="">${allLabel}</option>`;
+  opts.forEach(o => {
+    const op = document.createElement("option");
+    op.value = o; op.textContent = o;
+    sel.appendChild(op);
+  });
+  if (opts.includes(prev)) sel.value = prev;
+}
+
+function clearFilters() {
+  document.getElementById("filter-producto").value = "";
+  document.getElementById("filter-angulo").value = "";
+  document.getElementById("filter-creador").value = "";
+  render();
+}
 
 function renderOptList(kind) {
   const el = document.getElementById(`optlist-${kind}`);
@@ -452,6 +501,7 @@ function renderLog() {
 function setView(v) {
   currentView = v;
   document.getElementById("view-board").style.display = v === "board" ? "grid" : "none";
+  document.getElementById("board-filters").style.display = v === "board" ? "flex" : "none";
   document.getElementById("view-cal").style.display = v === "cal" ? "block" : "none";
   document.getElementById("view-log").style.display = v === "log" ? "block" : "none";
   document.getElementById("view-pauta").style.display = v === "pauta" ? "block" : "none";
@@ -560,8 +610,14 @@ function addOption(kind, inputId, selectId) {
 }
 
 function render() {
+  const fp = document.getElementById("filter-producto").value;
+  const fa = document.getElementById("filter-angulo").value;
+  const fc = document.getElementById("filter-creador").value;
   const cols = { crudo: [], editado: [], final: [] };
   Object.entries(items).forEach(([id, it]) => {
+    if (fp && it.producto !== fp) return;
+    if (fa && it.angulo !== fa) return;
+    if (fc && it.creador !== fc) return;
     const est = it.estado || "crudo";
     if (cols[est]) cols[est].push({ id, ...it });
   });
@@ -601,8 +657,8 @@ function renderCard(it) {
     <div class="card-thumb-row">
       ${thumb}
       <div style="flex:1; min-width:0;">
-        <p class="card-title">${escapeHtml(it.producto || "Sin producto")}</p>
-        <p class="card-sub">${escapeHtml(it.angulo || "Sin ángulo")}</p>
+        <span class="cat-badge">${escapeHtml(it.producto || "Sin categoría")}</span>
+        <p class="card-sub" style="margin-top:2px;">${escapeHtml(it.angulo || "Sin ángulo")}</p>
       </div>
     </div>
     <div class="chips">
@@ -630,9 +686,11 @@ function openModal(id) {
   document.getElementById("btnDelete").style.display = id ? "inline-block" : "none";
   fillSelect("f-producto", listas.productos);
   fillSelect("f-angulo", listas.angulos);
+  fillSelect("f-creador", listas.creadores);
   document.getElementById("f-producto").value = it.producto || listas.productos[0] || "";
   document.getElementById("f-angulo").value = it.angulo || listas.angulos[0] || "";
-  document.getElementById("f-creador").value = it.creador || "";
+  document.getElementById("f-creador").value = it.creador || listas.creadores[0] || "";
+  document.getElementById("f-descripcion").value = it.descripcion || "";
   document.getElementById("f-drive").value = it.drive || "";
   document.getElementById("f-fechaFeed").value = it.fechaFeed || "";
   document.getElementById("f-fechaTiktok").value = it.fechaTiktok || "";
@@ -673,7 +731,8 @@ function saveCurrent() {
   const data = {
     producto: document.getElementById("f-producto").value,
     angulo: document.getElementById("f-angulo").value,
-    creador: document.getElementById("f-creador").value.trim(),
+    creador: document.getElementById("f-creador").value,
+    descripcion: document.getElementById("f-descripcion").value.trim(),
     estado: currentEstado,
     drive: document.getElementById("f-drive").value.trim(),
     fechaFeed: document.getElementById("f-fechaFeed").value || null,
