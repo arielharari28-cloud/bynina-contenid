@@ -109,6 +109,10 @@
   }
   .board-mini-toggle.on{background:var(--green-soft);color:var(--green);border-color:transparent;}
   .board-dates{font-size:10.5px;color:var(--ink-soft);}
+  .board-video-btn{
+    font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:6px;
+    background:var(--purple);color:#fff;text-decoration:none;margin-left:auto;
+  }
   .board-row:active{opacity:0.85;}
   .board-bar{width:5px;align-self:stretch;border-radius:3px;flex-shrink:0;min-height:38px;}
   .board-thumb{width:38px;height:38px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--bg);border:1px solid var(--line);}
@@ -670,6 +674,9 @@ function renderBoardRow(it) {
   if (it.fechaFeed) dateBits.push(`Feed: ${formatDateShort(it.fechaFeed)}`);
   if (it.fechaTiktok) dateBits.push(`TikTok: ${formatDateShort(it.fechaTiktok)}`);
   const datesHtml = dateBits.length ? `<span class="board-dates">${dateBits.join(" · ")}</span>` : "";
+  const videoBtn = it.drive
+    ? `<a class="board-video-btn" href="${it.drive}" target="_blank" onclick="event.stopPropagation()">Ver video</a>`
+    : "";
 
   div.innerHTML = `
     <div class="board-row-main">
@@ -687,6 +694,7 @@ function renderBoardRow(it) {
       ${miniToggle("pautaFede","Pauta Fede")}
       ${miniToggle("pautaAri","Pauta Ari")}
       ${datesHtml}
+      ${videoBtn}
     </div>
   `;
   return div;
