@@ -165,7 +165,10 @@
   .cal-day{background:var(--card);border:1px solid var(--line);border-radius:8px;min-height:64px;padding:5px;font-size:11px;}
   .cal-day.empty{background:transparent;border:none;}
   .cal-daynum{font-size:11px;color:var(--ink-soft);margin-bottom:3px;}
-  .cal-item{border-radius:5px;padding:2px 4px;margin-bottom:2px;font-size:10px;line-height:1.3;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cal-item{border-radius:5px;padding:2px 4px;margin-bottom:2px;font-size:10px;line-height:1.3;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:4px;}
+  .cal-item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cal-item-thumb{width:16px;height:16px;border-radius:3px;object-fit:cover;flex:none;}
+  .cal-item-thumb-ph{display:none;}
   .cal-item.feed{background:var(--purple-soft);color:var(--purple);}
   .cal-item.tiktok{background:var(--rust-soft);color:var(--rust);}
   .cal-legend{display:flex;gap:8px;justify-content:center;margin-top:14px;}
@@ -370,8 +373,9 @@
     </div>
 
     <div class="field">
-      <label>Miniatura manual (opcional, si no sale sola la de Drive)</label>
-      <input type="text" id="f-thumb" placeholder="Link directo a una imagen">
+      <label>Miniatura</label>
+      <div id="thumb-preview" onclick="thumbTriggerUpload()" style="width:100%;height:110px;border:1px dashed #ccc;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888;font-size:12px;overflow:hidden;background:#fafafa">📷 Subir foto</div>
+      <input type="hidden" id="f-thumb">
     </div>
 
     <div class="toggles">
@@ -433,6 +437,34 @@ let items = {};
 let listas = { productos: [], angulos: [], creadores: [], tiposContenido: [], prendas: [] };
 let currentId = null;
 let currentPrendas = [];
+let currentThumbFile = null;
+const CLOUDINARY_CLOUD = 'dt6ijkpyy';
+const CLOUDINARY_PRESET = 'By Nina';
+// Igual que en la miniatura, se elige/previsualiza acá y recién se sube a Cloudinary al
+// guardar la pieza — si se cancela el modal, no queda una foto huérfana subida sin usar.
+function thumbTriggerUpload(){
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = 'image/*';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    currentThumbFile = file;
+    const reader = new FileReader();
+    reader.onload = ev => { document.getElementById('thumb-preview').innerHTML = `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover">`; };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+async function subirThumbSiHace(){
+  if (!currentThumbFile) return document.getElementById('f-thumb').value.trim();
+  const formData = new FormData();
+  formData.append('file', currentThumbFile);
+  formData.append('upload_preset', CLOUDINARY_PRESET);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: 'POST', body: formData });
+  const data = await res.json();
+  if (!data.secure_url) throw new Error('No se pudo subir la foto');
+  return data.secure_url;
+}
 let currentView = "board";
 let currentEstadoFilter = "";
 let calMonth = new Date(); calMonth.setDate(1);
@@ -501,10 +533,15 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
   renderPrendaCheckList();
 });
 
-function fillSelect(id, opts) {
+function fillSelect(id, opts, includeBlank) {
   const sel = document.getElementById(id);
   const prev = sel.value;
   sel.innerHTML = "";
+  if (includeBlank) {
+    const blank = document.createElement("option");
+    blank.value = ""; blank.textContent = "-- Elegir --";
+    sel.appendChild(blank);
+  }
   opts.forEach(o => {
     const op = document.createElement("option");
     op.value = o; op.textContent = o;
@@ -781,7 +818,7 @@ function renderCalendar() {
     (byDate[dateKey] || []).forEach(entry => {
       const chip = document.createElement("div");
       chip.className = `cal-item ${entry.tipo}`;
-      chip.textContent = `${entry.tipo === "feed" ? "IG" : "TT"} · ${entry.it.producto || "s/categoría"}`;
+      chip.innerHTML = `${thumbHtml(entry.it, "cal-item-thumb", 40)}<span>${entry.tipo === "feed" ? "IG" : "TT"} · ${escapeHtml(entry.it.producto || "s/categoría")}</span>`;
       chip.onclick = () => openModal(entry.id);
       cell.appendChild(chip);
     });
@@ -896,20 +933,22 @@ function openModal(id) {
   document.getElementById("modalTitle").textContent = id ? "Editar pieza" : "Nueva pieza";
   document.getElementById("btnDelete").style.display = id ? "inline-block" : "none";
 
-  fillSelect("f-producto", listas.productos);
-  fillSelect("f-angulo", listas.angulos);
-  fillSelect("f-creador", listas.creadores);
-  fillSelect("f-tipoContenido", listas.tiposContenido);
+  fillSelect("f-producto", listas.productos, true);
+  fillSelect("f-angulo", listas.angulos, true);
+  fillSelect("f-creador", listas.creadores, true);
+  fillSelect("f-tipoContenido", listas.tiposContenido, true);
 
-  document.getElementById("f-producto").value = it.producto || listas.productos[0] || "";
-  document.getElementById("f-angulo").value = it.angulo || listas.angulos[0] || "";
-  document.getElementById("f-creador").value = it.creador || listas.creadores[0] || "";
-  document.getElementById("f-tipoContenido").value = it.tipoContenido || listas.tiposContenido[0] || "";
+  document.getElementById("f-producto").value = it.producto || "";
+  document.getElementById("f-angulo").value = it.angulo || "";
+  document.getElementById("f-creador").value = it.creador || "";
+  document.getElementById("f-tipoContenido").value = it.tipoContenido || "";
   document.getElementById("f-gancho").value = it.gancho || "";
   document.getElementById("f-ideaLink").value = it.ideaLink || "";
   document.getElementById("f-ideaDescripcion").value = it.ideaDescripcion || "";
   document.getElementById("f-drive").value = it.drive || "";
   document.getElementById("f-thumb").value = it.thumb || "";
+  currentThumbFile = null;
+  document.getElementById("thumb-preview").innerHTML = it.thumb ? `<img src="${it.thumb}" style="width:100%;height:100%;object-fit:cover">` : "📷 Subir foto";
   document.getElementById("f-fechaCreacion").value = it.fechaCreacion || "";
   document.getElementById("f-fechaLimite").value = it.fechaLimite || "";
   document.getElementById("f-fechaEntregaReal").value = it.fechaEntregaReal || "";
@@ -931,6 +970,7 @@ function closeModal() {
   document.getElementById("overlay").classList.remove("show");
   currentId = null;
   currentPrendas = [];
+  currentThumbFile = null;
 }
 
 function setToggle(id, on) {
@@ -945,7 +985,14 @@ function toggleClass(id) {
   el.className = "toggle" + (on ? " on" : "");
 }
 
-function saveCurrent() {
+async function saveCurrent() {
+  let thumbUrl;
+  try {
+    thumbUrl = await subirThumbSiHace();
+  } catch (e) {
+    alert('No se pudo subir la foto de miniatura. Probá de nuevo.');
+    return;
+  }
   const data = {
     producto: document.getElementById("f-producto").value,
     angulo: document.getElementById("f-angulo").value,
@@ -957,7 +1004,7 @@ function saveCurrent() {
     ideaDescripcion: document.getElementById("f-ideaDescripcion").value.trim(),
     estado: document.getElementById("f-estado").value,
     drive: document.getElementById("f-drive").value.trim(),
-    thumb: document.getElementById("f-thumb").value.trim(),
+    thumb: thumbUrl,
     fechaCreacion: document.getElementById("f-fechaCreacion").value || null,
     fechaLimite: document.getElementById("f-fechaLimite").value || null,
     fechaEntregaReal: document.getElementById("f-fechaEntregaReal").value || null,
