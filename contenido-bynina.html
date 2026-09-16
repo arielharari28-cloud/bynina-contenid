@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <style>
   :root{
     --bg:#f5f4ef;
@@ -89,45 +90,51 @@
     padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;color:var(--ink);
   }
 
-  .estado-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
-  .estado-chip{
-    font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:8px;
-    border:1px solid var(--line);color:var(--ink-soft);cursor:pointer;background:#fff;
+  .board-search{
+    display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);
+    border-radius:8px;padding:8px 12px;flex:1;min-width:160px;
   }
-  .estado-chip.active{color:#fff;border-color:transparent;}
+  .board-search svg{flex-shrink:0;color:var(--ink-soft);}
+  .board-search input{
+    border:none;outline:none;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);width:100%;background:transparent;
+  }
 
-  .board-row{
-    display:flex;flex-direction:column;gap:8px;
-    background:var(--card);border:1px solid var(--line);border-radius:10px;
-    padding:9px 12px;margin-bottom:8px;cursor:pointer;
+  .board-columns{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;-webkit-overflow-scrolling:touch;}
+  .board-col{
+    flex:0 0 230px;background:#efece2;border-radius:12px;padding:10px;
+    display:flex;flex-direction:column;min-height:60px;
   }
-  .board-row-main{display:flex;align-items:center;gap:10px;}
-  .board-row-extra{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-left:15px;}
+  .board-col.drag-over{outline:2px dashed var(--ink-soft);outline-offset:-2px;}
+  .board-col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .board-col-title{font-size:11px;font-weight:600;padding:4px 8px;border-radius:6px;white-space:nowrap;}
+  .board-col-count{font-size:11px;color:var(--ink-soft);}
+  .board-col-cards{display:flex;flex-direction:column;gap:8px;min-height:20px;}
+
+  .board-card{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:9px 10px;cursor:grab;
+  }
+  .board-card:active{cursor:grabbing;}
+  .board-card.dragging{opacity:0.4;}
+  .board-card-main{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
   .board-mini-toggle{
     font-size:10px;font-weight:600;padding:3px 7px;border-radius:6px;
     border:1px solid var(--line);color:var(--ink-soft);cursor:pointer;background:#fff;user-select:none;
   }
   .board-mini-toggle.on{background:var(--green-soft);color:var(--green);border-color:transparent;}
-  .board-dates{font-size:10.5px;color:var(--ink-soft);}
-  .board-desc{font-size:11.5px;color:var(--ink);padding-left:15px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .board-dates{font-size:10px;color:var(--ink-soft);}
+  .board-desc{font-size:11px;color:var(--ink);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .board-video-btn{
-    font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:6px;
-    background:var(--purple);color:#fff;text-decoration:none;margin-left:auto;
+    font-size:10px;font-weight:600;padding:3px 9px;border-radius:6px;
+    background:var(--purple);color:#fff;text-decoration:none;
   }
-  .board-row:active{opacity:0.85;}
-  .board-bar{width:5px;align-self:stretch;border-radius:3px;flex-shrink:0;min-height:38px;}
   .board-thumb{width:38px;height:38px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--bg);border:1px solid var(--line);}
   .board-thumb-ph{width:38px;height:38px;border-radius:8px;flex-shrink:0;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:14px;}
   .board-mid{flex:1;min-width:0;}
-  .board-cat{font-weight:600;font-size:13.5px;}
-  .board-sub{font-size:11.5px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .board-estado-tag{font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:6px;white-space:nowrap;flex-shrink:0;}
-  .board-estado-select{
-    font-size:10.5px;font-weight:600;padding:4px 6px;border-radius:6px;white-space:nowrap;flex-shrink:0;
-    border:none;appearance:none;-webkit-appearance:none;cursor:pointer;font-family:'Inter',sans-serif;
-    max-width:110px;
-  }
-  .empty-col{font-size:13px;color:var(--ink-soft);padding:10px 0;}
+  .board-cat{font-weight:600;font-size:13px;}
+  .board-sub{font-size:11px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .board-card-extra{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .empty-col{font-size:12px;color:var(--ink-soft);padding:6px 2px;}
 
   .card{
     background:var(--card);
@@ -244,6 +251,10 @@
   </div>
 
   <div class="filterbar" id="board-filters">
+    <div class="board-search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="filter-search" placeholder="Buscar por categoría, ángulo, creador, descripción..." oninput="renderBoardList()">
+    </div>
     <select id="filter-categoria" onchange="renderBoardList()"><option value="">Todas las categorías</option></select>
     <select id="filter-angulo" onchange="renderBoardList()"><option value="">Todos los ángulos</option></select>
     <select id="filter-creador" onchange="renderBoardList()"><option value="">Todos los creadores</option></select>
@@ -251,8 +262,7 @@
   </div>
 
   <div id="view-board">
-    <div class="estado-chips" id="estado-chips"></div>
-    <div id="board-list"></div>
+    <div class="board-columns" id="board-columns"></div>
   </div>
 
   <div id="view-cal" style="display:none;">
@@ -512,7 +522,6 @@ async function subirThumbSiHace(){
   return data.secure_url;
 }
 let currentView = "board";
-let currentEstadoFilter = "";
 let calMonth = new Date(); calMonth.setDate(1);
 
 // Identifica quién está usando la app por el link (?persona=stef), como en bynina-control.
@@ -624,6 +633,7 @@ function clearFilters() {
   document.getElementById("filter-categoria").value = "";
   document.getElementById("filter-angulo").value = "";
   document.getElementById("filter-creador").value = "";
+  document.getElementById("filter-search").value = "";
   renderBoardList();
 }
 
@@ -707,60 +717,84 @@ db.ref(`${ROOT}/items`).on("value", snap => {
   }
 });
 
-// ---------- Vista Tablero (lista con estado como filtro) ----------
-function renderEstadoChips() {
-  const el = document.getElementById("estado-chips");
-  const chip = (key, label) => {
-    const active = currentEstadoFilter === key;
-    const info = key ? estadoInfo(key) : null;
-    const style = active
-      ? `background:${info ? info.color : "var(--ink)"};`
-      : "";
-    return `<span class="estado-chip ${active?'active':''}" style="${style}" onclick="setEstadoFilter('${key}')">${label}</span>`;
-  };
-  el.innerHTML = chip("", "Todos") + ESTADOS.map(e => chip(e.key, e.label)).join("");
-}
-function setEstadoFilter(key) {
-  currentEstadoFilter = key;
-  renderEstadoChips();
-  renderBoardList();
-}
+// ---------- Vista Tablero (kanban por estado, drag&drop) ----------
+let boardSortables = [];
 
-function renderBoardList() {
-  renderEstadoChips();
+function filteredBoardItems() {
   const fp = document.getElementById("filter-categoria").value;
   const fa = document.getElementById("filter-angulo").value;
   const fc = document.getElementById("filter-creador").value;
-  const container = document.getElementById("board-list");
-  if (!container) return;
+  const fs = (document.getElementById("filter-search").value || "").trim().toLowerCase();
 
-  const list = Object.entries(items)
+  return Object.entries(items)
     .map(([id, it]) => ({ id, ...it, estadoKey: normalizeEstado(it.estado) }))
     .filter(it => {
       if (fp && it.producto !== fp) return false;
       if (fa && it.angulo !== fa) return false;
       if (fc && it.creador !== fc) return false;
-      if (currentEstadoFilter && it.estadoKey !== currentEstadoFilter) return false;
+      if (fs) {
+        const haystack = [it.producto, it.angulo, it.creador, it.tipoContenido, it.descripcion]
+          .filter(Boolean).join(" ").toLowerCase();
+        if (!haystack.includes(fs)) return false;
+      }
       return true;
     })
     .sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0));
-
-  if (!list.length) {
-    container.innerHTML = `<div class="empty-col">No hay piezas para este filtro.</div>`;
-    return;
-  }
-  container.innerHTML = "";
-  list.forEach(it => container.appendChild(renderBoardRow(it)));
 }
 
-function renderBoardRow(it) {
+function renderBoardList() {
+  const container = document.getElementById("board-columns");
+  if (!container) return;
+
+  const list = filteredBoardItems();
+  boardSortables.forEach(s => s.destroy());
+  boardSortables = [];
+
+  container.innerHTML = ESTADOS.map(e => `
+    <div class="board-col" data-estado="${e.key}">
+      <div class="board-col-head">
+        <span class="board-col-title" style="background:${e.bg};color:${e.color};">${e.label}</span>
+        <span class="board-col-count" id="col-count-${e.key}"></span>
+      </div>
+      <div class="board-col-cards" id="col-cards-${e.key}" data-estado="${e.key}"></div>
+    </div>
+  `).join("");
+
+  ESTADOS.forEach(e => {
+    const colItems = list.filter(it => it.estadoKey === e.key);
+    document.getElementById(`col-count-${e.key}`).textContent = colItems.length;
+    const cardsEl = document.getElementById(`col-cards-${e.key}`);
+    if (!colItems.length) {
+      cardsEl.innerHTML = `<div class="empty-col">Sin piezas</div>`;
+    } else {
+      cardsEl.innerHTML = "";
+      colItems.forEach(it => cardsEl.appendChild(renderBoardCard(it)));
+    }
+    boardSortables.push(new Sortable(cardsEl, {
+      group: "board",
+      animation: 150,
+      ghostClass: "dragging",
+      delay: 80,
+      delayOnTouchOnly: true,
+      onEnd: function(evt) {
+        const id = evt.item.dataset.id;
+        const newEstado = evt.to.dataset.estado;
+        const oldEstado = evt.from.dataset.estado;
+        if (id && newEstado && newEstado !== oldEstado) {
+          moveItemEstado(id, newEstado);
+        }
+      }
+    }));
+  });
+}
+
+function renderBoardCard(it) {
   const div = document.createElement("div");
-  div.className = "board-row";
+  div.className = "board-card";
+  div.dataset.id = it.id;
   div.onclick = () => openModal(it.id);
-  const info = estadoInfo(it.estadoKey);
   const thumb = thumbHtml(it, "board-thumb", 80);
   const subParts = [it.tipoContenido, it.angulo, it.creador].filter(Boolean).join(" · ");
-  const estadoOptions = ESTADOS.map(e => `<option value="${e.key}" ${e.key===it.estadoKey?"selected":""}>${e.label}</option>`).join("");
 
   const miniToggle = (field, label) => {
     const on = !!it[field];
@@ -773,29 +807,27 @@ function renderBoardRow(it) {
   if (it.fechaEntregaReal) dateBits.push(`Entregado: ${formatDateShort(it.fechaEntregaReal)}`);
   if (it.fechaFeed) dateBits.push(`Feed: ${formatDateShort(it.fechaFeed)}`);
   if (it.fechaTiktok) dateBits.push(`TikTok: ${formatDateShort(it.fechaTiktok)}`);
-  const datesHtml = dateBits.length ? `<span class="board-dates">${dateBits.join(" · ")}</span>` : "";
+  const datesHtml = dateBits.length ? `<div class="board-dates">${dateBits.join(" · ")}</div>` : "";
   const descHtml = it.descripcion ? `<div class="board-desc">${escapeHtml(it.descripcion)}</div>` : "";
   const videoBtn = it.drive
     ? `<a class="board-video-btn" href="${it.drive}" target="_blank" onclick="event.stopPropagation()">Ver video</a>`
     : "";
 
   div.innerHTML = `
-    <div class="board-row-main">
-      <div class="board-bar" style="background:${info.color};"></div>
+    <div class="board-card-main">
       ${thumb}
       <div class="board-mid">
         <div class="board-cat">${escapeHtml(it.producto || "Sin categoría")}</div>
         <div class="board-sub">${escapeHtml(subParts || "—")}</div>
       </div>
-      <select class="board-estado-select" style="background:${info.bg};color:${info.color};" onclick="event.stopPropagation()" onchange="quickChangeEstado('${it.id}', this.value, this)">${estadoOptions}</select>
     </div>
     ${descHtml}
-    <div class="board-row-extra">
+    ${datesHtml}
+    <div class="board-card-extra">
       ${miniToggle("feed","Feed")}
       ${miniToggle("tiktok","TikTok")}
       ${miniToggle("pautaFede","Pauta Fede")}
       ${miniToggle("pautaAri","Pauta Ari")}
-      ${datesHtml}
       ${videoBtn}
     </div>
   `;
@@ -812,14 +844,9 @@ function quickToggle(id, field, newVal) {
   logAction((newVal ? "tildó " : "destildó ") + field, items[id] || {});
 }
 
-function quickChangeEstado(id, newEstado, selectEl) {
+function moveItemEstado(id, newEstado) {
   db.ref(`${ROOT}/items/${id}`).update({ estado: newEstado, updatedAt: Date.now() });
   logAction("cambió estado a " + estadoInfo(newEstado).label, items[id] || {});
-  if (selectEl) {
-    const info = estadoInfo(newEstado);
-    selectEl.style.background = info.bg;
-    selectEl.style.color = info.color;
-  }
 }
 
 // ---------- Calendario ----------
