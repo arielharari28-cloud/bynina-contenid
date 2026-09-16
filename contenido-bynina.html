@@ -210,6 +210,17 @@
   .toggle input{accent-color:var(--green);}
   .modal-actions{display:flex;justify-content:space-between;gap:8px;margin-top:16px;}
   .modal-actions .right{display:flex;gap:8px;}
+  .camp-quickadd{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);}
+  .camp-quickadd select, .camp-quickadd input[type=text], .camp-quickadd input[type=date]{
+    flex:1;min-width:78px;padding:6px 7px;border:1px solid var(--line);border-radius:7px;font-size:11.5px;background:#fff;color:var(--ink);font-family:'Inter',sans-serif;
+  }
+  .camp-quickadd button{flex:none;}
+  .camp-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+  .camp-chip{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;background:var(--blue-soft);color:var(--blue);border-radius:6px;padding:3px 4px 3px 8px;}
+  .camp-chip-actual{background:var(--green-soft);color:var(--green);}
+  .camp-chip-hist{background:var(--bg);color:var(--ink-soft);font-weight:500;}
+  .camp-chip button{border:none;background:none;color:var(--red);font-size:12px;line-height:1;cursor:pointer;padding:0 3px;}
+  .camp-empty{font-size:11px;color:var(--ink-soft);margin-top:6px;}
 </style>
 </head>
 <body>
@@ -385,6 +396,24 @@
       <label class="toggle" id="tg-pautaAri"><input type="checkbox" onchange="toggleClass('tg-pautaAri')"> Pauta Ari</label>
     </div>
 
+    <div class="section-title">Campañas cargadas</div>
+    <div class="field" id="camp-fields-wrap">
+      <label>Tipo de campaña</label>
+      <select id="f-campTipo"></select>
+      <div class="newopt"><input type="text" id="new-tiposCampana" placeholder="Agregar tipo nuevo"><button class="btn btn-ghost btn-sm" onclick="addOption('tiposCampana','new-tiposCampana','f-campTipo')">Agregar</button></div>
+      <div class="optlist" id="optlist-tiposCampana"></div>
+    </div>
+    <div class="field">
+      <label>Nombre de la campaña</label>
+      <input type="text" id="f-campNombre" placeholder="Ej: Verano24 - TOFU">
+    </div>
+    <div class="field">
+      <label>Fecha de carga</label>
+      <input type="date" id="f-campFecha">
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="addCampanaFromModal()">+ Agregar campaña</button>
+    <div class="checklist" id="campanas-list" style="margin-top:8px;"></div>
+
     <div class="modal-actions">
       <button class="btn btn-ghost" id="btnDelete" style="display:none;color:var(--red);" onclick="deleteCurrent()">Eliminar</button>
       <div class="right">
@@ -434,7 +463,7 @@ db.ref(".info/connected").on("value", snap => {
 });
 
 let items = {};
-let listas = { productos: [], angulos: [], creadores: [], tiposContenido: [], prendas: [] };
+let listas = { productos: [], angulos: [], creadores: [], tiposContenido: [], prendas: [], tiposCampana: [] };
 let currentId = null;
 let currentPrendas = [];
 let currentThumbFile = null;
@@ -496,8 +525,9 @@ function logAction(action, data) {
 })();
 
 // Listas editables (categoría, ángulo, creador, tipo de contenido, prendas mostradas).
-let listasRaw = { productos: {}, angulos: {}, creadores: {}, tiposContenido: {}, prendas: {} };
+let listasRaw = { productos: {}, angulos: {}, creadores: {}, tiposContenido: {}, prendas: {}, tiposCampana: {} };
 const DEFAULT_TIPOS = ["Video Persona - Casa", "Video Persona - Local", "Gráfica Texto Informativo", "Video Piso/Percha"];
+const DEFAULT_TIPOS_CAMPANA = ["TOFU", "ADV+", "ABO", "CBO"];
 
 db.ref(`${ROOT}/listas`).on("value", snap => {
   const v = snap.val() || {};
@@ -506,11 +536,17 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
   listasRaw.creadores = v.creadores || {};
   listasRaw.tiposContenido = v.tiposContenido || {};
   listasRaw.prendas = v.prendas || {};
+  listasRaw.tiposCampana = v.tiposCampana || {};
 
   // Siembra los 4 tipos de contenido conocidos una sola vez, si la lista está vacía y nunca se sembró.
   if (Object.keys(listasRaw.tiposContenido).length === 0 && !v._tiposSeeded) {
     DEFAULT_TIPOS.forEach(t => db.ref(`${ROOT}/listas/tiposContenido`).push(t));
     db.ref(`${ROOT}/listas/_tiposSeeded`).set(true);
+  }
+  // Siembra los tipos de campaña conocidos (TOFU/ADV+/ABO/CBO) una sola vez.
+  if (Object.keys(listasRaw.tiposCampana).length === 0 && !v._tiposCampanaSeeded) {
+    DEFAULT_TIPOS_CAMPANA.forEach(t => db.ref(`${ROOT}/listas/tiposCampana`).push(t));
+    db.ref(`${ROOT}/listas/_tiposCampanaSeeded`).set(true);
   }
 
   listas.productos = Object.values(listasRaw.productos);
@@ -518,11 +554,13 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
   listas.creadores = Object.values(listasRaw.creadores);
   listas.tiposContenido = Object.values(listasRaw.tiposContenido);
   listas.prendas = Object.values(listasRaw.prendas);
+  listas.tiposCampana = Object.values(listasRaw.tiposCampana);
 
   fillSelect("f-producto", listas.productos);
   fillSelect("f-angulo", listas.angulos);
   fillSelect("f-creador", listas.creadores);
   fillSelect("f-tipoContenido", listas.tiposContenido);
+  fillSelect("f-campTipo", listas.tiposCampana);
   fillFilterSelect("filter-categoria", listas.productos, "Todas las categorías");
   fillFilterSelect("filter-angulo", listas.angulos, "Todos los ángulos");
   fillFilterSelect("filter-creador", listas.creadores, "Todos los creadores");
@@ -530,7 +568,10 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
   renderOptList("angulos");
   renderOptList("creadores");
   renderOptList("tiposContenido");
+  renderOptList("tiposCampana");
   renderPrendaCheckList();
+  // Si estoy en Pauta Ari, refresco para que los selects de tipo de campaña de cada tarjeta usen la lista actualizada.
+  if (currentView === "pauta") renderPautaAri();
 });
 
 function fillSelect(id, opts, includeBlank) {
@@ -644,6 +685,9 @@ db.ref(`${ROOT}/items`).on("value", snap => {
   renderBoardList();
   renderCalendar();
   if (currentView === "pauta") renderPautaAri();
+  if (currentId && document.getElementById("overlay").classList.contains("show")) {
+    renderCampanasList(currentId, "campanas-list");
+  }
 });
 
 // ---------- Vista Tablero (lista con estado como filtro) ----------
@@ -857,16 +901,122 @@ function renderPautaAri() {
   const container = document.getElementById("pauta-list");
   if (!container) return;
   const sortBy = document.getElementById("pauta-sortby").value;
-  const list = Object.entries(items)
-    .filter(([id, it]) => it.pautaAri)
-    .map(([id, it]) => ({ id, ...it }))
-    .sort((a, b) => (a[sortBy] || "").localeCompare(b[sortBy] || "", "es"));
+  const sorter = (a, b) => (a[sortBy] || "").localeCompare(b[sortBy] || "", "es");
+  const all = Object.entries(items).map(([id, it]) => ({ id, ...it }));
+
+  // Pendiente Utilizar: todavía no tiene ni Pauta Fede ni Pauta Ari — es el banco listo para pautar.
+  // Ya utilizados: ya se cargó al menos una campaña (eso marca Pauta Ari solo) — acá se ve en cuál y se puede traspasar.
+  const pendientes = all.filter(it => !it.pautaFede && !it.pautaAri).sort(sorter);
+  const utilizados = all.filter(it => it.pautaFede || it.pautaAri).sort(sorter);
+
   container.innerHTML = "";
-  if (!list.length) {
-    container.innerHTML = `<div class="empty-col">Todavía no hay piezas marcadas con Pauta Ari.</div>`;
+  if (!pendientes.length && !utilizados.length) {
+    container.innerHTML = `<div class="empty-col">Todavía no hay piezas cargadas.</div>`;
     return;
   }
-  list.forEach(it => container.appendChild(renderCard(it)));
+
+  const addHeader = (text) => {
+    const h = document.createElement("div");
+    h.className = "section-title";
+    h.style.gridColumn = "1 / -1";
+    h.textContent = text;
+    container.appendChild(h);
+  };
+  const addEmptyRow = (text) => {
+    const e = document.createElement("div");
+    e.className = "empty-col";
+    e.style.gridColumn = "1 / -1";
+    e.textContent = text;
+    container.appendChild(e);
+  };
+
+  addHeader(`Pendiente Utilizar (${pendientes.length})`);
+  if (!pendientes.length) addEmptyRow("No queda contenido disponible sin usar.");
+  else pendientes.forEach(it => container.appendChild(renderCard(it)));
+
+  addHeader(`Ya utilizados (${utilizados.length})`);
+  if (!utilizados.length) addEmptyRow("Todavía no cargaste ninguna pieza en una campaña.");
+  else utilizados.forEach(it => container.appendChild(renderCard(it)));
+}
+
+// ---------- Campañas cargadas por pieza ----------
+function addCampana(itemId, tipo, nombre, fecha) {
+  if (!tipo) { alert("Elegí un tipo de campaña."); return; }
+  db.ref(`${ROOT}/items/${itemId}/campanas`).push({ tipo, nombre: nombre || "", fecha: fecha || "", creadoEn: Date.now() });
+  // Cargar (o traspasar) una campaña la marca como usada: pasa de "Pendiente Utilizar" a "Ya utilizados".
+  db.ref(`${ROOT}/items/${itemId}`).update({ pautaAri: true, updatedAt: Date.now() });
+  logAction("cargó campaña " + tipo + (nombre ? " - " + nombre : ""), items[itemId] || {});
+}
+
+function removeCampana(itemId, campKey) {
+  if (!confirm("¿Eliminar esta campaña cargada?")) return;
+  db.ref(`${ROOT}/items/${itemId}/campanas/${campKey}`).remove();
+}
+
+function addCampanaFromModal() {
+  if (!currentId) { alert("Guardá la pieza primero para poder cargar campañas."); return; }
+  const tipo = document.getElementById("f-campTipo").value;
+  const nombre = document.getElementById("f-campNombre").value.trim();
+  const fecha = document.getElementById("f-campFecha").value;
+  addCampana(currentId, tipo, nombre, fecha);
+  document.getElementById("f-campNombre").value = "";
+  document.getElementById("f-campFecha").value = "";
+}
+
+function addCampanaFromCard(itemId) {
+  const tipo = document.getElementById(`camp-tipo-${itemId}`).value;
+  const nombre = document.getElementById(`camp-nombre-${itemId}`).value.trim();
+  const fecha = document.getElementById(`camp-fecha-${itemId}`).value;
+  addCampana(itemId, tipo, nombre, fecha);
+}
+
+// Lista de campañas ya cargadas, para el checklist del modal. La más reciente queda marcada como "Actual".
+function renderCampanasList(itemId, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!itemId) {
+    el.innerHTML = `<div class="empty-col">Guardá la pieza primero para poder cargar campañas.</div>`;
+    return;
+  }
+  const camps = (items[itemId] && items[itemId].campanas) || {};
+  const entries = Object.entries(camps).sort((a, b) => (b[1].creadoEn || 0) - (a[1].creadoEn || 0));
+  if (!entries.length) {
+    el.innerHTML = `<div class="empty-col">Todavía no cargaste ninguna campaña para esta pieza.</div>`;
+    return;
+  }
+  el.innerHTML = entries.map(([key, c], i) => {
+    const detalle = [c.tipo, c.nombre, c.fecha ? formatDateShort(c.fecha) : ""].filter(Boolean).join(" · ");
+    const tag = i === 0 ? "<strong>Actual —</strong> " : "";
+    return `<div class="checkrow"><label style="flex:1;">${tag}${escapeHtml(detalle)}</label><button onclick="removeCampana('${itemId}','${key}')" title="Eliminar">×</button></div>`;
+  }).join("");
+}
+
+// Chips compactos + mini formulario de carga rápida, para la tarjeta de Pauta Ari.
+// El primer chip (el más reciente) se resalta como campaña actual; el resto queda como historial de traspasos.
+function campanasCardHtml(it) {
+  const camps = it.campanas || {};
+  const entries = Object.entries(camps).sort((a, b) => (b[1].creadoEn || 0) - (a[1].creadoEn || 0));
+  const detalle = c => [c.tipo, c.nombre, c.fecha ? formatDateShort(c.fecha) : ""].filter(Boolean).join(" · ");
+  let listHtml;
+  if (!entries.length) {
+    listHtml = `<div class="camp-empty">Sin campañas cargadas todavía</div>`;
+  } else {
+    const [actualKey, actual] = entries[0];
+    const historial = entries.slice(1);
+    const actualChip = `<span class="camp-chip camp-chip-actual">Actual: ${escapeHtml(detalle(actual))}<button onclick="event.stopPropagation(); removeCampana('${it.id}','${actualKey}')" title="Eliminar">×</button></span>`;
+    const histChips = historial.map(([key, c]) => `<span class="camp-chip camp-chip-hist">${escapeHtml(detalle(c))}<button onclick="event.stopPropagation(); removeCampana('${it.id}','${key}')" title="Eliminar">×</button></span>`).join("");
+    listHtml = `<div class="camp-list">${actualChip}${histChips}</div>`;
+  }
+  const tipoOptions = `<option value="">Tipo…</option>` + listas.tiposCampana.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+  return `
+    ${listHtml}
+    <div class="camp-quickadd" onclick="event.stopPropagation()">
+      <select id="camp-tipo-${it.id}">${tipoOptions}</select>
+      <input type="text" id="camp-nombre-${it.id}" placeholder="Nombre campaña">
+      <input type="date" id="camp-fecha-${it.id}">
+      <button class="btn btn-primary btn-sm" onclick="addCampanaFromCard('${it.id}')">+ ${entries.length ? "Traspasar" : "Cargar"}</button>
+    </div>
+  `;
 }
 
 function driveFileId(url) {
@@ -894,7 +1044,7 @@ function renderCard(it) {
   div.className = "card";
   div.onclick = () => openModal(it.id);
   const chip = (on, label) => `<span class="chip ${on?'on':''}">${label}</span>`;
-  const driveLink = it.drive ? `<a href="${it.drive}" target="_blank" onclick="event.stopPropagation()">Ver en Drive</a>` : `<span></span>`;
+  const driveLink = it.drive ? `<a href="${it.drive}" target="_blank" onclick="event.stopPropagation()">Ver video</a>` : `<span></span>`;
   const thumb = thumbHtml(it, "card-thumb", 100);
   const descHtml = it.descripcion ? `<p class="card-desc">${escapeHtml(it.descripcion)}</p>` : "";
   div.innerHTML = `
@@ -916,6 +1066,7 @@ function renderCard(it) {
       <span>${escapeHtml(it.creador || "")}</span>
       ${driveLink}
     </div>
+    ${campanasCardHtml(it)}
   `;
   return div;
 }
@@ -937,6 +1088,7 @@ function openModal(id) {
   fillSelect("f-angulo", listas.angulos, true);
   fillSelect("f-creador", listas.creadores, true);
   fillSelect("f-tipoContenido", listas.tiposContenido, true);
+  fillSelect("f-campTipo", listas.tiposCampana, true);
 
   document.getElementById("f-producto").value = it.producto || "";
   document.getElementById("f-angulo").value = it.angulo || "";
@@ -963,6 +1115,9 @@ function openModal(id) {
   setToggle("tg-pautaAri", !!it.pautaAri);
 
   renderPrendaCheckList();
+  document.getElementById("f-campNombre").value = "";
+  document.getElementById("f-campFecha").value = "";
+  renderCampanasList(id, "campanas-list");
   document.getElementById("overlay").classList.add("show");
 }
 
