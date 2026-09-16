@@ -109,6 +109,7 @@
   }
   .board-mini-toggle.on{background:var(--green-soft);color:var(--green);border-color:transparent;}
   .board-dates{font-size:10.5px;color:var(--ink-soft);}
+  .board-desc{font-size:11.5px;color:var(--ink);padding-left:15px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .board-video-btn{
     font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:6px;
     background:var(--purple);color:#fff;text-decoration:none;margin-left:auto;
@@ -753,7 +754,7 @@ function renderBoardRow(it) {
   div.onclick = () => openModal(it.id);
   const info = estadoInfo(it.estadoKey);
   const thumb = thumbHtml(it, "board-thumb", 80);
-  const subParts = [it.angulo, it.creador].filter(Boolean).join(" · ");
+  const subParts = [it.tipoContenido, it.angulo, it.creador].filter(Boolean).join(" · ");
   const estadoOptions = ESTADOS.map(e => `<option value="${e.key}" ${e.key===it.estadoKey?"selected":""}>${e.label}</option>`).join("");
 
   const miniToggle = (field, label) => {
@@ -762,10 +763,13 @@ function renderBoardRow(it) {
   };
 
   const dateBits = [];
+  if (it.fechaCreacion) dateBits.push(`Creado: ${formatDateShort(it.fechaCreacion)}`);
+  if (it.fechaLimite) dateBits.push(`Límite: ${formatDateShort(it.fechaLimite)}`);
   if (it.fechaEntregaReal) dateBits.push(`Entregado: ${formatDateShort(it.fechaEntregaReal)}`);
   if (it.fechaFeed) dateBits.push(`Feed: ${formatDateShort(it.fechaFeed)}`);
   if (it.fechaTiktok) dateBits.push(`TikTok: ${formatDateShort(it.fechaTiktok)}`);
   const datesHtml = dateBits.length ? `<span class="board-dates">${dateBits.join(" · ")}</span>` : "";
+  const descHtml = it.descripcion ? `<div class="board-desc">${escapeHtml(it.descripcion)}</div>` : "";
   const videoBtn = it.drive
     ? `<a class="board-video-btn" href="${it.drive}" target="_blank" onclick="event.stopPropagation()">Ver video</a>`
     : "";
@@ -780,6 +784,7 @@ function renderBoardRow(it) {
       </div>
       <select class="board-estado-select" style="background:${info.bg};color:${info.color};" onclick="event.stopPropagation()" onchange="quickChangeEstado('${it.id}', this.value, this)">${estadoOptions}</select>
     </div>
+    ${descHtml}
     <div class="board-row-extra">
       ${miniToggle("feed","Feed")}
       ${miniToggle("tiktok","TikTok")}
