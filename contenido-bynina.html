@@ -154,7 +154,9 @@
   .card-thumb-row{display:flex;gap:8px;}
   .card-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--bg);border:1px solid var(--line);}
   .card-thumb-ph{width:44px;height:44px;border-radius:8px;flex-shrink:0;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink-soft);}
-  #pauta-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+  #pauta-list{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
+  .pauta-col-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+  @media (max-width:760px){ #pauta-list{grid-template-columns:1fr;} }
   .pauta-sort{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;color:var(--ink-soft);}
   .pauta-sort select{padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;color:var(--ink);}
 
@@ -278,7 +280,16 @@
         <option value="creador">Creador</option>
       </select>
     </div>
-    <div id="pauta-list"></div>
+    <div id="pauta-list">
+      <div class="pauta-col">
+        <div class="section-title" id="pauta-col-pendientes-title"></div>
+        <div class="pauta-col-cards" id="pauta-col-pendientes"></div>
+      </div>
+      <div class="pauta-col">
+        <div class="section-title" id="pauta-col-utilizados-title"></div>
+        <div class="pauta-col-cards" id="pauta-col-utilizados"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -898,8 +909,11 @@ function renderLog() {
 
 // ---------- Pauta Ari ----------
 function renderPautaAri() {
-  const container = document.getElementById("pauta-list");
-  if (!container) return;
+  const colPend = document.getElementById("pauta-col-pendientes");
+  const colUtil = document.getElementById("pauta-col-utilizados");
+  const titlePend = document.getElementById("pauta-col-pendientes-title");
+  const titleUtil = document.getElementById("pauta-col-utilizados-title");
+  if (!colPend || !colUtil) return;
   const sortBy = document.getElementById("pauta-sortby").value;
   const sorter = (a, b) => (a[sortBy] || "").localeCompare(b[sortBy] || "", "es");
   const all = Object.entries(items).map(([id, it]) => ({ id, ...it }));
@@ -909,34 +923,16 @@ function renderPautaAri() {
   const pendientes = all.filter(it => !it.pautaFede && !it.pautaAri).sort(sorter);
   const utilizados = all.filter(it => it.pautaFede || it.pautaAri).sort(sorter);
 
-  container.innerHTML = "";
-  if (!pendientes.length && !utilizados.length) {
-    container.innerHTML = `<div class="empty-col">Todavía no hay piezas cargadas.</div>`;
-    return;
-  }
+  titlePend.textContent = `Pendiente Utilizar (${pendientes.length})`;
+  titleUtil.textContent = `Ya utilizados (${utilizados.length})`;
 
-  const addHeader = (text) => {
-    const h = document.createElement("div");
-    h.className = "section-title";
-    h.style.gridColumn = "1 / -1";
-    h.textContent = text;
-    container.appendChild(h);
-  };
-  const addEmptyRow = (text) => {
-    const e = document.createElement("div");
-    e.className = "empty-col";
-    e.style.gridColumn = "1 / -1";
-    e.textContent = text;
-    container.appendChild(e);
-  };
+  colPend.innerHTML = "";
+  if (!pendientes.length) colPend.innerHTML = `<div class="empty-col">No queda contenido disponible sin usar.</div>`;
+  else pendientes.forEach(it => colPend.appendChild(renderCard(it)));
 
-  addHeader(`Pendiente Utilizar (${pendientes.length})`);
-  if (!pendientes.length) addEmptyRow("No queda contenido disponible sin usar.");
-  else pendientes.forEach(it => container.appendChild(renderCard(it)));
-
-  addHeader(`Ya utilizados (${utilizados.length})`);
-  if (!utilizados.length) addEmptyRow("Todavía no cargaste ninguna pieza en una campaña.");
-  else utilizados.forEach(it => container.appendChild(renderCard(it)));
+  colUtil.innerHTML = "";
+  if (!utilizados.length) colUtil.innerHTML = `<div class="empty-col">Todavía no cargaste ninguna pieza en una campaña.</div>`;
+  else utilizados.forEach(it => colUtil.appendChild(renderCard(it)));
 }
 
 // ---------- Campañas cargadas por pieza ----------
