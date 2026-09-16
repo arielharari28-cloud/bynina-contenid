@@ -204,7 +204,8 @@
   .newopt{display:flex;gap:6px;margin-top:6px;}
   .newopt input{flex:1;padding:7px 8px;border:1px solid var(--line);border-radius:7px;font-size:13px;}
   .optlist{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
-  .optchip{display:flex;align-items:center;gap:5px;font-size:11.5px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:3px 4px 3px 8px;color:var(--ink-soft);}
+  .optchip{display:flex;align-items:center;gap:5px;font-size:11.5px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:3px 4px 3px 8px;color:var(--ink-soft);cursor:pointer;}
+  .optchip.selected{background:var(--purple-soft);color:var(--purple);border-color:transparent;font-weight:600;}
   .optchip button{border:none;background:none;color:var(--red);font-size:13px;line-height:1;cursor:pointer;padding:2px 4px;}
 
   .checklist{border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-height:150px;overflow-y:auto;}
@@ -657,12 +658,29 @@ function removeOption(kind, key) {
   db.ref(`${ROOT}/listas/${kind}/${key}`).remove();
 }
 
+const KIND_SELECT = {
+  productos: "f-producto",
+  angulos: "f-angulo",
+  creadores: "f-creador",
+  tiposContenido: "f-tipoContenido",
+  tiposCampana: "f-campTipo"
+};
+
+function selectOption(kind, val) {
+  const selectId = KIND_SELECT[kind];
+  if (!selectId) return;
+  document.getElementById(selectId).value = val;
+  renderOptList(kind);
+}
+
 function renderOptList(kind) {
   const el = document.getElementById(`optlist-${kind}`);
   if (!el) return;
+  const selectId = KIND_SELECT[kind];
+  const currentVal = selectId ? document.getElementById(selectId).value : null;
   const entries = Object.entries(listasRaw[kind]);
   el.innerHTML = entries.map(([key, val]) => `
-    <span class="optchip">${escapeHtml(val)}<button onclick="removeOption('${kind}','${key}')" title="Eliminar">×</button></span>
+    <span class="optchip ${val===currentVal?'selected':''}" onclick="selectOption('${kind}','${escapeAttr(val)}')">${escapeHtml(val)}<button onclick="event.stopPropagation(); removeOption('${kind}','${key}')" title="Eliminar">×</button></span>
   `).join("");
 }
 
@@ -1136,6 +1154,10 @@ function openModal(id) {
   document.getElementById("f-angulo").value = it.angulo || "";
   document.getElementById("f-creador").value = it.creador || "";
   document.getElementById("f-tipoContenido").value = it.tipoContenido || "";
+  renderOptList("productos");
+  renderOptList("angulos");
+  renderOptList("creadores");
+  renderOptList("tiposContenido");
   document.getElementById("f-gancho").value = it.gancho || "";
   document.getElementById("f-ideaLink").value = it.ideaLink || "";
   document.getElementById("f-ideaDescripcion").value = it.ideaDescripcion || "";
