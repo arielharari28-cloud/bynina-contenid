@@ -174,8 +174,12 @@
   .cal-dow{text-align:center;font-size:11px;color:var(--ink-soft);font-weight:600;padding-bottom:4px;}
   .cal-day{background:var(--card);border:1px solid var(--line);border-radius:8px;min-height:80px;padding:5px;font-size:11px;}
   .cal-day.empty{background:transparent;border:none;}
+  .cal-day.drag-over{outline:2px dashed var(--purple);outline-offset:-2px;}
+  .cal-day-items{min-height:16px;}
   .cal-daynum{font-size:11px;color:var(--ink-soft);margin-bottom:3px;}
-  .cal-item{border-radius:5px;padding:3px 6px;margin-bottom:3px;font-size:11px;line-height:1.3;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;}
+  .cal-item{border-radius:5px;padding:3px 6px;margin-bottom:3px;font-size:11px;line-height:1.3;cursor:grab;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;}
+  .cal-item:active{cursor:grabbing;}
+  .cal-item.dragging{opacity:0.4;}
   .cal-item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .cal-item-thumb{width:28px;height:28px;border-radius:5px;object-fit:cover;flex:none;}
   .cal-item-thumb-ph{display:none;}
@@ -524,6 +528,7 @@ async function subirThumbSiHace(){
 }
 let currentView = "board";
 let calMonth = new Date(); calMonth.setDate(1);
+let calSortables = [];
 
 // Identifica quién está usando la app por el link (?persona=stef), como en bynina-control.
 const params = new URLSearchParams(window.location.search);
@@ -905,6 +910,9 @@ function renderCalendar() {
   const firstDow = (new Date(y, m, 1).getDay() + 6) % 7;
   const daysInMonth = new Date(y, m + 1, 0).getDate();
 
+  calSortables.forEach(s => s.destroy());
+  calSortables = [];
+
   grid.innerHTML = "";
   ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"].forEach(d => {
     const el = document.createElement("div");
@@ -925,15 +933,45 @@ function renderCalendar() {
     num.className = "cal-daynum";
     num.textContent = d;
     cell.appendChild(num);
+
+    const itemsWrap = document.createElement("div");
+    itemsWrap.className = "cal-day-items";
+    itemsWrap.dataset.date = dateKey;
     (byDate[dateKey] || []).forEach(entry => {
       const chip = document.createElement("div");
       chip.className = `cal-item ${entry.tipo}`;
+      chip.dataset.id = entry.id;
+      chip.dataset.tipo = entry.tipo;
       chip.innerHTML = `${thumbHtml(entry.it, "cal-item-thumb", 80)}<span>${entry.tipo === "feed" ? "IG" : "TT"} · ${escapeHtml(entry.it.producto || "s/categoría")}</span>`;
       chip.onclick = () => openModal(entry.id);
-      cell.appendChild(chip);
+      itemsWrap.appendChild(chip);
     });
+    cell.appendChild(itemsWrap);
     grid.appendChild(cell);
+
+    calSortables.push(new Sortable(itemsWrap, {
+      group: "calendar",
+      animation: 150,
+      ghostClass: "dragging",
+      delay: 80,
+      delayOnTouchOnly: true,
+      onEnd: function(evt) {
+        const id = evt.item.dataset.id;
+        const tipo = evt.item.dataset.tipo;
+        const newDate = evt.to.dataset.date;
+        const oldDate = evt.from.dataset.date;
+        if (id && tipo && newDate && newDate !== oldDate) {
+          moveCalItemDate(id, tipo, newDate);
+        }
+      }
+    }));
   }
+}
+
+function moveCalItemDate(id, tipo, newDate) {
+  const field = tipo === "feed" ? "fechaFeed" : "fechaTiktok";
+  db.ref(`${ROOT}/items/${id}`).update({ [field]: newDate, updatedAt: Date.now() });
+  logAction(`movió fecha de ${tipo === "feed" ? "Feed" : "TikTok"} a ${newDate}`, items[id] || {});
 }
 
 // ---------- Historial ----------
