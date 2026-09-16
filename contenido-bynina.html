@@ -100,6 +100,8 @@
   }
 
   .board-columns{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;-webkit-overflow-scrolling:touch;}
+  #board-scroll-top{overflow-x:auto;overflow-y:hidden;height:16px;margin-bottom:2px;-webkit-overflow-scrolling:touch;}
+  #board-scroll-top-inner{height:1px;}
   .board-col{
     flex:0 0 230px;background:#efece2;border-radius:12px;padding:10px;
     display:flex;flex-direction:column;min-height:60px;
@@ -128,8 +130,8 @@
     font-size:10px;font-weight:600;padding:3px 9px;border-radius:6px;
     background:var(--purple);color:#fff;text-decoration:none;
   }
-  .board-thumb{width:38px;height:38px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--bg);border:1px solid var(--line);}
-  .board-thumb-ph{width:38px;height:38px;border-radius:8px;flex-shrink:0;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .board-thumb{width:56px;height:56px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--bg);border:1px solid var(--line);}
+  .board-thumb-ph{width:56px;height:56px;border-radius:8px;flex-shrink:0;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:20px;}
   .board-mid{flex:1;min-width:0;}
   .board-cat{font-weight:600;font-size:13px;}
   .board-sub{font-size:11px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -266,6 +268,7 @@
     <button class="btn btn-ghost btn-sm" onclick="clearFilters()">Limpiar filtros</button>
   </div>
 
+  <div id="board-scroll-top"><div id="board-scroll-top-inner"></div></div>
   <div id="view-board">
     <div class="board-columns" id="board-columns"></div>
   </div>
@@ -447,7 +450,10 @@
     <div class="checklist" id="campanas-list" style="margin-top:8px;"></div>
 
     <div class="modal-actions">
-      <button class="btn btn-ghost" id="btnDelete" style="display:none;color:var(--red);" onclick="deleteCurrent()">Eliminar</button>
+      <div class="left" style="display:flex;gap:8px;">
+        <button class="btn btn-ghost" id="btnDelete" style="display:none;color:var(--red);" onclick="deleteCurrent()">Eliminar</button>
+        <button class="btn btn-ghost" id="btnDuplicate" style="display:none;" onclick="duplicateCurrent()">Duplicar</button>
+      </div>
       <div class="right">
         <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
         <button class="btn btn-primary" onclick="saveCurrent()">Guardar</button>
@@ -809,6 +815,20 @@ function renderBoardList() {
       }
     }));
   });
+
+  syncBoardScrollTop();
+}
+
+function syncBoardScrollTop() {
+  const top = document.getElementById("board-scroll-top");
+  const topInner = document.getElementById("board-scroll-top-inner");
+  const cols = document.getElementById("board-columns");
+  if (!top || !cols) return;
+  topInner.style.width = cols.scrollWidth + "px";
+  if (top.dataset.wired) return;
+  top.dataset.wired = "1";
+  top.addEventListener("scroll", () => { cols.scrollLeft = top.scrollLeft; });
+  cols.addEventListener("scroll", () => { top.scrollLeft = cols.scrollLeft; });
 }
 
 function renderBoardCard(it) {
@@ -816,7 +836,7 @@ function renderBoardCard(it) {
   div.className = "board-card";
   div.dataset.id = it.id;
   div.onclick = () => openModal(it.id);
-  const thumb = thumbHtml(it, "board-thumb", 80);
+  const thumb = thumbHtml(it, "board-thumb", 120);
   const subParts = [it.tipoContenido, it.angulo, it.creador].filter(Boolean).join(" · ");
 
   const miniToggle = (field, label) => {
@@ -1181,6 +1201,7 @@ function openModal(id) {
 
   document.getElementById("modalTitle").textContent = id ? "Editar pieza" : "Nueva pieza";
   document.getElementById("btnDelete").style.display = id ? "inline-block" : "none";
+  document.getElementById("btnDuplicate").style.display = id ? "inline-block" : "none";
 
   fillSelect("f-producto", listas.productos, true);
   fillSelect("f-angulo", listas.angulos, true);
@@ -1283,6 +1304,24 @@ async function saveCurrent() {
     logAction("creó", data);
   }
   closeModal();
+}
+
+function duplicateCurrent() {
+  if (!currentId) return;
+  currentId = null;
+  document.getElementById("modalTitle").textContent = "Nueva pieza (duplicada)";
+  document.getElementById("btnDelete").style.display = "none";
+  document.getElementById("btnDuplicate").style.display = "none";
+  document.getElementById("f-estado").value = "sin_comenzar";
+  document.getElementById("f-drive").value = "";
+  document.getElementById("f-fechaEntregaReal").value = "";
+  document.getElementById("f-fechaFeed").value = "";
+  document.getElementById("f-fechaTiktok").value = "";
+  setToggle("tg-feed", false);
+  setToggle("tg-tiktok", false);
+  setToggle("tg-pautaFede", false);
+  setToggle("tg-pautaAri", false);
+  document.getElementById("campanas-list").innerHTML = "";
 }
 
 function deleteCurrent() {
