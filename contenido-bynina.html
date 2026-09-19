@@ -292,8 +292,13 @@
   </div>
 
   <div id="view-pauta" style="display:none;">
-    <div class="pauta-sort">
-      <label>Ordenar por:</label>
+    <div class="pauta-sort" style="flex-wrap:wrap;gap:10px;">
+      <select id="pauta-filter-categoria" onchange="renderPautaAri()"><option value="">Todas las categorías</option></select>
+      <select id="pauta-filter-angulo" onchange="renderPautaAri()"><option value="">Todos los ángulos</option></select>
+      <select id="pauta-filter-creador" onchange="renderPautaAri()"><option value="">Todos los creadores</option></select>
+      <input type="text" id="pauta-filter-campana" placeholder="Buscar por campaña…" oninput="renderPautaAri()" style="min-width:160px;">
+      <button class="btn btn-ghost btn-sm" onclick="clearPautaFilters()">Limpiar filtros</button>
+      <label style="margin-left:auto;">Ordenar por:</label>
       <select id="pauta-sortby" onchange="renderPautaAri()">
         <option value="producto">Categoría</option>
         <option value="angulo">Ángulo</option>
@@ -609,6 +614,9 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
   fillFilterSelect("filter-categoria", listas.productos, "Todas las categorías");
   fillFilterSelect("filter-angulo", listas.angulos, "Todos los ángulos");
   fillFilterSelect("filter-creador", listas.creadores, "Todos los creadores");
+  fillFilterSelect("pauta-filter-categoria", listas.productos, "Todas las categorías");
+  fillFilterSelect("pauta-filter-angulo", listas.angulos, "Todos los ángulos");
+  fillFilterSelect("pauta-filter-creador", listas.creadores, "Todos los creadores");
   renderOptList("productos");
   renderOptList("angulos");
   renderOptList("creadores");
@@ -654,6 +662,14 @@ function clearFilters() {
   document.getElementById("filter-creador").value = "";
   document.getElementById("filter-search").value = "";
   renderBoardList();
+}
+
+function clearPautaFilters() {
+  document.getElementById("pauta-filter-categoria").value = "";
+  document.getElementById("pauta-filter-angulo").value = "";
+  document.getElementById("pauta-filter-creador").value = "";
+  document.getElementById("pauta-filter-campana").value = "";
+  renderPautaAri();
 }
 
 function addOption(kind, inputId, selectId) {
@@ -1037,6 +1053,14 @@ function campanaActualLabel(it) {
   return [c.tipo, c.nombre].filter(Boolean).join(" - ");
 }
 
+// Texto de búsqueda de campaña: junta tipo + nombre de TODAS las campañas cargadas en la pieza
+// (no solo la actual), para que buscar por campaña encuentre piezas que pasaron por ahí aunque
+// después se hayan traspasado a otra.
+function campanasSearchHaystack(it) {
+  const camps = it.campanas || {};
+  return Object.values(camps).map(c => [c.tipo, c.nombre].filter(Boolean).join(" ")).join(" ").toLowerCase();
+}
+
 function renderPautaAri() {
   const colPend = document.getElementById("pauta-col-pendientes");
   const colAri = document.getElementById("pauta-col-ari");
@@ -1055,7 +1079,18 @@ function renderPautaAri() {
   // Solo entra al tablero de Pauta Ari el contenido que ya está en condiciones de usarse
   // (Listo el Contenido en adelante) — si todavía está sin comenzar/en edición, no se puede pautar.
   const READY_STATES = ["listo", "reutilizar", "programado", "subido"];
-  const ready = all.filter(it => READY_STATES.includes(normalizeEstado(it.estado)));
+  let ready = all.filter(it => READY_STATES.includes(normalizeEstado(it.estado)));
+
+  // Filtros por categoría, ángulo, creador y campaña (busca en tipo + nombre de todas las
+  // campañas cargadas en la pieza, no solo la actual).
+  const fCat = document.getElementById("pauta-filter-categoria").value;
+  const fAng = document.getElementById("pauta-filter-angulo").value;
+  const fCreador = document.getElementById("pauta-filter-creador").value;
+  const fCamp = (document.getElementById("pauta-filter-campana").value || "").trim().toLowerCase();
+  if (fCat) ready = ready.filter(it => it.producto === fCat);
+  if (fAng) ready = ready.filter(it => it.angulo === fAng);
+  if (fCreador) ready = ready.filter(it => it.creador === fCreador);
+  if (fCamp) ready = ready.filter(it => campanasSearchHaystack(it).includes(fCamp));
 
   // Pendiente Utilizar: todavía no tiene ni Pauta Fede ni Pauta Ari — es el banco listo para pautar.
   // Usado por Ari / Usado por Fede: separados por cuál de las dos pautas tiene cargada, y solo
