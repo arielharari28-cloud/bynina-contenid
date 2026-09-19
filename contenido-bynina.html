@@ -164,9 +164,10 @@
   .card-thumb-row{display:flex;gap:8px;}
   .card-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--bg);border:1px solid var(--line);}
   .card-thumb-ph{width:44px;height:44px;border-radius:8px;flex-shrink:0;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink-soft);}
-  #pauta-list{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;align-items:start;}
+  #pauta-list{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:24px;align-items:start;}
   .pauta-col-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
-  @media (max-width:1000px){ #pauta-list{grid-template-columns:1fr;} }
+  @media (max-width:1300px){ #pauta-list{grid-template-columns:1fr 1fr;} }
+  @media (max-width:650px){ #pauta-list{grid-template-columns:1fr;} }
   .pauta-sort{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;color:var(--ink-soft);}
   .pauta-sort select{padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;color:var(--ink);}
 
@@ -298,6 +299,7 @@
         <option value="angulo">Ángulo</option>
         <option value="creador">Creador</option>
         <option value="fechaCreacion">Fecha</option>
+        <option value="campanaActual">Campaña</option>
       </select>
     </div>
     <div id="pauta-list">
@@ -312,6 +314,10 @@
       <div class="pauta-col">
         <div class="section-title" id="pauta-col-fede-title"></div>
         <div class="pauta-col-cards" id="pauta-col-fede"></div>
+      </div>
+      <div class="pauta-col">
+        <div class="section-title" id="pauta-col-apagado-title"></div>
+        <div class="pauta-col-cards" id="pauta-col-apagado"></div>
       </div>
     </div>
   </div>
@@ -429,6 +435,7 @@
       <label class="toggle" id="tg-tiktok"><input type="checkbox" onchange="toggleClass('tg-tiktok')"> TikTok</label>
       <label class="toggle" id="tg-pautaFede"><input type="checkbox" onchange="toggleClass('tg-pautaFede')"> Pauta Fede</label>
       <label class="toggle" id="tg-pautaAri"><input type="checkbox" onchange="toggleClass('tg-pautaAri')"> Pauta Ari</label>
+      <label class="toggle" id="tg-anuncioApagado"><input type="checkbox" onchange="toggleClass('tg-anuncioApagado')"> Anuncio apagado</label>
     </div>
 
     <div class="section-title">Campañas cargadas</div>
@@ -1021,28 +1028,49 @@ function renderLog() {
 }
 
 // ---------- Pauta Ari ----------
+// Campaña actual de una pieza (la más reciente de las cargadas), para ordenar y comparar.
+function campanaActualLabel(it) {
+  const camps = it.campanas || {};
+  const entries = Object.entries(camps).sort((a, b) => (b[1].creadoEn || 0) - (a[1].creadoEn || 0));
+  if (!entries.length) return "";
+  const c = entries[0][1];
+  return [c.tipo, c.nombre].filter(Boolean).join(" - ");
+}
+
 function renderPautaAri() {
   const colPend = document.getElementById("pauta-col-pendientes");
   const colAri = document.getElementById("pauta-col-ari");
   const colFede = document.getElementById("pauta-col-fede");
+  const colApagado = document.getElementById("pauta-col-apagado");
   const titlePend = document.getElementById("pauta-col-pendientes-title");
   const titleAri = document.getElementById("pauta-col-ari-title");
   const titleFede = document.getElementById("pauta-col-fede-title");
-  if (!colPend || !colAri || !colFede) return;
+  const titleApagado = document.getElementById("pauta-col-apagado-title");
+  if (!colPend || !colAri || !colFede || !colApagado) return;
   const sortBy = document.getElementById("pauta-sortby").value;
-  const sorter = (a, b) => (a[sortBy] || "").localeCompare(b[sortBy] || "", "es");
+  const sorter = sortBy === "campanaActual"
+    ? (a, b) => campanaActualLabel(a).localeCompare(campanaActualLabel(b), "es")
+    : (a, b) => (a[sortBy] || "").localeCompare(b[sortBy] || "", "es");
   const all = Object.entries(items).map(([id, it]) => ({ id, ...it }));
+  // Solo entra al tablero de Pauta Ari el contenido que ya está en condiciones de usarse
+  // (Listo el Contenido en adelante) — si todavía está sin comenzar/en edición, no se puede pautar.
+  const READY_STATES = ["listo", "reutilizar", "programado", "subido"];
+  const ready = all.filter(it => READY_STATES.includes(normalizeEstado(it.estado)));
 
   // Pendiente Utilizar: todavía no tiene ni Pauta Fede ni Pauta Ari — es el banco listo para pautar.
-  // Usado por Ari / Usado por Fede: separados por cuál de las dos pautas tiene cargada. Una
-  // pieza con las dos marcadas aparece en las dos columnas, porque está en uso en ambas.
-  const pendientes = all.filter(it => !it.pautaFede && !it.pautaAri).sort(sorter);
-  const usadosAri = all.filter(it => it.pautaAri).sort(sorter);
-  const usadosFede = all.filter(it => it.pautaFede).sort(sorter);
+  // Usado por Ari / Usado por Fede: separados por cuál de las dos pautas tiene cargada, y solo
+  // mientras el anuncio sigue activo — si se marcó "Anuncio apagado" sale de estas columnas
+  // (se da por entendido que ya estuvo usado, y pasa a la columna de apagados).
+  // Anuncio apagado: piezas cuyo anuncio se apagó por fatiga/sin entrega, para refrescar o revisar.
+  const pendientes = ready.filter(it => !it.pautaFede && !it.pautaAri && !it.anuncioApagado).sort(sorter);
+  const usadosAri = ready.filter(it => it.pautaAri && !it.anuncioApagado).sort(sorter);
+  const usadosFede = ready.filter(it => it.pautaFede && !it.anuncioApagado).sort(sorter);
+  const apagados = ready.filter(it => it.anuncioApagado).sort(sorter);
 
   titlePend.textContent = `Pendiente Utilizar (${pendientes.length})`;
   titleAri.textContent = `Usado por Ari (${usadosAri.length})`;
   titleFede.textContent = `Usado por Fede (${usadosFede.length})`;
+  titleApagado.textContent = `Anuncio apagado (${apagados.length})`;
 
   colPend.innerHTML = "";
   if (!pendientes.length) colPend.innerHTML = `<div class="empty-col">No queda contenido disponible sin usar.</div>`;
@@ -1055,6 +1083,10 @@ function renderPautaAri() {
   colFede.innerHTML = "";
   if (!usadosFede.length) colFede.innerHTML = `<div class="empty-col">Todavía no cargaste ninguna pieza en Pauta Fede.</div>`;
   else usadosFede.forEach(it => colFede.appendChild(renderCard(it)));
+
+  colApagado.innerHTML = "";
+  if (!apagados.length) colApagado.innerHTML = `<div class="empty-col">No hay anuncios marcados como apagados.</div>`;
+  else apagados.forEach(it => colApagado.appendChild(renderCard(it)));
 }
 
 // ---------- Campañas cargadas por pieza ----------
@@ -1157,6 +1189,11 @@ function thumbHtml(it, sizeClass, sizePx) {
   return `<div class="${sizeClass}-ph">🎬</div>`;
 }
 
+function toggleAnuncioApagado(itemId, next) {
+  db.ref(`${ROOT}/items/${itemId}`).update({ anuncioApagado: next, updatedAt: Date.now() });
+  logAction((next ? "marcó" : "desmarcó") + " anuncio apagado", items[itemId] || {});
+}
+
 function renderCard(it) {
   const div = document.createElement("div");
   div.className = "card";
@@ -1165,6 +1202,9 @@ function renderCard(it) {
   const driveLink = it.drive ? `<a href="${it.drive}" target="_blank" onclick="event.stopPropagation()">Ver video</a>` : `<span></span>`;
   const thumb = thumbHtml(it, "card-thumb", 100);
   const descHtml = it.descripcion ? `<p class="card-desc">${escapeHtml(it.descripcion)}</p>` : "";
+  const apagadoBtn = it.anuncioApagado
+    ? `<button class="btn btn-sm" style="background:#fdecea;color:#c0392b;border:1px solid #f5b7b1;" onclick="event.stopPropagation(); toggleAnuncioApagado('${it.id}', false)">🔴 Apagado — reactivar</button>`
+    : `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); toggleAnuncioApagado('${it.id}', true)">Marcar anuncio apagado</button>`;
   div.innerHTML = `
     <div class="card-thumb-row">
       ${thumb}
@@ -1179,12 +1219,14 @@ function renderCard(it) {
       ${chip(it.tiktok, "TikTok")}
       ${chip(it.pautaFede, "Pauta Fede")}
       ${chip(it.pautaAri, "Pauta Ari")}
+      ${it.anuncioApagado ? chip(true, "🔴 Apagado") : ""}
     </div>
     <div class="card-foot">
       <span>${escapeHtml(it.creador || "")}</span>
       ${driveLink}
     </div>
     ${campanasCardHtml(it)}
+    <div style="margin-top:8px;" onclick="event.stopPropagation()">${apagadoBtn}</div>
   `;
   return div;
 }
@@ -1236,6 +1278,7 @@ function openModal(id) {
   setToggle("tg-tiktok", !!it.tiktok);
   setToggle("tg-pautaFede", !!it.pautaFede);
   setToggle("tg-pautaAri", !!it.pautaAri);
+  setToggle("tg-anuncioApagado", !!it.anuncioApagado);
 
   renderPrendaCheckList();
   document.getElementById("f-campNombre").value = "";
@@ -1293,6 +1336,7 @@ async function saveCurrent() {
     tiktok: document.getElementById("tg-tiktok").querySelector("input").checked,
     pautaFede: document.getElementById("tg-pautaFede").querySelector("input").checked,
     pautaAri: document.getElementById("tg-pautaAri").querySelector("input").checked,
+    anuncioApagado: document.getElementById("tg-anuncioApagado").querySelector("input").checked,
     updatedAt: Date.now()
   };
   if (currentId) {
@@ -1321,6 +1365,7 @@ function duplicateCurrent() {
   setToggle("tg-tiktok", false);
   setToggle("tg-pautaFede", false);
   setToggle("tg-pautaAri", false);
+  setToggle("tg-anuncioApagado", false);
   document.getElementById("campanas-list").innerHTML = "";
 }
 
