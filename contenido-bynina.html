@@ -164,7 +164,27 @@
   .card-thumb-row{display:flex;gap:8px;}
   .card-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--bg);border:1px solid var(--line);}
   .card-thumb-ph{width:44px;height:44px;border-radius:8px;flex-shrink:0;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink-soft);}
-  #pauta-list{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:24px;align-items:start;}
+  #pauta-list{display:grid;grid-template-columns:repeat(var(--pcols,4),1fr);gap:24px;align-items:start;}
+  .pauta-colsbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-4px 0 16px;font-size:13px;color:var(--ink-soft);}
+  .pauta-coltoggle{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:13px;color:var(--ink);}
+  .pauta-coltoggle.off{color:var(--ink-soft);background:transparent;border-style:dashed;}
+  .pcard{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:7px;}
+  .pcard.st-pend{border-left-color:#c9b8f0;}
+  .pcard.st-ari{border-left-color:var(--green);}
+  .pcard.st-fede{border-left-color:var(--blue);}
+  .pcard.st-off{border-left-color:#e57373;opacity:.85;}
+  .pcard-top{display:flex;gap:10px;align-items:flex-start;}
+  .pcard-info{flex:1;min-width:0;}
+  .pcard-title{font-size:13px;font-weight:600;line-height:1.3;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .pcard-meta{font-size:11.5px;color:var(--ink-soft);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  .pcard-meta a{color:var(--purple);text-decoration:none;font-weight:600;}
+  .pcard-camp{font-size:11.5px;font-weight:600;background:var(--green-soft);color:var(--green);border-radius:6px;padding:4px 8px;line-height:1.3;display:flex;justify-content:space-between;gap:6px;align-items:flex-start;}
+  .pcard-camp.none{background:var(--bg);color:var(--ink-soft);font-weight:500;}
+  .pcard-camp button{border:none;background:none;color:var(--red);cursor:pointer;font-size:12px;padding:0;}
+  .pcard-hist{font-size:11px;color:var(--ink-soft);}
+  .pcard-hist summary{cursor:pointer;}
+  .pcard-actions{display:flex;gap:6px;align-items:center;}
+  .pcard-actions .btn{padding:4px 10px;font-size:12px;}
   .pauta-col-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
   @media (max-width:1300px){ #pauta-list{grid-template-columns:1fr 1fr;} }
   @media (max-width:650px){ #pauta-list{grid-template-columns:1fr;} }
@@ -307,20 +327,21 @@
         <option value="campanaActual">Campaña</option>
       </select>
     </div>
+    <div class="pauta-colsbar" id="pauta-colsbar"></div>
     <div id="pauta-list">
-      <div class="pauta-col">
+      <div class="pauta-col" id="pauta-wrap-pendientes">
         <div class="section-title" id="pauta-col-pendientes-title"></div>
         <div class="pauta-col-cards" id="pauta-col-pendientes"></div>
       </div>
-      <div class="pauta-col">
+      <div class="pauta-col" id="pauta-wrap-ari">
         <div class="section-title" id="pauta-col-ari-title"></div>
         <div class="pauta-col-cards" id="pauta-col-ari"></div>
       </div>
-      <div class="pauta-col">
+      <div class="pauta-col" id="pauta-wrap-fede">
         <div class="section-title" id="pauta-col-fede-title"></div>
         <div class="pauta-col-cards" id="pauta-col-fede"></div>
       </div>
-      <div class="pauta-col">
+      <div class="pauta-col" id="pauta-wrap-apagado">
         <div class="section-title" id="pauta-col-apagado-title"></div>
         <div class="pauta-col-cards" id="pauta-col-apagado"></div>
       </div>
@@ -1061,6 +1082,30 @@ function campanasSearchHaystack(it) {
   return Object.values(camps).map(c => [c.tipo, c.nombre].filter(Boolean).join(" ")).join(" ").toLowerCase();
 }
 
+// Columnas que se pueden ocultar (Pendiente y Usado por Ari siempre se ven). Se recuerda en
+// este navegador. Por defecto Fede y Apagados arrancan ocultas para enfocar en lo propio.
+let pautaColsOcultas = (() => {
+  try { const v = JSON.parse(localStorage.getItem("pautaColsOcultas")); if (Array.isArray(v)) return v; } catch (e) {}
+  return ["fede", "apagado"];
+})();
+function togglePautaCol(key) {
+  pautaColsOcultas = pautaColsOcultas.includes(key) ? pautaColsOcultas.filter(k => k !== key) : [...pautaColsOcultas, key];
+  try { localStorage.setItem("pautaColsOcultas", JSON.stringify(pautaColsOcultas)); } catch (e) {}
+  renderPautaAri();
+}
+// Formularios de campaña abiertos (se mantienen abiertos aunque la vista se redibuje).
+const pautaFormsAbiertos = new Set();
+function guardarCampanaCard(itemId) {
+  const tipo = document.getElementById(`camp-tipo-${itemId}`).value;
+  if (!tipo) { alert("Elegí un tipo de campaña."); return; }
+  pautaFormsAbiertos.delete(itemId);
+  addCampanaFromCard(itemId);
+}
+function togglePautaForm(itemId) {
+  if (pautaFormsAbiertos.has(itemId)) pautaFormsAbiertos.delete(itemId); else pautaFormsAbiertos.add(itemId);
+  renderPautaAri();
+}
+
 function renderPautaAri() {
   const colPend = document.getElementById("pauta-col-pendientes");
   const colAri = document.getElementById("pauta-col-ari");
@@ -1102,6 +1147,22 @@ function renderPautaAri() {
   const usadosFede = ready.filter(it => it.pautaFede && !it.anuncioApagado).sort(sorter);
   const apagados = ready.filter(it => it.anuncioApagado).sort(sorter);
 
+  // Mostrar/ocultar columnas
+  const visibles = ["pendientes", "ari", "fede", "apagado"].filter(k => !pautaColsOcultas.includes(k));
+  ["pendientes", "ari", "fede", "apagado"].forEach(k => {
+    const w = document.getElementById(`pauta-wrap-${k}`);
+    if (w) w.style.display = visibles.includes(k) ? "" : "none";
+  });
+  document.getElementById("pauta-list").style.setProperty("--pcols", visibles.length);
+  const bar = document.getElementById("pauta-colsbar");
+  if (bar) {
+    const tg = (key, label, n) => {
+      const on = !pautaColsOcultas.includes(key);
+      return `<button class="pauta-coltoggle ${on ? "" : "off"}" onclick="togglePautaCol('${key}')">${on ? "👁" : "🙈"} ${label} (${n})</button>`;
+    };
+    bar.innerHTML = `<span>Columnas:</span>${tg("fede", "Usado por Fede", usadosFede.length)}${tg("apagado", "Anuncio apagado", apagados.length)}`;
+  }
+
   titlePend.textContent = `Pendiente Utilizar (${pendientes.length})`;
   titleAri.textContent = `Usado por Ari (${usadosAri.length})`;
   titleFede.textContent = `Usado por Fede (${usadosFede.length})`;
@@ -1109,19 +1170,19 @@ function renderPautaAri() {
 
   colPend.innerHTML = "";
   if (!pendientes.length) colPend.innerHTML = `<div class="empty-col">No queda contenido disponible sin usar.</div>`;
-  else pendientes.forEach(it => colPend.appendChild(renderCard(it)));
+  else pendientes.forEach(it => colPend.appendChild(renderCard(it, "pend")));
 
   colAri.innerHTML = "";
   if (!usadosAri.length) colAri.innerHTML = `<div class="empty-col">Todavía no cargaste ninguna pieza en Pauta Ari.</div>`;
-  else usadosAri.forEach(it => colAri.appendChild(renderCard(it)));
+  else usadosAri.forEach(it => colAri.appendChild(renderCard(it, "ari")));
 
   colFede.innerHTML = "";
   if (!usadosFede.length) colFede.innerHTML = `<div class="empty-col">Todavía no cargaste ninguna pieza en Pauta Fede.</div>`;
-  else usadosFede.forEach(it => colFede.appendChild(renderCard(it)));
+  else usadosFede.forEach(it => colFede.appendChild(renderCard(it, "fede")));
 
   colApagado.innerHTML = "";
   if (!apagados.length) colApagado.innerHTML = `<div class="empty-col">No hay anuncios marcados como apagados.</div>`;
-  else apagados.forEach(it => colApagado.appendChild(renderCard(it)));
+  else apagados.forEach(it => colApagado.appendChild(renderCard(it, "off")));
 }
 
 // ---------- Campañas cargadas por pieza ----------
@@ -1229,39 +1290,62 @@ function toggleAnuncioApagado(itemId, next) {
   logAction((next ? "marcó" : "desmarcó") + " anuncio apagado", items[itemId] || {});
 }
 
-function renderCard(it) {
+// Tarjeta compacta de Pauta Ari: lo importante a la vista (qué es, quién, campaña actual) y las
+// acciones chicas; el formulario de campaña se abre solo cuando se necesita.
+function renderCard(it, estado) {
   const div = document.createElement("div");
-  div.className = "card";
+  div.className = `pcard st-${estado || "pend"}`;
   div.onclick = () => openModal(it.id);
-  const chip = (on, label) => `<span class="chip ${on?'on':''}">${label}</span>`;
-  const driveLink = it.drive ? `<a href="${it.drive}" target="_blank" onclick="event.stopPropagation()">Ver video</a>` : `<span></span>`;
-  const thumb = thumbHtml(it, "card-thumb", 100);
-  const descHtml = it.descripcion ? `<p class="card-desc">${escapeHtml(it.descripcion)}</p>` : "";
+  const camps = it.campanas || {};
+  const entries = Object.entries(camps).sort((a, b) => (b[1].creadoEn || 0) - (a[1].creadoEn || 0));
+  const detalle = c => [c.tipo, c.nombre, c.fecha ? formatDateShort(c.fecha) : ""].filter(Boolean).join(" · ");
+  const canales = [it.feed ? "Feed" : "", it.tiktok ? "TikTok" : ""].filter(Boolean).join(" · ");
+  const titulo = it.descripcion || it.angulo || "Sin descripción";
+  let campHtml;
+  if (entries.length) {
+    const [k, c] = entries[0];
+    campHtml = `<div class="pcard-camp"><span>▶ ${escapeHtml(detalle(c))}</span><button title="Eliminar campaña" onclick="event.stopPropagation(); removeCampana('${it.id}','${k}')">×</button></div>`;
+    if (entries.length > 1) {
+      campHtml += `<details class="pcard-hist" onclick="event.stopPropagation()"><summary>${entries.length - 1} campaña${entries.length - 1 !== 1 ? "s" : ""} anterior${entries.length - 1 !== 1 ? "es" : ""}</summary>
+        ${entries.slice(1).map(([kk, cc]) => `<div style="display:flex;justify-content:space-between;gap:6px;margin-top:3px;">${escapeHtml(detalle(cc))}<button style="border:none;background:none;color:var(--red);cursor:pointer;" onclick="removeCampana('${it.id}','${kk}')">×</button></div>`).join("")}
+      </details>`;
+    }
+  } else {
+    campHtml = `<div class="pcard-camp none">Sin campaña todavía</div>`;
+  }
+  const formAbierto = pautaFormsAbiertos.has(it.id);
+  const tipoOptions = `<option value="">Tipo…</option>` + listas.tiposCampana.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+  const formHtml = formAbierto ? `
+    <div class="camp-quickadd" onclick="event.stopPropagation()" style="margin-top:0;">
+      <select id="camp-tipo-${it.id}">${tipoOptions}</select>
+      <input type="text" id="camp-nombre-${it.id}" placeholder="Nombre campaña">
+      <input type="date" id="camp-fecha-${it.id}">
+      <button class="btn btn-primary btn-sm" onclick="guardarCampanaCard('${it.id}')">Guardar</button>
+    </div>` : "";
   const apagadoBtn = it.anuncioApagado
-    ? `<button class="btn btn-sm" style="background:#fdecea;color:#c0392b;border:1px solid #f5b7b1;" onclick="event.stopPropagation(); toggleAnuncioApagado('${it.id}', false)">🔴 Apagado — reactivar</button>`
-    : `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); toggleAnuncioApagado('${it.id}', true)">Marcar anuncio apagado</button>`;
+    ? `<button class="btn btn-ghost btn-sm" style="color:#c0392b;" title="Reactivar anuncio" onclick="event.stopPropagation(); toggleAnuncioApagado('${it.id}', false)">↺ Reactivar</button>`
+    : `<button class="btn btn-ghost btn-sm" title="Marcar anuncio apagado" onclick="event.stopPropagation(); toggleAnuncioApagado('${it.id}', true)">🔴 Apagar</button>`;
   div.innerHTML = `
-    <div class="card-thumb-row">
-      ${thumb}
-      <div style="flex:1; min-width:0;">
-        <span class="cat-badge">${escapeHtml(it.producto || "Sin categoría")}</span>
-        <p class="card-sub" style="margin-top:2px;">${escapeHtml(it.angulo || "Sin ángulo")}</p>
+    <div class="pcard-top">
+      ${thumbHtml(it, "card-thumb", 100)}
+      <div class="pcard-info">
+        <span class="cat-badge" style="margin-bottom:0;">${escapeHtml(it.producto || "Sin categoría")}</span>
+        <div class="pcard-title">${escapeHtml(titulo)}</div>
+        <div class="pcard-meta">
+          ${it.creador ? `<span>${escapeHtml(it.creador)}</span>` : ""}
+          ${it.descripcion && it.angulo ? `<span>· ${escapeHtml(it.angulo)}</span>` : ""}
+          ${canales ? `<span>· ${canales}</span>` : ""}
+          ${it.drive ? `<a href="${it.drive}" target="_blank" onclick="event.stopPropagation()">▶ Ver</a>` : ""}
+        </div>
       </div>
     </div>
-    ${descHtml}
-    <div class="chips">
-      ${chip(it.feed, "Feed")}
-      ${chip(it.tiktok, "TikTok")}
-      ${chip(it.pautaFede, "Pauta Fede")}
-      ${chip(it.pautaAri, "Pauta Ari")}
-      ${it.anuncioApagado ? chip(true, "🔴 Apagado") : ""}
+    ${campHtml}
+    ${formHtml}
+    <div class="pcard-actions" onclick="event.stopPropagation()">
+      <button class="btn ${formAbierto ? "btn-ghost" : "btn-primary"} btn-sm" onclick="togglePautaForm('${it.id}')">${formAbierto ? "Cancelar" : (entries.length ? "↪ Traspasar" : "+ Cargar campaña")}</button>
+      <span style="flex:1"></span>
+      ${apagadoBtn}
     </div>
-    <div class="card-foot">
-      <span>${escapeHtml(it.creador || "")}</span>
-      ${driveLink}
-    </div>
-    ${campanasCardHtml(it)}
-    <div style="margin-top:8px;" onclick="event.stopPropagation()">${apagadoBtn}</div>
   `;
   return div;
 }
