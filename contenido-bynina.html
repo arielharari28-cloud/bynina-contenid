@@ -286,6 +286,30 @@
   .camp-section-title{font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;margin:18px 0 10px;}
   .camp-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
   .camp-toolbar select{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;color:var(--ink);}
+  /* --- Clasificar --- */
+  .clas-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+  .clas-count{font-size:13px;color:var(--ink-soft);}
+  .clas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+  .clas-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;gap:12px;flex-wrap:wrap;}
+  .clas-card.done{border-color:var(--green);background:#f7fbf8;}
+  .clas-photo{width:110px;aspect-ratio:4/5;object-fit:cover;border-radius:10px;background:var(--bg);flex:none;cursor:pointer;display:block;}
+  .clas-photo-ph{width:110px;aspect-ratio:4/5;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:24px;flex:none;}
+  .clas-body{flex:1 1 180px;min-width:0;display:flex;flex-direction:column;gap:8px;}
+  .clas-name{font-weight:600;font-size:13.5px;}
+  .clas-state{font-size:11.5px;color:var(--ink-soft);}
+  .clas-row-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);margin-bottom:4px;}
+  .clas-row-label.falta{color:var(--red);}
+  .clas-opts{display:flex;flex-wrap:wrap;gap:6px;}
+  .clas-btn{min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;}
+  .clas-btn.on{background:#1e3b2f;color:#fff;border-color:#1e3b2f;}
+  .sheet-overlay{position:fixed;inset:0;background:rgba(37,35,31,.5);display:none;align-items:flex-end;justify-content:center;z-index:70;}
+  .sheet-overlay.show{display:flex;}
+  .sheet{background:var(--card);border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));width:100%;max-width:520px;max-height:88vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+  .sheet-title{font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;}
+  .sheet-actions{display:flex;gap:10px;}
+  .sheet-actions .btn{flex:1;min-height:46px;}
+  .btn[disabled]{opacity:.45;cursor:not-allowed;}
+  .quick-row{display:flex;gap:6px;flex-wrap:wrap;}
 </style>
 </head>
 <body>
@@ -302,6 +326,7 @@
       <button class="btn btn-ghost btn-sm" id="tab-log" onclick="setView('log')">Historial</button>
       <button class="btn btn-ghost btn-sm" id="tab-pauta" onclick="setView('pauta')">Pauta Ari</button>
       <button class="btn btn-ghost btn-sm" id="tab-camp" onclick="setView('camp')">Por campaña</button>
+      <button class="btn btn-ghost btn-sm" id="tab-clas" onclick="setView('clas')">Clasificar</button>
     </div>
     <button class="btn btn-primary" onclick="openModal(null)">+ Nueva pieza</button>
   </div>
@@ -339,6 +364,17 @@
     <div id="log-list"></div>
   </div>
 
+  <div id="view-clas" style="display:none;">
+    <div class="clas-toolbar">
+      <select id="clas-filter" onchange="clasSesion.clear(); renderClasificar()" style="padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;">
+        <option value="falta">Solo las que les falta algo</option>
+        <option value="todas">Todas</option>
+      </select>
+      <span class="clas-count" id="clas-count"></span>
+    </div>
+    <div class="clas-grid" id="clas-list"></div>
+  </div>
+
   <div id="view-camp" style="display:none;">
     <div class="camp-toolbar">
       <select id="camp-filter-quien" onchange="renderPorCampana()">
@@ -347,6 +383,8 @@
         <option value="fede">Solo Pauta Fede</option>
       </select>
       <select id="camp-filter-paraque" onchange="renderPorCampana()"><option value="">Para qué: todos</option></select>
+      <select id="camp-filter-linea" onchange="renderPorCampana()"><option value="">Línea: todas</option></select>
+      <select id="camp-filter-publico" onchange="renderPorCampana()"><option value="">Público: todos</option><option>Minorista</option><option>Mayorista</option><option>Ambos</option></select>
     </div>
     <div id="camp-list"></div>
   </div>
@@ -354,6 +392,8 @@
   <div id="view-pauta" style="display:none;">
     <div class="pauta-sort" style="flex-wrap:wrap;gap:10px;">
       <select id="pauta-filter-categoria" onchange="renderPautaAri()"><option value="">Para qué: todos</option></select>
+      <select id="pauta-filter-linea" onchange="renderPautaAri()"><option value="">Línea: todas</option></select>
+      <select id="pauta-filter-publico" onchange="renderPautaAri()"><option value="">Público: todos</option><option>Minorista</option><option>Mayorista</option><option>Ambos</option></select>
       <select id="pauta-filter-angulo" onchange="renderPautaAri()"><option value="">Todos los ángulos</option></select>
       <select id="pauta-filter-creador" onchange="renderPautaAri()"><option value="">Todos los creadores</option></select>
       <input type="text" id="pauta-filter-campana" placeholder="Buscar por campaña…" oninput="renderPautaAri()" style="min-width:160px;">
@@ -389,6 +429,11 @@
   </div>
 </div>
 
+<div class="sheet-overlay" id="sheet-overlay" onclick="if(event.target===this) cerrarSheet()">
+  <div class="sheet" id="sheet"></div>
+</div>
+<datalist id="camp-nombres"></datalist>
+
 <div class="overlay" id="overlay">
   <div class="modal">
     <h2 id="modalTitle">Nueva pieza</h2>
@@ -398,7 +443,22 @@
       <select id="f-estado"></select>
     </div>
 
-    <div class="section-title">Qué es</div>
+    <div class="section-title">Qué muestra</div>
+
+    <div class="field">
+      <label>Línea de producto</label>
+      <select id="f-linea"></select>
+      <div class="newopt"><input type="text" id="new-linea" placeholder="Agregar línea nueva"><button class="btn btn-ghost btn-sm" onclick="addOption('lineas','new-linea','f-linea')">Agregar</button></div>
+      <div class="optlist" id="optlist-lineas"></div>
+    </div>
+
+    <div class="field">
+      <label>Productos que se muestran (podés tildar varios)</label>
+      <div class="checklist" id="check-prendas"></div>
+      <div class="newopt"><input type="text" id="new-prenda" placeholder="Agregar producto nuevo"><button class="btn btn-ghost btn-sm" onclick="addPrendaOption()">Agregar</button></div>
+    </div>
+
+    <div class="section-title">Para qué y a quién</div>
 
     <div class="field">
       <label>Para qué</label>
@@ -408,9 +468,20 @@
     </div>
 
     <div class="field">
-      <label>Productos que se muestran (podés tildar varios)</label>
-      <div class="checklist" id="check-prendas"></div>
-      <div class="newopt"><input type="text" id="new-prenda" placeholder="Agregar producto nuevo"><button class="btn btn-ghost btn-sm" onclick="addPrendaOption()">Agregar</button></div>
+      <label>Público</label>
+      <select id="f-publico">
+        <option value="">—</option>
+        <option value="Minorista">Minorista</option>
+        <option value="Mayorista">Mayorista</option>
+        <option value="Ambos">Ambos</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Ángulo</label>
+      <select id="f-angulo"></select>
+      <div class="newopt"><input type="text" id="new-angulo" placeholder="Agregar ángulo nuevo"><button class="btn btn-ghost btn-sm" onclick="addOption('angulos','new-angulo','f-angulo')">Agregar</button></div>
+      <div class="optlist" id="optlist-angulos"></div>
     </div>
 
     <div class="section-title">Idea / Referencia</div>
@@ -437,13 +508,6 @@
       <select id="f-tipoContenido"></select>
       <div class="newopt"><input type="text" id="new-tipoContenido" placeholder="Agregar formato nuevo"><button class="btn btn-ghost btn-sm" onclick="addOption('tiposContenido','new-tipoContenido','f-tipoContenido')">Agregar</button></div>
       <div class="optlist" id="optlist-tiposContenido"></div>
-    </div>
-
-    <div class="field">
-      <label>Ángulo</label>
-      <select id="f-angulo"></select>
-      <div class="newopt"><input type="text" id="new-angulo" placeholder="Agregar ángulo nuevo"><button class="btn btn-ghost btn-sm" onclick="addOption('angulos','new-angulo','f-angulo')">Agregar</button></div>
-      <div class="optlist" id="optlist-angulos"></div>
     </div>
 
     <div class="field">
@@ -513,7 +577,7 @@
     </div>
     <div class="field">
       <label>Nombre de la campaña</label>
-      <input type="text" id="f-campNombre" placeholder="Ej: Verano24 - TOFU">
+      <input type="text" id="f-campNombre" list="camp-nombres" placeholder="Elegí una existente o escribí">
     </div>
     <div class="field">
       <label>Fecha de carga</label>
@@ -574,7 +638,7 @@ db.ref(".info/connected").on("value", snap => {
 });
 
 let items = {};
-let listas = { productos: [], angulos: [], creadores: [], tiposContenido: [], prendas: [], tiposCampana: [] };
+let listas = { productos: [], angulos: [], creadores: [], tiposContenido: [], prendas: [], tiposCampana: [], lineas: [] };
 let currentId = null;
 let currentPrendas = [];
 let currentThumbFile = null;
@@ -636,10 +700,59 @@ function logAction(action, data) {
 })();
 
 // Listas editables (categoría, ángulo, creador, tipo de contenido, prendas mostradas).
-let listasRaw = { productos: {}, angulos: {}, creadores: {}, tiposContenido: {}, prendas: {}, tiposCampana: {} };
+let listasRaw = { productos: {}, angulos: {}, creadores: {}, tiposContenido: {}, prendas: {}, tiposCampana: {}, lineas: {} };
+let listasFlags = null;
 const DEFAULT_TIPOS = ["Video Persona - Casa", "Video Persona - Local", "Gráfica Texto Informativo", "Video Piso/Percha"];
 const DEFAULT_TIPOS_CAMPANA = ["TOFU", "ADV+", "ABO", "CBO"];
 const PARA_QUE_DEFAULT = ["Vender", "Captar mayoristas", "Atraer", "Confianza"];
+// La vieja "Categoría" mezclaba 3 cosas. La migración separa cada valor en su campo:
+const MIG_LINEAS = ["JEANS","REMERAS","TEJIDO","TOPS","BUZOS","CONJUNTO","PANTALON","ACCESORIOS","SWEATERS","BODY","SHORT/MINI","BASICOS"];
+const MIG_ANGULOS = ["NEW IN","BENEFICIO","MAS VENDIDOS","DIFERENCIADO","LOOKS"];
+const MIG_PARAQUE = { "MARKETING / BRANDING": "Confianza" };
+let itemsCargados = false, migrando = false;
+function tryMigrarV2() {
+  if (migrando || !itemsCargados || !listasFlags || listasFlags._migracionV2) return;
+  migrando = true;
+  const U = {};
+  const norm = x => String(x || "").trim().toUpperCase();
+  const pqCanon = {}; PARA_QUE_DEFAULT.forEach(x => pqCanon[x.toUpperCase()] = x);
+  // Si el valor ya existe en la lista destino con otra mayúscula, uso esa forma para que los filtros coincidan.
+  const canonLinea = {}; Object.values(listasRaw.lineas).forEach(x => canonLinea[norm(x)] = x);
+  const canonAng = {}; Object.values(listasRaw.angulos).forEach(x => canonAng[norm(x)] = x);
+  // Ítems
+  Object.entries(items).forEach(([id, it]) => {
+    const old = (it.producto || "").trim(); const up = norm(old);
+    if (!old) return;
+    const base = `items/${id}`;
+    if (MIG_LINEAS.includes(up)) {
+      if (!it.linea) U[`${base}/linea`] = canonLinea[up] || old;
+      U[`${base}/producto`] = ""; U[`${base}/categoriaVieja`] = old;
+    } else if (MIG_ANGULOS.includes(up)) {
+      if (!it.angulo) U[`${base}/angulo`] = canonAng[up] || old;
+      U[`${base}/producto`] = ""; U[`${base}/categoriaVieja`] = old;
+    } else if (MIG_PARAQUE[up]) {
+      U[`${base}/producto`] = MIG_PARAQUE[up]; U[`${base}/categoriaVieja`] = old;
+    } else if (pqCanon[up] && pqCanon[up] !== old) {
+      U[`${base}/producto`] = pqCanon[up];
+    }
+  });
+  // Lista "Para qué": solo las 4 opciones (sin duplicados) + valores desconocidos que no se pudieron ubicar.
+  const nuevaPq = { pq_vender: "Vender", pq_mayoristas: "Captar mayoristas", pq_atraer: "Atraer", pq_confianza: "Confianza" };
+  const lineas = Object.assign({}, listasRaw.lineas);
+  const lineasUp = Object.values(lineas).map(norm);
+  const angUp = Object.values(listasRaw.angulos).map(norm);
+  let i = 0;
+  Object.entries(listasRaw.productos).forEach(([k, val]) => {
+    const up = norm(val);
+    if (MIG_LINEAS.includes(up)) { if (!lineasUp.includes(up)) { lineas[`mig_l${i++}`] = String(val).trim(); lineasUp.push(up); } }
+    else if (MIG_ANGULOS.includes(up)) { if (!angUp.includes(up)) { U[`listas/angulos/mig_a${i++}`] = String(val).trim(); angUp.push(up); } }
+    else if (!MIG_PARAQUE[up] && !pqCanon[up]) { nuevaPq[k] = val; }
+  });
+  U["listas/productos"] = nuevaPq;
+  U["listas/lineas"] = lineas;
+  U["listas/_migracionV2"] = true;
+  db.ref(ROOT).update(U).catch(e => { migrando = false; console.error("Migración falló", e); });
+}
 // Color de la etiqueta de "Para qué". Las opciones viejas (categorías anteriores) salen en gris
 // para que se vea rápido qué piezas faltan reclasificar.
 function paraQueStyle(v) {
@@ -660,17 +773,13 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
   listasRaw.tiposContenido = v.tiposContenido || {};
   listasRaw.prendas = v.prendas || {};
   listasRaw.tiposCampana = v.tiposCampana || {};
+  listasRaw.lineas = v.lineas || {};
+  listasFlags = v;
 
   // Siembra los 4 tipos de contenido conocidos una sola vez, si la lista está vacía y nunca se sembró.
   if (Object.keys(listasRaw.tiposContenido).length === 0 && !v._tiposSeeded) {
     DEFAULT_TIPOS.forEach(t => db.ref(`${ROOT}/listas/tiposContenido`).push(t));
     db.ref(`${ROOT}/listas/_tiposSeeded`).set(true);
-  }
-  // Siembra las 4 opciones de "Para qué" una sola vez (las categorías viejas quedan hasta que se borren a mano).
-  if (!v._paraQueSeeded) {
-    const existentes = Object.values(listasRaw.productos).map(x => String(x).toLowerCase());
-    PARA_QUE_DEFAULT.forEach(t => { if (!existentes.includes(t.toLowerCase())) db.ref(`${ROOT}/listas/productos`).push(t); });
-    db.ref(`${ROOT}/listas/_paraQueSeeded`).set(true);
   }
   // Siembra los tipos de campaña conocidos (TOFU/ADV+/ABO/CBO) una sola vez.
   if (Object.keys(listasRaw.tiposCampana).length === 0 && !v._tiposCampanaSeeded) {
@@ -684,6 +793,11 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
   listas.tiposContenido = Object.values(listasRaw.tiposContenido);
   listas.prendas = Object.values(listasRaw.prendas);
   listas.tiposCampana = Object.values(listasRaw.tiposCampana);
+  listas.lineas = Object.values(listasRaw.lineas);
+  fillSelect("f-linea", listas.lineas);
+  fillFilterSelect("pauta-filter-linea", listas.lineas, "Línea: todas");
+  fillFilterSelect("camp-filter-linea", listas.lineas, "Línea: todas");
+  renderOptList("lineas");
 
   fillSelect("f-producto", listas.productos);
   fillSelect("f-angulo", listas.angulos);
@@ -702,10 +816,12 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
   renderOptList("creadores");
   renderOptList("tiposContenido");
   renderOptList("tiposCampana");
+  tryMigrarV2();
   renderPrendaCheckList();
   // Si estoy en Pauta Ari, refresco para que los selects de tipo de campaña de cada tarjeta usen la lista actualizada.
   if (currentView === "pauta") renderPautaAri();
   if (currentView === "camp") renderPorCampana();
+  if (currentView === "clas") renderClasificar();
 });
 
 function fillSelect(id, opts, includeBlank) {
@@ -750,6 +866,8 @@ function clearPautaFilters() {
   document.getElementById("pauta-filter-angulo").value = "";
   document.getElementById("pauta-filter-creador").value = "";
   document.getElementById("pauta-filter-campana").value = "";
+  document.getElementById("pauta-filter-linea").value = "";
+  document.getElementById("pauta-filter-publico").value = "";
   renderPautaAri();
 }
 
@@ -775,6 +893,7 @@ function removeOption(kind, key) {
 
 const KIND_SELECT = {
   productos: "f-producto",
+  lineas: "f-linea",
   angulos: "f-angulo",
   creadores: "f-creador",
   tiposContenido: "f-tipoContenido",
@@ -841,11 +960,16 @@ function togglePrenda(val, checked) {
 function escapeAttr(s) { return String(s).replace(/'/g, "&#39;"); }
 
 db.ref(`${ROOT}/items`).on("value", snap => {
+  itemsCargados = true;
   items = snap.val() || {};
+  tryMigrarV2();
+  fillCampNombres();
+  if (sheetId) renderSheet();
   renderBoardList();
   renderCalendar();
   if (currentView === "pauta") renderPautaAri();
   if (currentView === "camp") renderPorCampana();
+  if (currentView === "clas") renderClasificar();
   if (currentId && document.getElementById("overlay").classList.contains("show")) {
     renderCampanasList(currentId, "campanas-list");
   }
@@ -867,7 +991,7 @@ function filteredBoardItems() {
       if (fa && it.angulo !== fa) return false;
       if (fc && it.creador !== fc) return false;
       if (fs) {
-        const haystack = [it.producto, it.angulo, it.creador, it.tipoContenido, it.descripcion]
+        const haystack = [it.producto, it.linea, it.publico, it.angulo, it.creador, it.tipoContenido, it.descripcion, ...(it.prendas || [])]
           .filter(Boolean).join(" ").toLowerCase();
         if (!haystack.includes(fs)) return false;
       }
@@ -942,7 +1066,7 @@ function renderBoardCard(it) {
   div.dataset.id = it.id;
   div.onclick = () => openModal(it.id);
   const thumb = thumbHtml(it, "board-thumb", 120);
-  const subParts = [it.tipoContenido, it.angulo, it.creador].filter(Boolean).join(" · ");
+  const subParts = [it.producto, it.publico, it.angulo, it.creador].filter(Boolean).join(" · ");
 
   const miniToggle = (field, label) => {
     const on = !!it[field];
@@ -965,7 +1089,7 @@ function renderBoardCard(it) {
     <div class="board-card-main">
       ${thumb}
       <div class="board-mid">
-        <div class="board-cat">${escapeHtml(it.producto || "Sin para qué")}</div>
+        <div class="board-cat">${escapeHtml(nombrePieza(it) || "Sin línea")}</div>
         <div class="board-sub">${escapeHtml(subParts || "—")}</div>
       </div>
     </div>
@@ -987,7 +1111,11 @@ function formatDateShort(iso) {
   return `${d}/${m}`;
 }
 
-function quickToggle(id, field, newVal) {
+function quickToggle(id, field, newVal, yaChequeado) {
+  if (newVal && (field === "pautaAri" || field === "pautaFede") && !yaChequeado && faltaClasif(items[id] || {}).length) {
+    pedirClasifYHacer(id, "marcarla en " + (field === "pautaAri" ? "Pauta Ari" : "Pauta Fede"), () => quickToggle(id, field, newVal, true));
+    return;
+  }
   db.ref(`${ROOT}/items/${id}`).update({ [field]: newVal, updatedAt: Date.now() });
   logAction((newVal ? "tildó " : "destildó ") + field, items[id] || {});
 }
@@ -1007,6 +1135,9 @@ function setView(v) {
   document.getElementById("view-pauta").style.display = v === "pauta" ? "block" : "none";
   document.getElementById("view-camp").style.display = v === "camp" ? "block" : "none";
   document.getElementById("tab-camp").classList.toggle("active", v === "camp");
+  document.getElementById("view-clas").style.display = v === "clas" ? "block" : "none";
+  document.getElementById("tab-clas").classList.toggle("active", v === "clas");
+  if (v !== "clas") clasSesion.clear();
   document.getElementById("tab-board").classList.toggle("active", v === "board");
   document.getElementById("tab-cal").classList.toggle("active", v === "cal");
   document.getElementById("tab-log").classList.toggle("active", v === "log");
@@ -1015,6 +1146,7 @@ function setView(v) {
   if (v === "log") renderLog();
   if (v === "pauta") renderPautaAri();
   if (v === "camp") renderPorCampana();
+  if (v === "clas") renderClasificar();
 }
 
 function shiftMonth(n) {
@@ -1070,7 +1202,7 @@ function renderCalendar() {
       chip.className = `cal-item ${entry.tipo}`;
       chip.dataset.id = entry.id;
       chip.dataset.tipo = entry.tipo;
-      chip.innerHTML = `${thumbHtml(entry.it, "cal-item-thumb", 80)}<span>${entry.tipo === "feed" ? "IG" : "TT"} · ${escapeHtml(entry.it.producto || "s/para qué")}</span>`;
+      chip.innerHTML = `${thumbHtml(entry.it, "cal-item-thumb", 80)}<span>${entry.tipo === "feed" ? "IG" : "TT"} · ${escapeHtml(entry.it.linea || entry.it.producto || "s/línea")}</span>`;
       chip.onclick = () => openModal(entry.id);
       itemsWrap.appendChild(chip);
     });
@@ -1197,6 +1329,10 @@ function renderPautaAri() {
   const fCreador = document.getElementById("pauta-filter-creador").value;
   const fCamp = (document.getElementById("pauta-filter-campana").value || "").trim().toLowerCase();
   if (fCat) ready = ready.filter(it => it.producto === fCat);
+  const fLin = document.getElementById("pauta-filter-linea").value;
+  const fPub = document.getElementById("pauta-filter-publico").value;
+  if (fLin) ready = ready.filter(it => it.linea === fLin);
+  if (fPub) ready = ready.filter(it => it.publico === fPub || (it.publico === "Ambos" && fPub !== "Ambos"));
   if (fAng) ready = ready.filter(it => it.angulo === fAng);
   if (fCreador) ready = ready.filter(it => it.creador === fCreador);
   if (fCamp) ready = ready.filter(it => campanasSearchHaystack(it).includes(fCamp));
@@ -1250,8 +1386,12 @@ function renderPautaAri() {
 }
 
 // ---------- Campañas cargadas por pieza ----------
-function addCampana(itemId, tipo, nombre, fecha) {
+function addCampana(itemId, tipo, nombre, fecha, yaChequeado) {
   if (!tipo) { alert("Elegí un tipo de campaña."); return; }
+  if (!yaChequeado && faltaClasif(items[itemId] || {}).length) {
+    pedirClasifYHacer(itemId, "cargar la campaña", () => addCampana(itemId, tipo, nombre, fecha, true));
+    return;
+  }
   db.ref(`${ROOT}/items/${itemId}/campanas`).push({ tipo, nombre: nombre || "", fecha: fecha || "", creadoEn: Date.now() });
   // Cargar (o traspasar) una campaña la marca como usada: pasa de "Pendiente Utilizar" a "Ya utilizados".
   db.ref(`${ROOT}/items/${itemId}`).update({ pautaAri: true, updatedAt: Date.now() });
@@ -1322,7 +1462,7 @@ function campanasCardHtml(it) {
     ${listHtml}
     <div class="camp-quickadd" onclick="event.stopPropagation()">
       <select id="camp-tipo-${it.id}">${tipoOptions}</select>
-      <input type="text" id="camp-nombre-${it.id}" placeholder="Nombre campaña">
+      <input type="text" id="camp-nombre-${it.id}" list="camp-nombres" placeholder="Nombre campaña (elegí o escribí)">
       <input type="date" id="camp-fecha-${it.id}">
       <button class="btn btn-primary btn-sm" onclick="addCampanaFromCard('${it.id}')">+ ${entries.length ? "Traspasar" : "Cargar"}</button>
     </div>
@@ -1382,15 +1522,15 @@ function renderCard(it, estado) {
   const formHtml = formAbierto ? `
     <div class="camp-quickadd" onclick="event.stopPropagation()" style="margin-top:0;">
       <select id="camp-tipo-${it.id}">${tipoOptions}</select>
-      <input type="text" id="camp-nombre-${it.id}" placeholder="Nombre campaña">
+      <input type="text" id="camp-nombre-${it.id}" list="camp-nombres" placeholder="Nombre campaña (elegí o escribí)">
       <input type="date" id="camp-fecha-${it.id}">
       <button class="btn btn-primary btn-sm" onclick="guardarCampanaCard('${it.id}')">Guardar</button>
     </div>` : "";
   const apagadoBtn = it.anuncioApagado
     ? `<button class="btn btn-ghost btn-sm" style="color:#c0392b;" title="Reactivar anuncio" onclick="event.stopPropagation(); toggleAnuncioApagado('${it.id}', false)">↺ Reactivar</button>`
     : `<button class="btn btn-ghost btn-sm" title="Marcar anuncio apagado" onclick="event.stopPropagation(); toggleAnuncioApagado('${it.id}', true)">🔴 Apagar</button>`;
-  const nombre = (it.prendas && it.prendas.length) ? it.prendas.join(", ") : (it.descripcion || "Sin producto cargado");
-  const sub = [it.angulo, it.tipoContenido].filter(Boolean).join(" · ");
+  const nombre = nombrePieza(it);
+  const sub = [(it.prendas && it.prendas.length) ? it.linea : "", it.publico, it.angulo, it.tipoContenido].filter(Boolean).join(" · ");
   div.innerHTML = `
     <div class="pcard-photo-wrap">
       ${thumbHtml(it, "pcard-photo", 480)}
@@ -1398,10 +1538,14 @@ function renderCard(it, estado) {
       ${canales ? `<span class="pcard-channels">${canales}</span>` : ""}
     </div>
     <div class="pcard-body">
-      <div class="pcard-title" style="margin-top:0;">${escapeHtml(nombre)}</div>
+      ${nombre ? `<div class="pcard-title" style="margin-top:0;">${escapeHtml(nombre)}</div>` : ""}
       <span class="pq-badge" style="${paraQueStyle(it.producto)}">${escapeHtml(it.producto || "Sin para qué")}</span>
       <div class="pcard-who">por ${escapeHtml(it.creador || "—")}</div>
       ${sub ? `<div class="pcard-sub">${escapeHtml(sub)}</div>` : ""}
+      <div class="quick-row" onclick="event.stopPropagation()">
+        ${["pautaAri:Pauta Ari", "pautaFede:Pauta Fede", "feed:Feed", "tiktok:TikTok"].map(x => { const [f, l] = x.split(":"); const on = !!it[f];
+          return `<span class="board-mini-toggle ${on ? "on" : ""}" onclick="quickToggle('${it.id}','${f}',${!on})">${on ? "✓ " : ""}${l}</span>`; }).join("")}
+      </div>
       ${campHtml}
       ${formHtml}
       <div class="pcard-actions" onclick="event.stopPropagation()">
@@ -1418,13 +1562,18 @@ function renderCard(it, estado) {
 // Agrupa las piezas por su campaña ACTUAL (la última cargada). Las que ya se pueden usar y no
 // están en ninguna pauta van en "Listas para usar". Las marcadas como Pauta sin campaña cargada
 // van aparte, para detectar datos que faltan.
+function nombrePieza(it) {
+  if (it.prendas && it.prendas.length) return it.prendas.length > 1 ? `${it.prendas[0]} +${it.prendas.length - 1}` : it.prendas[0];
+  return it.linea || it.descripcion || "";
+}
 function miniHtml(it) {
-  const nombre = (it.prendas && it.prendas.length) ? it.prendas.join(", ") : (it.descripcion || "Sin producto");
+  const nombre = it.linea || nombrePieza(it);
+  const who = [it.creador ? "por " + it.creador : "", it.publico].filter(Boolean).join(" · ");
   return `<div class="mini" onclick="openModal('${it.id}')">
     ${thumbHtml(it, "mini-photo", 300)}
-    <div class="mini-name">${escapeHtml(nombre)}</div>
+    ${nombre ? `<div class="mini-name">${escapeHtml(nombre)}</div>` : ""}
     <span class="pq-badge" style="${paraQueStyle(it.producto)}">${escapeHtml(it.producto || "Sin para qué")}</span>
-    <div class="mini-who">por ${escapeHtml(it.creador || "—")}</div>
+    ${who ? `<div class="mini-who">${escapeHtml(who)}</div>` : ""}
   </div>`;
 }
 function renderPorCampana() {
@@ -1435,6 +1584,10 @@ function renderPorCampana() {
   const READY_STATES = ["listo", "reutilizar", "programado", "subido"];
   let all = Object.entries(items).map(([id, it]) => ({ id, ...it }));
   if (fPq) all = all.filter(it => it.producto === fPq);
+  const fLin = document.getElementById("camp-filter-linea").value;
+  const fPub = document.getElementById("camp-filter-publico").value;
+  if (fLin) all = all.filter(it => it.linea === fLin);
+  if (fPub) all = all.filter(it => it.publico === fPub || (it.publico === "Ambos" && fPub !== "Ambos"));
 
   const grupos = {};
   const sinCampana = [];
@@ -1482,6 +1635,101 @@ function renderPorCampana() {
   el.innerHTML = html;
 }
 
+// ---------- Clasificación rápida ----------
+// Datos mínimos para poder marcar una pieza como pautada.
+const PUBLICOS = ["Minorista", "Mayorista", "Ambos"];
+function faltaClasif(it) {
+  const f = [];
+  if (!it.producto || !listas.productos.includes(it.producto)) f.push("Para qué");
+  if (!it.publico) f.push("Público");
+  if (!it.linea) f.push("Línea");
+  return f;
+}
+function setCampo(id, campo, val) {
+  const it = items[id] || {};
+  const nuevo = it[campo] === val ? "" : val;   // tocar de nuevo el mismo botón lo desmarca
+  db.ref(`${ROOT}/items/${id}`).update({ [campo]: nuevo, updatedAt: Date.now() });
+}
+function clasRowsHtml(it, id) {
+  const faltan = faltaClasif(it);
+  const row = (campo, label, opts, obligatorio) => {
+    const falta = obligatorio && faltan.includes(label);
+    return `<div><div class="clas-row-label ${falta ? "falta" : ""}">${label}${falta ? " · falta" : ""}</div>
+      <div class="clas-opts">${opts.map(o => `<button class="clas-btn ${it[campo] === o ? "on" : ""}" onclick="event.stopPropagation(); setCampo('${id}','${campo}','${escapeAttr(o)}')">${escapeHtml(o)}</button>`).join("")}</div></div>`;
+  };
+  return row("producto", "Para qué", listas.productos, true)
+    + row("publico", "Público", PUBLICOS, true)
+    + row("linea", "Línea", listas.lineas, true)
+    + row("angulo", "Ángulo", listas.angulos, false);
+}
+// Piezas que arrancaron incompletas en esta sesión: siguen a la vista (en verde) hasta salir de la pestaña.
+const clasSesion = new Set();
+function renderClasificar() {
+  const el = document.getElementById("clas-list");
+  if (!el) return;
+  const modo = document.getElementById("clas-filter").value;
+  const READY = ["listo", "reutilizar", "programado", "subido"];
+  const prio = it => (it.pautaAri || it.pautaFede) ? 0 : READY.includes(normalizeEstado(it.estado)) ? 1 : 2;
+  let lista = Object.entries(items).map(([id, it]) => ({ id, ...it }));
+  const totalFaltan = lista.filter(it => faltaClasif(it).length).length;
+  lista.forEach(it => { if (faltaClasif(it).length) clasSesion.add(it.id); });
+  if (modo === "falta") lista = lista.filter(it => clasSesion.has(it.id));
+  lista.sort((a, b) => prio(a) - prio(b) || (b.createdAt || 0) - (a.createdAt || 0));
+  document.getElementById("clas-count").textContent = totalFaltan ? `Faltan clasificar ${totalFaltan}` : "Todo clasificado ✓";
+  if (!lista.length) { el.innerHTML = `<div class="empty-col">No hay piezas para clasificar.</div>`; return; }
+  el.innerHTML = lista.map(it => {
+    const ok = !faltaClasif(it).length;
+    const estado = [it.pautaAri ? "Pauta Ari" : "", it.pautaFede ? "Pauta Fede" : "", estadoInfo(normalizeEstado(it.estado)).label].filter(Boolean).join(" · ");
+    return `<div class="clas-card ${ok ? "done" : ""}">
+      <div onclick="openModal('${it.id}')">${thumbHtml(it, "clas-photo", 300)}</div>
+      <div class="clas-body">
+        <div><div class="clas-name">${escapeHtml(nombrePieza(it) || "Sin producto")}${ok ? " ✓" : ""}</div>
+        <div class="clas-state">${escapeHtml(estado)}${it.creador ? " · por " + escapeHtml(it.creador) : ""}</div></div>
+        ${clasRowsHtml(it, it.id)}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// Hoja que aparece cuando se quiere marcar como pautado algo sin clasificar.
+let sheetId = null, sheetAccion = null, sheetTexto = "";
+function pedirClasifYHacer(id, texto, accion) {
+  const it = items[id] || {};
+  if (!faltaClasif(it).length) { accion(); return; }
+  sheetId = id; sheetAccion = accion; sheetTexto = texto;
+  renderSheet();
+  document.getElementById("sheet-overlay").classList.add("show");
+}
+function renderSheet() {
+  const it = items[sheetId];
+  if (!it) { cerrarSheet(); return; }
+  const faltan = faltaClasif(it);
+  document.getElementById("sheet").innerHTML = `
+    <div class="sheet-title">Antes de ${escapeHtml(sheetTexto)}, clasificala</div>
+    <div style="display:flex;gap:12px;align-items:center;">${thumbHtml(it, "card-thumb", 100)}<div class="clas-name">${escapeHtml(nombrePieza(it) || "Sin producto")}</div></div>
+    ${clasRowsHtml(it, sheetId)}
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="cerrarSheet()">Cancelar</button>
+      <button class="btn btn-primary" ${faltan.length ? "disabled" : ""} onclick="confirmarSheet()">${faltan.length ? "Falta: " + faltan.join(", ") : "Listo, " + escapeHtml(sheetTexto)}</button>
+    </div>`;
+}
+function confirmarSheet() {
+  const accion = sheetAccion;
+  cerrarSheet();
+  if (accion) accion();
+}
+function cerrarSheet() {
+  sheetId = null; sheetAccion = null;
+  document.getElementById("sheet-overlay").classList.remove("show");
+}
+// Nombres de campañas ya usados, para elegirlos en vez de tipearlos (evita duplicados por typos).
+function fillCampNombres() {
+  const set = new Set();
+  Object.values(items).forEach(it => Object.values(it.campanas || {}).forEach(c => { if (c.nombre) set.add(c.nombre); }));
+  const dl = document.getElementById("camp-nombres");
+  if (dl) dl.innerHTML = [...set].sort((a, b) => a.localeCompare(b, "es")).map(n => `<option value="${escapeHtml(n)}"></option>`).join("");
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
@@ -1497,12 +1745,16 @@ function openModal(id) {
   document.getElementById("btnDuplicate").style.display = id ? "inline-block" : "none";
 
   fillSelect("f-producto", listas.productos, true);
+  fillSelect("f-linea", listas.lineas, true);
   fillSelect("f-angulo", listas.angulos, true);
   fillSelect("f-creador", listas.creadores, true);
   fillSelect("f-tipoContenido", listas.tiposContenido, true);
   fillSelect("f-campTipo", listas.tiposCampana, true);
 
   document.getElementById("f-producto").value = it.producto || "";
+  document.getElementById("f-linea").value = it.linea || "";
+  document.getElementById("f-publico").value = it.publico || "";
+  renderOptList("lineas");
   document.getElementById("f-angulo").value = it.angulo || "";
   document.getElementById("f-creador").value = it.creador || "";
   document.getElementById("f-tipoContenido").value = it.tipoContenido || "";
@@ -1567,6 +1819,8 @@ async function saveCurrent() {
   }
   const data = {
     producto: document.getElementById("f-producto").value,
+    linea: document.getElementById("f-linea").value,
+    publico: document.getElementById("f-publico").value,
     angulo: document.getElementById("f-angulo").value,
     creador: document.getElementById("f-creador").value,
     tipoContenido: document.getElementById("f-tipoContenido").value,
@@ -1590,6 +1844,12 @@ async function saveCurrent() {
     anuncioApagado: document.getElementById("tg-anuncioApagado").querySelector("input").checked,
     updatedAt: Date.now()
   };
+  const prev = currentId ? (items[currentId] || {}) : {};
+  const marcaPautaNueva = (data.pautaAri && !prev.pautaAri) || (data.pautaFede && !prev.pautaFede);
+  if (marcaPautaNueva) {
+    const faltan = faltaClasif(data);
+    if (faltan.length) { alert("Para marcarla como pautada completá: " + faltan.join(", ") + "."); return; }
+  }
   if (currentId) {
     db.ref(`${ROOT}/items/${currentId}`).update(data);
     logAction("editó", data);
