@@ -310,6 +310,43 @@
   .sheet-actions .btn{flex:1;min-height:46px;}
   .btn[disabled]{opacity:.45;cursor:not-allowed;}
   .quick-row{display:flex;gap:6px;flex-wrap:wrap;}
+  /* --- Formulario compacto --- */
+  .modal.mx{max-width:520px;padding:16px 16px 0;}
+  .mx-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;}
+  .mx-photo{width:84px;aspect-ratio:4/5;border-radius:10px;background:var(--bg);border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;cursor:pointer;flex:none;}
+  .mx-photo img{width:100%;height:100%;object-fit:cover;}
+  .mx-headinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;}
+  .mx-headinfo h2{margin:0 !important;font-size:12px !important;color:var(--ink-soft);font-family:'Inter',sans-serif !important;font-weight:600;}
+  .mx-name{font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;line-height:1.25;}
+  .mx-estado{align-self:flex-start;padding:6px 10px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:600;background:#fff;color:var(--ink);}
+  .mx-drive{font-size:12px;font-weight:600;color:var(--purple);text-decoration:none;}
+  .mx-close{border:none;background:none;font-size:24px;line-height:1;color:var(--ink-soft);cursor:pointer;padding:4px 6px;min-width:36px;min-height:36px;}
+  .mx-toggles{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+  .mx-toggles .toggle{padding:7px 12px;border-radius:999px;font-size:12.5px;}
+  .mx-toggles .toggle input{display:none;}
+  .mx-sec{display:flex;flex-direction:column;gap:12px;padding-bottom:6px;}
+  .mx-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);margin-bottom:5px;}
+  .mx-label.falta{color:var(--red);}
+  .mx-label.falta::after{content:" · falta";}
+  .mx-search{width:100%;box-sizing:border-box;margin-top:6px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;}
+  .mx-results{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+  .mx-results button{text-align:left;border:none;background:var(--bg);border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;color:var(--ink);font-family:'Inter',sans-serif;}
+  .mx-results button.add{background:transparent;color:var(--purple);font-weight:600;}
+  .mx-sel{display:inline-flex;align-items:center;gap:4px;background:#1e3b2f;color:#fff;border-radius:999px;padding:5px 6px 5px 12px;font-size:12.5px;font-weight:600;margin:0 6px 6px 0;}
+  .mx-sel button{border:none;background:none;color:#fff;font-size:15px;line-height:1;cursor:pointer;padding:0 4px;}
+  .mx-empty{font-size:12px;color:var(--ink-soft);}
+  .mx-det{border-top:1px solid var(--line);padding:10px 0;}
+  .mx-det summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--ink);list-style:none;display:flex;justify-content:space-between;align-items:center;min-height:32px;}
+  .mx-det summary::-webkit-details-marker{display:none;}
+  .mx-det summary::after{content:"＋";color:var(--ink-soft);font-weight:400;}
+  .mx-det[open] summary::after{content:"－";}
+  .mx-det[open] summary{margin-bottom:10px;}
+  .mx-det .two-col{grid-template-columns:1fr 1fr;}
+  .mx-campadd{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+  .mx-campadd select,.mx-campadd input{padding:8px;border:1px solid var(--line);border-radius:8px;font-size:13px;min-width:0;}
+  .mx-campadd input[type=text]{grid-column:1 / -1;}
+  .mx-help{font-size:12px;color:var(--ink-soft);margin-bottom:10px;}
+  .mx-actions{position:sticky;bottom:0;background:var(--card);padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));margin-top:4px;border-top:1px solid var(--line);flex-wrap:wrap;}
 </style>
 </head>
 <body>
@@ -435,158 +472,93 @@
 <datalist id="camp-nombres"></datalist>
 
 <div class="overlay" id="overlay">
-  <div class="modal">
-    <h2 id="modalTitle">Nueva pieza</h2>
-
-    <div class="field">
-      <label>Estado</label>
-      <select id="f-estado"></select>
-    </div>
-
-    <div class="section-title">Qué muestra</div>
-
-    <div class="field">
-      <label>Línea de producto</label>
-      <select id="f-linea"></select>
-      <div class="newopt"><input type="text" id="new-linea" placeholder="Agregar línea nueva"><button class="btn btn-ghost btn-sm" onclick="addOption('lineas','new-linea','f-linea')">Agregar</button></div>
-      <div class="optlist" id="optlist-lineas"></div>
-    </div>
-
-    <div class="field">
-      <label>Productos que se muestran (podés tildar varios)</label>
-      <div class="checklist" id="check-prendas"></div>
-      <div class="newopt"><input type="text" id="new-prenda" placeholder="Agregar producto nuevo"><button class="btn btn-ghost btn-sm" onclick="addPrendaOption()">Agregar</button></div>
-    </div>
-
-    <div class="section-title">Para qué y a quién</div>
-
-    <div class="field">
-      <label>Para qué</label>
-      <select id="f-producto"></select>
-      <div class="newopt"><input type="text" id="new-producto" placeholder="Agregar opción nueva"><button class="btn btn-ghost btn-sm" onclick="addOption('productos','new-producto','f-producto')">Agregar</button></div>
-      <div class="optlist" id="optlist-productos"></div>
-    </div>
-
-    <div class="field">
-      <label>Público</label>
-      <select id="f-publico">
-        <option value="">—</option>
-        <option value="Minorista">Minorista</option>
-        <option value="Mayorista">Mayorista</option>
-        <option value="Ambos">Ambos</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Ángulo</label>
-      <select id="f-angulo"></select>
-      <div class="newopt"><input type="text" id="new-angulo" placeholder="Agregar ángulo nuevo"><button class="btn btn-ghost btn-sm" onclick="addOption('angulos','new-angulo','f-angulo')">Agregar</button></div>
-      <div class="optlist" id="optlist-angulos"></div>
-    </div>
-
-    <div class="section-title">Idea / Referencia</div>
-    <div class="field">
-      <label>Link de referencia</label>
-      <input type="text" id="f-ideaLink" placeholder="Link del video/idea que lo inspiró">
-    </div>
-    <div class="field">
-      <label>Descripción de la idea</label>
-      <textarea id="f-ideaDescripcion" placeholder="De qué se trata la idea, antes de grabar"></textarea>
-    </div>
-
-    <div class="section-title">Producción</div>
-
-    <div class="field">
-      <label>Creador</label>
-      <select id="f-creador"></select>
-      <div class="newopt"><input type="text" id="new-creador" placeholder="Agregar creador nuevo"><button class="btn btn-ghost btn-sm" onclick="addOption('creadores','new-creador','f-creador')">Agregar</button></div>
-      <div class="optlist" id="optlist-creadores"></div>
-    </div>
-
-    <div class="field">
-      <label>Formato</label>
-      <select id="f-tipoContenido"></select>
-      <div class="newopt"><input type="text" id="new-tipoContenido" placeholder="Agregar formato nuevo"><button class="btn btn-ghost btn-sm" onclick="addOption('tiposContenido','new-tipoContenido','f-tipoContenido')">Agregar</button></div>
-      <div class="optlist" id="optlist-tiposContenido"></div>
-    </div>
-
-    <div class="field">
-      <label>Gancho / Hook</label>
-      <textarea id="f-gancho" placeholder="La frase o idea puntual del video, ej: todas tus amigas ya lo tienen..."></textarea>
-    </div>
-
-    <div class="field">
-      <label>Descripción del video</label>
-      <textarea id="f-descripcion" placeholder="Qué muestra el video ya hecho"></textarea>
-    </div>
-
-    <div class="section-title">Fechas</div>
-
-    <div class="two-col">
-      <div class="field">
-        <label>Fecha de creación</label>
-        <input type="date" id="f-fechaCreacion">
+  <div class="modal mx">
+    <div class="mx-head">
+      <div id="thumb-preview" class="mx-photo" onclick="thumbTriggerUpload()" title="Cambiar foto">📷</div>
+      <div class="mx-headinfo">
+        <h2 id="modalTitle">Nueva pieza</h2>
+        <div class="mx-name" id="mx-name"></div>
+        <select id="f-estado" class="mx-estado" aria-label="Estado"></select>
+        <a id="mx-drive" class="mx-drive" target="_blank" style="display:none;">▶ Ver video</a>
       </div>
-      <div class="field">
-        <label>Fecha límite de entrega</label>
-        <input type="date" id="f-fechaLimite">
-      </div>
+      <button class="mx-close" onclick="closeModal()" aria-label="Cerrar">×</button>
     </div>
+    <input type="hidden" id="f-thumb">
 
-    <div class="field">
-      <label>Fecha de entrega real</label>
-      <input type="date" id="f-fechaEntregaReal">
-    </div>
-
-    <div class="two-col">
-      <div class="field">
-        <label>Fecha Feed</label>
-        <input type="date" id="f-fechaFeed">
-      </div>
-      <div class="field">
-        <label>Fecha TikTok</label>
-        <input type="date" id="f-fechaTiktok">
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Link a Drive</label>
-      <input type="text" id="f-drive" placeholder="https://drive.google.com/...">
-    </div>
-
-    <div class="field">
-      <label>Miniatura</label>
-      <div id="thumb-preview" onclick="thumbTriggerUpload()" style="width:100%;height:110px;border:1px dashed #ccc;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888;font-size:12px;overflow:hidden;background:#fafafa">📷 Subir foto</div>
-      <input type="hidden" id="f-thumb">
-    </div>
-
-    <div class="toggles">
+    <div class="toggles mx-toggles">
+      <label class="toggle" id="tg-pautaAri"><input type="checkbox" onchange="toggleClass('tg-pautaAri')"> Pauta Ari</label>
+      <label class="toggle" id="tg-pautaFede"><input type="checkbox" onchange="toggleClass('tg-pautaFede')"> Pauta Fede</label>
       <label class="toggle" id="tg-feed"><input type="checkbox" onchange="toggleClass('tg-feed')"> Feed</label>
       <label class="toggle" id="tg-tiktok"><input type="checkbox" onchange="toggleClass('tg-tiktok')"> TikTok</label>
-      <label class="toggle" id="tg-pautaFede"><input type="checkbox" onchange="toggleClass('tg-pautaFede')"> Pauta Fede</label>
-      <label class="toggle" id="tg-pautaAri"><input type="checkbox" onchange="toggleClass('tg-pautaAri')"> Pauta Ari</label>
-      <label class="toggle" id="tg-anuncioApagado"><input type="checkbox" onchange="toggleClass('tg-anuncioApagado')"> Anuncio apagado</label>
+      <label class="toggle" id="tg-anuncioApagado"><input type="checkbox" onchange="toggleClass('tg-anuncioApagado')"> Apagado</label>
     </div>
 
-    <div class="section-title">Campañas cargadas</div>
-    <div class="field" id="camp-fields-wrap">
-      <label>Tipo de campaña</label>
-      <select id="f-campTipo"></select>
-      <div class="newopt"><input type="text" id="new-tiposCampana" placeholder="Agregar tipo nuevo"><button class="btn btn-ghost btn-sm" onclick="addOption('tiposCampana','new-tiposCampana','f-campTipo')">Agregar</button></div>
-      <div class="optlist" id="optlist-tiposCampana"></div>
+    <div class="mx-sec">
+      <div class="mx-row"><div class="mx-label" data-req="f-producto">Para qué</div><div class="clas-opts" id="chips-f-producto"></div></div>
+      <div class="mx-row"><div class="mx-label" data-req="f-publico">Público</div><div class="clas-opts" id="chips-f-publico"></div></div>
+      <div class="mx-row"><div class="mx-label" data-req="f-linea">Línea</div><div class="clas-opts" id="chips-f-linea"></div></div>
+      <div class="mx-row"><div class="mx-label">Ángulo</div><div class="clas-opts" id="chips-f-angulo"></div></div>
+      <div class="mx-row">
+        <div class="mx-label">Productos</div>
+        <div id="check-prendas"></div>
+        <input type="text" id="prenda-search" class="mx-search" placeholder="Buscar producto para sumar…" oninput="renderPrendaCheckList()">
+        <div id="prenda-results" class="mx-results"></div>
+        <input type="hidden" id="new-prenda">
+      </div>
+      <div class="mx-row"><div class="mx-label">Creador</div><div class="clas-opts" id="chips-f-creador"></div></div>
+      <div class="mx-row"><div class="mx-label">Formato</div><div class="clas-opts" id="chips-f-tipoContenido"></div></div>
+      <select id="f-producto" hidden></select>
+      <select id="f-publico" hidden><option value="">—</option><option value="Minorista">Minorista</option><option value="Mayorista">Mayorista</option><option value="Ambos">Ambos</option></select>
+      <select id="f-linea" hidden></select>
+      <select id="f-angulo" hidden></select>
+      <select id="f-creador" hidden></select>
+      <select id="f-tipoContenido" hidden></select>
     </div>
-    <div class="field">
-      <label>Nombre de la campaña</label>
-      <input type="text" id="f-campNombre" list="camp-nombres" placeholder="Elegí una existente o escribí">
-    </div>
-    <div class="field">
-      <label>Fecha de carga</label>
-      <input type="date" id="f-campFecha">
-    </div>
-    <button class="btn btn-ghost btn-sm" onclick="addCampanaFromModal()">+ Agregar campaña</button>
-    <div class="checklist" id="campanas-list" style="margin-top:8px;"></div>
 
-    <div class="modal-actions">
+    <details class="mx-det" id="det-campanas">
+      <summary>Campañas</summary>
+      <div class="checklist" id="campanas-list"></div>
+      <div class="mx-campadd">
+        <select id="f-campTipo" aria-label="Tipo de campaña"></select>
+        <input type="text" id="f-campNombre" list="camp-nombres" placeholder="Nombre (elegí o escribí)">
+        <input type="date" id="f-campFecha" aria-label="Fecha de carga">
+        <button class="btn btn-primary btn-sm" onclick="addCampanaFromModal()">+ Cargar</button>
+      </div>
+    </details>
+
+    <details class="mx-det">
+      <summary>Contenido e idea</summary>
+      <div class="field"><label>Gancho / Hook</label><textarea id="f-gancho" placeholder="La frase o idea puntual del video"></textarea></div>
+      <div class="field"><label>Descripción del video</label><textarea id="f-descripcion" placeholder="Qué muestra el video ya hecho"></textarea></div>
+      <div class="field"><label>Link a Drive</label><input type="text" id="f-drive" placeholder="https://drive.google.com/..."></div>
+      <div class="field"><label>Link de referencia</label><input type="text" id="f-ideaLink" placeholder="Video/idea que lo inspiró"></div>
+      <div class="field"><label>Descripción de la idea</label><textarea id="f-ideaDescripcion" placeholder="De qué se trata la idea, antes de grabar"></textarea></div>
+    </details>
+
+    <details class="mx-det">
+      <summary>Fechas</summary>
+      <div class="two-col">
+        <div class="field"><label>Creación</label><input type="date" id="f-fechaCreacion"></div>
+        <div class="field"><label>Límite de entrega</label><input type="date" id="f-fechaLimite"></div>
+        <div class="field"><label>Entrega real</label><input type="date" id="f-fechaEntregaReal"></div>
+        <div class="field"><label>Feed</label><input type="date" id="f-fechaFeed"></div>
+        <div class="field"><label>TikTok</label><input type="date" id="f-fechaTiktok"></div>
+      </div>
+    </details>
+
+    <details class="mx-det">
+      <summary>Editar listas</summary>
+      <div class="mx-help">Agregá o borrá opciones. Borrar una opción no cambia las piezas que ya la usan.</div>
+      <div class="field"><label>Para qué</label><div class="optlist" id="optlist-productos"></div><div class="newopt"><input type="text" id="new-producto" placeholder="Nueva opción"><button class="btn btn-ghost btn-sm" onclick="addOption('productos','new-producto','f-producto')">Agregar</button></div></div>
+      <div class="field"><label>Línea</label><div class="optlist" id="optlist-lineas"></div><div class="newopt"><input type="text" id="new-linea" placeholder="Nueva línea"><button class="btn btn-ghost btn-sm" onclick="addOption('lineas','new-linea','f-linea')">Agregar</button></div></div>
+      <div class="field"><label>Ángulo</label><div class="optlist" id="optlist-angulos"></div><div class="newopt"><input type="text" id="new-angulo" placeholder="Nuevo ángulo"><button class="btn btn-ghost btn-sm" onclick="addOption('angulos','new-angulo','f-angulo')">Agregar</button></div></div>
+      <div class="field"><label>Creador</label><div class="optlist" id="optlist-creadores"></div><div class="newopt"><input type="text" id="new-creador" placeholder="Nuevo creador"><button class="btn btn-ghost btn-sm" onclick="addOption('creadores','new-creador','f-creador')">Agregar</button></div></div>
+      <div class="field"><label>Formato</label><div class="optlist" id="optlist-tiposContenido"></div><div class="newopt"><input type="text" id="new-tipoContenido" placeholder="Nuevo formato"><button class="btn btn-ghost btn-sm" onclick="addOption('tiposContenido','new-tipoContenido','f-tipoContenido')">Agregar</button></div></div>
+      <div class="field"><label>Tipo de campaña</label><div class="optlist" id="optlist-tiposCampana"></div><div class="newopt"><input type="text" id="new-tiposCampana" placeholder="Nuevo tipo"><button class="btn btn-ghost btn-sm" onclick="addOption('tiposCampana','new-tiposCampana','f-campTipo')">Agregar</button></div></div>
+      <div class="field"><label>Productos</label><div class="optlist" id="optlist-prendas"></div></div>
+    </details>
+
+    <div class="modal-actions mx-actions">
       <div class="left" style="display:flex;gap:8px;">
         <button class="btn btn-ghost" id="btnDelete" style="display:none;color:var(--red);" onclick="deleteCurrent()">Eliminar</button>
         <button class="btn btn-ghost" id="btnDuplicate" style="display:none;" onclick="duplicateCurrent()">Duplicar</button>
@@ -818,6 +790,7 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
   renderOptList("tiposCampana");
   tryMigrarV2();
   renderPrendaCheckList();
+  renderModalChips();
   // Si estoy en Pauta Ari, refresco para que los selects de tipo de campaña de cada tarjeta usen la lista actualizada.
   if (currentView === "pauta") renderPautaAri();
   if (currentView === "camp") renderPorCampana();
@@ -826,6 +799,7 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
 
 function fillSelect(id, opts, includeBlank) {
   const sel = document.getElementById(id);
+  if (sel.hidden) includeBlank = true;   // los selects ocultos del formulario nunca deben autoelegir una opción
   const prev = sel.value;
   sel.innerHTML = "";
   if (includeBlank) {
@@ -905,6 +879,7 @@ function selectOption(kind, val) {
   if (!selectId) return;
   document.getElementById(selectId).value = val;
   renderOptList(kind);
+  renderModalChips();
 }
 
 function renderOptList(kind) {
@@ -924,29 +899,39 @@ function addPrendaOption() {
   const val = input.value.trim();
   if (!val) return;
   if (listas.prendas.some(o => o.toLowerCase() === val.toLowerCase())) { input.value = ""; return; }
-  db.ref(`${ROOT}/listas/prendas`).push(val).then(ref => {
-    currentPrendas.push(val);
-  });
+  if (!currentPrendas.includes(val)) currentPrendas.push(val);
+  db.ref(`${ROOT}/listas/prendas`).push(val);
   input.value = "";
 }
 
 function renderPrendaCheckList() {
   const el = document.getElementById("check-prendas");
+  const res = document.getElementById("prenda-results");
   if (!el) return;
-  const entries = Object.entries(listasRaw.prendas);
-  if (!entries.length) {
-    el.innerHTML = `<div class="empty-col">Todavía no hay productos cargados.</div>`;
-    return;
-  }
-  el.innerHTML = entries.map(([key, val]) => {
-    const checked = currentPrendas.includes(val) ? "checked" : "";
-    const safeId = `prenda-${key}`;
-    return `<div class="checkrow">
-      <input type="checkbox" id="${safeId}" ${checked} onchange="togglePrenda('${escapeAttr(val)}', this.checked)">
-      <label for="${safeId}">${escapeHtml(val)}</label>
-      <button onclick="event.preventDefault(); removeOption('prendas','${key}')" title="Eliminar de la lista">×</button>
-    </div>`;
-  }).join("");
+  el.innerHTML = currentPrendas.length
+    ? currentPrendas.map(v => `<span class="mx-sel">${escapeHtml(v)}<button onclick="togglePrenda('${escapeAttr(v)}', false)" aria-label="Quitar">×</button></span>`).join("")
+    : `<div class="mx-empty">Ningún producto marcado.</div>`;
+  if (!res) return;
+  const q = (document.getElementById("prenda-search").value || "").trim();
+  if (!q) { res.innerHTML = ""; renderOptList("prendas"); return; }
+  const ql = q.toLowerCase();
+  const matches = listas.prendas.filter(v => !currentPrendas.includes(v) && v.toLowerCase().includes(ql)).slice(0, 8);
+  const exacto = listas.prendas.some(v => v.toLowerCase() === ql);
+  res.innerHTML = matches.map(v => `<button onclick="sumarPrenda('${escapeAttr(v)}')">${escapeHtml(v)}</button>`).join("")
+    + (exacto ? "" : `<button class="add" onclick="crearPrenda()">+ Crear producto "${escapeHtml(q)}"</button>`);
+}
+function sumarPrenda(v) {
+  togglePrenda(v, true);
+  document.getElementById("prenda-search").value = "";
+  renderPrendaCheckList();
+}
+function crearPrenda() {
+  const q = document.getElementById("prenda-search").value.trim();
+  if (!q) return;
+  document.getElementById("new-prenda").value = q;
+  addPrendaOption();
+  document.getElementById("prenda-search").value = "";
+  renderPrendaCheckList();
 }
 
 function togglePrenda(val, checked) {
@@ -955,6 +940,7 @@ function togglePrenda(val, checked) {
   } else {
     currentPrendas = currentPrendas.filter(p => p !== val);
   }
+  renderPrendaCheckList();
 }
 
 function escapeAttr(s) { return String(s).replace(/'/g, "&#39;"); }
@@ -1730,6 +1716,28 @@ function fillCampNombres() {
   if (dl) dl.innerHTML = [...set].sort((a, b) => a.localeCompare(b, "es")).map(n => `<option value="${escapeHtml(n)}"></option>`).join("");
 }
 
+// ---------- Botones del formulario ----------
+const MX_CHIPS = ["f-producto", "f-publico", "f-linea", "f-angulo", "f-creador", "f-tipoContenido"];
+function renderModalChips() {
+  MX_CHIPS.forEach(selId => {
+    const sel = document.getElementById(selId);
+    const box = document.getElementById("chips-" + selId);
+    if (!sel || !box) return;
+    const opts = [...sel.options].map(o => o.value).filter(Boolean);
+    box.innerHTML = opts.length
+      ? opts.map(o => `<button type="button" class="clas-btn ${sel.value === o ? "on" : ""}" onclick="mxPick('${selId}','${escapeAttr(o)}')">${escapeHtml(o)}</button>`).join("")
+      : `<div class="mx-empty">Sin opciones — agregalas en "Editar listas".</div>`;
+  });
+  document.querySelectorAll(".mx-label[data-req]").forEach(l => {
+    l.classList.toggle("falta", !document.getElementById(l.dataset.req).value);
+  });
+}
+function mxPick(selId, val) {
+  const sel = document.getElementById(selId);
+  sel.value = sel.value === val ? "" : val;
+  renderModalChips();
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
@@ -1787,6 +1795,14 @@ function openModal(id) {
   document.getElementById("f-campNombre").value = "";
   document.getElementById("f-campFecha").value = "";
   renderCampanasList(id, "campanas-list");
+  document.getElementById("prenda-search").value = "";
+  renderPrendaCheckList();
+  document.getElementById("mx-name").textContent = id ? (nombrePieza(it) || "Sin producto") : "";
+  const dl = document.getElementById("mx-drive");
+  if (it.drive) { dl.href = it.drive; dl.style.display = ""; } else dl.style.display = "none";
+  document.getElementById("det-campanas").open = !!(it.pautaAri || it.pautaFede || Object.keys(it.campanas || {}).length);
+  document.querySelectorAll(".mx-det:not(#det-campanas)").forEach(d => d.open = !id && d.querySelector("summary").textContent === "Contenido e idea");
+  renderModalChips();
   document.getElementById("overlay").classList.add("show");
 }
 
