@@ -509,7 +509,6 @@
       <div class="mx-row"><div class="mx-label" data-req="f-propuesta">Propuesta</div><div class="clas-opts" id="chips-f-propuesta"></div></div>
       <div class="mx-row"><div class="mx-label" data-req="f-publico">Público</div><div class="clas-opts" id="chips-f-publico"></div></div>
       <div class="mx-row"><div class="mx-label" data-req="f-linea">Línea</div><div class="clas-opts" id="chips-f-linea"></div></div>
-      <div class="mx-row"><div class="mx-label">Ángulo</div><div class="clas-opts" id="chips-f-angulo"></div></div>
       <div class="mx-row">
         <div class="mx-label">Productos</div>
         <div id="check-prendas"></div>
@@ -518,7 +517,7 @@
         <input type="hidden" id="new-prenda">
       </div>
       <div class="mx-row"><div class="mx-label">Creador</div><div class="clas-opts" id="chips-f-creador"></div></div>
-      <div class="mx-row"><div class="mx-label">Formato</div><div class="clas-opts" id="chips-f-tipoContenido"></div></div>
+      <div class="mx-row"><div class="mx-label" data-req="f-tipoContenido">Formato</div><div class="clas-opts" id="chips-f-tipoContenido"></div></div>
       <div class="mx-row" id="row-estilo"><div class="mx-label">Estilo</div><div class="clas-opts" id="chips-f-estilo"></div></div>
       <div class="mx-row"><div class="mx-label">Lugar</div><div class="clas-opts" id="chips-f-lugar"></div></div>
       <div class="mx-row"><div class="mx-label">Código del artículo</div><input type="text" id="f-codigo" class="mx-search" style="margin-top:0;" placeholder="Ej: 4727 (si es un look: VARIOS)" oninput="renderModalChips()"></div>
@@ -546,6 +545,7 @@
 
     <details class="mx-det">
       <summary>Contenido e idea</summary>
+      <div class="field"><label>Ángulo (opcional)</label><div class="clas-opts" id="chips-f-angulo"></div></div>
       <div class="field"><label>Gancho / Hook</label><textarea id="f-gancho" placeholder="La frase o idea puntual del video"></textarea></div>
       <div class="field"><label>Descripción del video</label><textarea id="f-descripcion" placeholder="Qué muestra el video ya hecho"></textarea></div>
       <div class="field"><label>Link a Drive</label><input type="text" id="f-drive" placeholder="https://drive.google.com/..."></div>
@@ -1737,12 +1737,15 @@ function faltaClasif(it) {
   if (!it.publico) f.push("Público");
   if (!it.linea) f.push("Línea");
   if (!it.propuesta) f.push("Propuesta");
+  if (!it.tipoContenido || !FORMATOS.includes(it.tipoContenido)) f.push("Formato");
   return f;
 }
 function setCampo(id, campo, val) {
   const it = items[id] || {};
   const nuevo = it[campo] === val ? "" : val;   // tocar de nuevo el mismo botón lo desmarca
-  db.ref(`${ROOT}/items/${id}`).update({ [campo]: nuevo, updatedAt: Date.now() });
+  const extra = {};
+  if (campo === "tipoContenido" && it.estilo && !(ESTILOS_POR_FORMATO[nuevo] || []).includes(it.estilo)) extra.estilo = "";
+  db.ref(`${ROOT}/items/${id}`).update({ [campo]: nuevo, ...extra, updatedAt: Date.now() });
 }
 function clasRowsHtml(it, id) {
   const faltan = faltaClasif(it);
@@ -1755,7 +1758,8 @@ function clasRowsHtml(it, id) {
     + row("propuesta", "Propuesta", PROPUESTAS, true)
     + row("publico", "Público", PUBLICOS, true)
     + row("linea", "Línea", listas.lineas, true)
-    + row("angulo", "Ángulo", listas.angulos, false);
+    + row("tipoContenido", "Formato", FORMATOS, true)
+    + ((ESTILOS_POR_FORMATO[it.tipoContenido] || []).length || it.estilo ? row("estilo", "Estilo", ESTILOS_POR_FORMATO[it.tipoContenido] || ESTILOS, false) : "");
 }
 // Piezas que arrancaron incompletas en esta sesión: siguen a la vista (en verde) hasta salir de la pestaña.
 const clasSesion = new Set();
