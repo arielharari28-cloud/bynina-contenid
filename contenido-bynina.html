@@ -347,6 +347,13 @@
   .mx-campadd input[type=text]{grid-column:1 / -1;}
   .mx-help{font-size:12px;color:var(--ink-soft);margin-bottom:10px;}
   .mx-actions{position:sticky;bottom:0;background:var(--card);padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));margin-top:4px;border-top:1px solid var(--line);flex-wrap:wrap;}
+  .mx-nombre{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
+  .mx-nombre-row{display:flex;gap:8px;align-items:center;}
+  .mx-nombre code,.pcard-nombre code{font-size:12px;font-weight:600;color:#1e3b2f;word-break:break-word;flex:1;}
+  .mx-nombre code.incompleto,.pcard-nombre.incompleto code{color:var(--ink-soft);}
+  .pcard-nombre{display:flex;gap:6px;align-items:center;background:var(--bg);border-radius:8px;padding:6px 8px;}
+  .pcard-nombre code{font-size:10.5px;}
+  .pcard-nombre button{border:1px solid var(--line);background:#fff;border-radius:6px;font-size:11px;font-weight:600;padding:4px 8px;cursor:pointer;color:var(--ink);}
 </style>
 </head>
 <body>
@@ -494,7 +501,12 @@
     </div>
 
     <div class="mx-sec">
+      <div class="mx-nombre" id="mx-nombre-wrap">
+        <div class="mx-label">Nombre del anuncio</div>
+        <div class="mx-nombre-row"><code id="mx-nombre"></code><button type="button" class="btn btn-ghost btn-sm" onclick="copiarNombre(null, this)">Copiar</button></div>
+      </div>
       <div class="mx-row"><div class="mx-label" data-req="f-producto">Para qué</div><div class="clas-opts" id="chips-f-producto"></div></div>
+      <div class="mx-row"><div class="mx-label" data-req="f-propuesta">Propuesta</div><div class="clas-opts" id="chips-f-propuesta"></div></div>
       <div class="mx-row"><div class="mx-label" data-req="f-publico">Público</div><div class="clas-opts" id="chips-f-publico"></div></div>
       <div class="mx-row"><div class="mx-label" data-req="f-linea">Línea</div><div class="clas-opts" id="chips-f-linea"></div></div>
       <div class="mx-row"><div class="mx-label">Ángulo</div><div class="clas-opts" id="chips-f-angulo"></div></div>
@@ -507,12 +519,18 @@
       </div>
       <div class="mx-row"><div class="mx-label">Creador</div><div class="clas-opts" id="chips-f-creador"></div></div>
       <div class="mx-row"><div class="mx-label">Formato</div><div class="clas-opts" id="chips-f-tipoContenido"></div></div>
+      <div class="mx-row" id="row-estilo"><div class="mx-label">Estilo</div><div class="clas-opts" id="chips-f-estilo"></div></div>
+      <div class="mx-row"><div class="mx-label">Lugar</div><div class="clas-opts" id="chips-f-lugar"></div></div>
+      <div class="mx-row"><div class="mx-label">Código del artículo</div><input type="text" id="f-codigo" class="mx-search" style="margin-top:0;" placeholder="Ej: 4727 (si es un look: VARIOS)" oninput="renderModalChips()"></div>
       <select id="f-producto" hidden></select>
       <select id="f-publico" hidden><option value="">—</option><option value="Minorista">Minorista</option><option value="Mayorista">Mayorista</option><option value="Ambos">Ambos</option></select>
       <select id="f-linea" hidden></select>
       <select id="f-angulo" hidden></select>
       <select id="f-creador" hidden></select>
       <select id="f-tipoContenido" hidden></select>
+      <select id="f-propuesta" hidden><option value=""></option><option value="BAS">BAS</option><option value="TEND">TEND</option><option value="LOOK">LOOK</option></select>
+      <select id="f-estilo" hidden><option value=""></option><option>HABLADO</option><option>MUSICA</option><option>POV</option><option>TEXTO</option><option>MOCKUP</option></select>
+      <select id="f-lugar" hidden><option value=""></option><option>CASA</option><option>LOCAL</option><option>FABRICA</option><option>PRODU</option><option>ESTUDIO</option><option>EXTERIOR</option></select>
     </div>
 
     <details class="mx-det" id="det-campanas">
@@ -677,11 +695,97 @@ let listasFlags = null;
 const DEFAULT_TIPOS = ["Video Persona - Casa", "Video Persona - Local", "Gráfica Texto Informativo", "Video Piso/Percha"];
 const DEFAULT_TIPOS_CAMPANA = ["TOFU", "ADV+", "ABO", "CBO"];
 const PARA_QUE_DEFAULT = ["Vender", "Captar mayoristas", "Atraer", "Confianza"];
+// ---- Nomenclatura de pauta (ver doc "Nomenclatura de pauta Meta — By Nina") ----
+const PROPUESTAS = ["BAS", "TEND", "LOOK"];
+const PROPUESTA_LABEL = { BAS: "Básico", TEND: "Tendencia", LOOK: "Look" };
+const FORMATOS = ["TRYON", "PERSONA", "HAUL", "VIDEO-ESPEJO", "FOTO-ESPEJO", "VIDEO-PRENDA", "FOTO-PRENDA", "VIDEO-LIFESTYLE", "FOTO-LIFESTYLE", "GRAFICA"];
+const ESTILOS = ["HABLADO", "MUSICA", "POV", "TEXTO", "MOCKUP"];
+const LUGARES = ["CASA", "LOCAL", "FABRICA", "PRODU", "ESTUDIO", "EXTERIOR"];
+// Estilos que tienen sentido para cada formato (los botones muestran solo esos).
+const ESTILOS_POR_FORMATO = { "TRYON": ["MUSICA", "HABLADO"], "PERSONA": [], "HAUL": ["HABLADO", "MUSICA"], "VIDEO-ESPEJO": ["HABLADO", "MUSICA"], "FOTO-ESPEJO": [],
+  "VIDEO-PRENDA": ["HABLADO", "MUSICA", "POV"], "FOTO-PRENDA": [], "VIDEO-LIFESTYLE": ["HABLADO", "MUSICA", "POV"], "FOTO-LIFESTYLE": [], "GRAFICA": ["TEXTO", "MOCKUP"] };
+const LINEAS_CODIGOS = ["REMERAS", "TOPS", "BODYS", "BUZOS", "SWEATERS", "TEJIDOS", "JEANS", "PANTALONES", "SHORTS-MINIS", "CONJUNTOS", "ACCESORIOS", "VARIOS"];
+function nombreAnuncio(it) {
+  const formato = [it.tipoContenido, it.estilo, it.lugar].filter(Boolean).join(" ");
+  const partes = [it.propuesta || "¿PROPUESTA?", it.linea || "¿CATEGORÍA?", formato || "¿FORMATO?", it.codigo || "¿CÓDIGO?"];
+  if (it.creador) partes.push(it.creador);
+  return partes.join(" | ");
+}
+function nombreAnuncioCompleto(it) { return !!(it.propuesta && it.linea && it.tipoContenido && it.codigo); }
+function copiarNombre(id, btn) {
+  const it = id ? (items[id] || {}) : leerFormNombre();
+  const txt = nombreAnuncio(it);
+  const ok = () => { if (!btn) return; const t = btn.textContent; btn.textContent = "✓ Copiado"; setTimeout(() => { btn.textContent = t; }, 1500); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, () => prompt("Copiá el nombre:", txt));
+  else prompt("Copiá el nombre:", txt);
+}
 // La vieja "Categoría" mezclaba 3 cosas. La migración separa cada valor en su campo:
 const MIG_LINEAS = ["JEANS","REMERAS","TEJIDO","TOPS","BUZOS","CONJUNTO","PANTALON","ACCESORIOS","SWEATERS","BODY","SHORT/MINI","BASICOS"];
 const MIG_ANGULOS = ["NEW IN","BENEFICIO","MAS VENDIDOS","DIFERENCIADO","LOOKS"];
 const MIG_PARAQUE = { "MARKETING / BRANDING": "Confianza" };
 let itemsCargados = false, migrando = false;
+const MIG3_FORMATOS = {
+  "VIDEO PERSONA - CASA": { f: "PERSONA", l: "CASA" }, "VIDEO PERSONA - LOCAL": { f: "PERSONA", l: "LOCAL" },
+  "VIDEO PERSONA - FABRICA": { f: "PERSONA", l: "FABRICA" }, "VIDEO PERSONA - FÁBRICA": { f: "PERSONA", l: "FABRICA" },
+  "VIDEO PERSONA - PRODU": { f: "PERSONA", l: "PRODU" }, "VIDEO PERSONA - ESTUDIO": { f: "PERSONA", l: "ESTUDIO" },
+  "GRÁFICA TEXTO INFORMATIVO": { f: "GRAFICA", e: "TEXTO" }, "GRAFICA TEXTO INFORMATIVO": { f: "GRAFICA", e: "TEXTO" },
+  "GRÁFICA IA/MOCKUP": { f: "GRAFICA", e: "MOCKUP" }, "GRAFICA IA/MOCKUP": { f: "GRAFICA", e: "MOCKUP" },
+  "GRÁFICA": { f: "GRAFICA" }, "GRAFICA": { f: "GRAFICA" },
+  "VIDEO PISO/PERCHA": { f: "VIDEO-PRENDA" }, "FOTO PISO/PERCHA": { f: "FOTO-PRENDA" },
+  "FOTO EXTERIOR": { f: "FOTO-LIFESTYLE", l: "EXTERIOR" }, "VIDEO EXTERIOR": { f: "VIDEO-LIFESTYLE", l: "EXTERIOR" },
+  "VIDEO MOMENTO": { f: "VIDEO-LIFESTYLE" }
+};
+// Ángulos que en realidad eran formato, estilo o propuesta.
+const MIG3_ANGULOS = { "TRY ON": { f: "TRYON" }, "VIDEO PERSONA": { f: "PERSONA" }, "VIDEO LOCAL": { f: "PERSONA", l: "LOCAL" },
+  "YAPPING": { f: "PERSONA" }, "POV": { e: "POV" }, "LOOKS": { p: "LOOK" } };
+const MIG3_LINEAS = { "TEJIDO": "TEJIDOS", "BODY": "BODYS", "PANTALON": "PANTALONES", "SHORT/MINI": "SHORTS-MINIS", "CONJUNTO": "CONJUNTOS",
+  "REMERA": "REMERAS", "TOP": "TOPS", "BUZO": "BUZOS", "SWEATER": "SWEATERS", "JEAN": "JEANS", "SHORTS": "SHORTS-MINIS", "SHORT": "SHORTS-MINIS" };
+let migrando3 = false;
+function tryMigrarV3() {
+  if (migrando3 || !itemsCargados || !listasFlags || !listasFlags._migracionV2 || listasFlags._migracionV3) return;
+  migrando3 = true;
+  const U = {};
+  const norm = x => String(x || "").trim().toUpperCase();
+  Object.entries(items).forEach(([id, it]) => {
+    const base = `items/${id}`;
+    const nuevo = {};
+    // Formato viejo
+    const mf = MIG3_FORMATOS[norm(it.tipoContenido)];
+    if (it.tipoContenido && !FORMATOS.includes(it.tipoContenido)) {
+      U[`${base}/formatoViejo`] = it.tipoContenido;
+      if (mf) { nuevo.tipoContenido = mf.f; if (mf.e) nuevo.estilo = mf.e; if (mf.l) nuevo.lugar = mf.l; }
+      else nuevo.tipoContenido = "";
+    }
+    // Ángulo que era otra cosa
+    const ma = MIG3_ANGULOS[norm(it.angulo)];
+    if (ma) {
+      U[`${base}/anguloViejo`] = it.angulo;
+      nuevo.angulo = "";
+      if (ma.f && !nuevo.tipoContenido && !FORMATOS.includes(it.tipoContenido)) nuevo.tipoContenido = ma.f;
+      if (ma.l && !it.lugar && !nuevo.lugar) nuevo.lugar = ma.l;
+      if (ma.e && !it.estilo && !nuevo.estilo) nuevo.estilo = ma.e;
+      if (ma.p && !it.propuesta) nuevo.propuesta = ma.p;
+    }
+    // Línea: BÁSICOS pasa a propuesta; el resto se renombra al código
+    const ln = norm(it.linea);
+    if (ln === "BASICOS" || ln === "BÁSICOS") { U[`${base}/lineaVieja`] = it.linea; nuevo.linea = ""; if (!it.propuesta && !nuevo.propuesta) nuevo.propuesta = "BAS"; }
+    else if (MIG3_LINEAS[ln]) { U[`${base}/lineaVieja`] = it.linea; nuevo.linea = MIG3_LINEAS[ln]; }
+    else if (it.linea && LINEAS_CODIGOS.includes(ln) && it.linea !== ln) nuevo.linea = ln;
+    Object.entries(nuevo).forEach(([k, v]) => { U[`${base}/${k}`] = v; });
+  });
+  // Listas: formatos = los 10 códigos; líneas = códigos (más las que no se pudieron ubicar); ángulos sin los que se movieron.
+  const fmt = {}; FORMATOS.forEach((f, i) => fmt[`f${i}`] = f);
+  U["listas/tiposContenido"] = fmt;
+  const lin = {}; LINEAS_CODIGOS.forEach((l, i) => lin[`l${i}`] = l);
+  Object.entries(listasRaw.lineas).forEach(([k, v]) => { const n = norm(v); if (n === "BASICOS" || n === "BÁSICOS" || MIG3_LINEAS[n] || LINEAS_CODIGOS.includes(n)) return; lin[k] = v; });
+  U["listas/lineas"] = lin;
+  const ang = {};
+  Object.entries(listasRaw.angulos).forEach(([k, v]) => { if (!MIG3_ANGULOS[norm(v)]) ang[k] = v; });
+  if (!Object.values(ang).some(v => norm(v) === "EDUCACION" || norm(v) === "EDUCACIÓN")) ang.educacion = "EDUCACION";
+  U["listas/angulos"] = ang;
+  U["listas/_migracionV3"] = true;
+  db.ref(ROOT).update(U).catch(e => { migrando3 = false; console.error("Migración V3 falló", e); });
+}
 function tryMigrarV2() {
   if (migrando || !itemsCargados || !listasFlags || listasFlags._migracionV2) return;
   migrando = true;
@@ -789,6 +893,7 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
   renderOptList("tiposContenido");
   renderOptList("tiposCampana");
   tryMigrarV2();
+  tryMigrarV3();
   renderPrendaCheckList();
   renderModalChips();
   // Si estoy en Pauta Ari, refresco para que los selects de tipo de campaña de cada tarjeta usen la lista actualizada.
@@ -949,6 +1054,7 @@ db.ref(`${ROOT}/items`).on("value", snap => {
   itemsCargados = true;
   items = snap.val() || {};
   tryMigrarV2();
+  tryMigrarV3();
   fillCampNombres();
   if (sheetId) renderSheet();
   renderBoardList();
@@ -977,7 +1083,7 @@ function filteredBoardItems() {
       if (fa && it.angulo !== fa) return false;
       if (fc && it.creador !== fc) return false;
       if (fs) {
-        const haystack = [it.producto, it.linea, it.publico, it.angulo, it.creador, it.tipoContenido, it.descripcion, ...(it.prendas || [])]
+        const haystack = [it.producto, it.linea, it.publico, it.angulo, it.creador, it.tipoContenido, it.descripcion, it.propuesta, it.estilo, it.lugar, it.codigo, ...(it.prendas || [])]
           .filter(Boolean).join(" ").toLowerCase();
         if (!haystack.includes(fs)) return false;
       }
@@ -1532,6 +1638,7 @@ function renderCard(it, estado) {
         ${["pautaAri:Pauta Ari", "pautaFede:Pauta Fede", "feed:Feed", "tiktok:TikTok"].map(x => { const [f, l] = x.split(":"); const on = !!it[f];
           return `<span class="board-mini-toggle ${on ? "on" : ""}" onclick="quickToggle('${it.id}','${f}',${!on})">${on ? "✓ " : ""}${l}</span>`; }).join("")}
       </div>
+      <div class="pcard-nombre ${nombreAnuncioCompleto(it) ? "" : "incompleto"}" onclick="event.stopPropagation()"><code>${escapeHtml(nombreAnuncio(it))}</code><button title="Copiar nombre del anuncio" onclick="copiarNombre('${it.id}', this)">Copiar</button></div>
       ${campHtml}
       ${formHtml}
       <div class="pcard-actions" onclick="event.stopPropagation()">
@@ -1629,6 +1736,7 @@ function faltaClasif(it) {
   if (!it.producto || !listas.productos.includes(it.producto)) f.push("Para qué");
   if (!it.publico) f.push("Público");
   if (!it.linea) f.push("Línea");
+  if (!it.propuesta) f.push("Propuesta");
   return f;
 }
 function setCampo(id, campo, val) {
@@ -1644,6 +1752,7 @@ function clasRowsHtml(it, id) {
       <div class="clas-opts">${opts.map(o => `<button class="clas-btn ${it[campo] === o ? "on" : ""}" onclick="event.stopPropagation(); setCampo('${id}','${campo}','${escapeAttr(o)}')">${escapeHtml(o)}</button>`).join("")}</div></div>`;
   };
   return row("producto", "Para qué", listas.productos, true)
+    + row("propuesta", "Propuesta", PROPUESTAS, true)
     + row("publico", "Público", PUBLICOS, true)
     + row("linea", "Línea", listas.lineas, true)
     + row("angulo", "Ángulo", listas.angulos, false);
@@ -1717,24 +1826,40 @@ function fillCampNombres() {
 }
 
 // ---------- Botones del formulario ----------
-const MX_CHIPS = ["f-producto", "f-publico", "f-linea", "f-angulo", "f-creador", "f-tipoContenido"];
+const MX_CHIPS = ["f-producto", "f-propuesta", "f-publico", "f-linea", "f-angulo", "f-creador", "f-tipoContenido", "f-estilo", "f-lugar"];
 function renderModalChips() {
   MX_CHIPS.forEach(selId => {
     const sel = document.getElementById(selId);
     const box = document.getElementById("chips-" + selId);
     if (!sel || !box) return;
-    const opts = [...sel.options].map(o => o.value).filter(Boolean);
+    let opts = [...sel.options].map(o => o.value).filter(Boolean);
+    if (selId === "f-estilo") {
+      const fmt = document.getElementById("f-tipoContenido").value;
+      const permitidos = ESTILOS_POR_FORMATO[fmt];
+      if (permitidos) opts = opts.filter(o => permitidos.includes(o) || o === sel.value);
+      document.getElementById("row-estilo").style.display = (fmt && permitidos && !permitidos.length && !sel.value) ? "none" : "";
+    }
     box.innerHTML = opts.length
       ? opts.map(o => `<button type="button" class="clas-btn ${sel.value === o ? "on" : ""}" onclick="mxPick('${selId}','${escapeAttr(o)}')">${escapeHtml(o)}</button>`).join("")
       : `<div class="mx-empty">Sin opciones — agregalas en "Editar listas".</div>`;
   });
+  const nm = document.getElementById("mx-nombre");
+  if (nm) { const f = leerFormNombre(); nm.textContent = nombreAnuncio(f); nm.classList.toggle("incompleto", !nombreAnuncioCompleto(f)); }
   document.querySelectorAll(".mx-label[data-req]").forEach(l => {
     l.classList.toggle("falta", !document.getElementById(l.dataset.req).value);
   });
 }
+function leerFormNombre() {
+  const v = id => (document.getElementById(id) || {}).value || "";
+  return { propuesta: v("f-propuesta"), linea: v("f-linea"), tipoContenido: v("f-tipoContenido"), estilo: v("f-estilo"), lugar: v("f-lugar"), codigo: v("f-codigo").trim(), creador: v("f-creador") };
+}
 function mxPick(selId, val) {
   const sel = document.getElementById(selId);
   sel.value = sel.value === val ? "" : val;
+  if (selId === "f-tipoContenido") {   // si el estilo elegido no corresponde al formato nuevo, se limpia
+    const est = document.getElementById("f-estilo"), perm = ESTILOS_POR_FORMATO[sel.value];
+    if (perm && est.value && !perm.includes(est.value)) est.value = "";
+  }
   renderModalChips();
 }
 
@@ -1762,6 +1887,10 @@ function openModal(id) {
   document.getElementById("f-producto").value = it.producto || "";
   document.getElementById("f-linea").value = it.linea || "";
   document.getElementById("f-publico").value = it.publico || "";
+  document.getElementById("f-propuesta").value = it.propuesta || "";
+  document.getElementById("f-estilo").value = it.estilo || "";
+  document.getElementById("f-lugar").value = it.lugar || "";
+  document.getElementById("f-codigo").value = it.codigo || "";
   renderOptList("lineas");
   document.getElementById("f-angulo").value = it.angulo || "";
   document.getElementById("f-creador").value = it.creador || "";
@@ -1837,6 +1966,10 @@ async function saveCurrent() {
     producto: document.getElementById("f-producto").value,
     linea: document.getElementById("f-linea").value,
     publico: document.getElementById("f-publico").value,
+    propuesta: document.getElementById("f-propuesta").value,
+    estilo: document.getElementById("f-estilo").value,
+    lugar: document.getElementById("f-lugar").value,
+    codigo: document.getElementById("f-codigo").value.trim(),
     angulo: document.getElementById("f-angulo").value,
     creador: document.getElementById("f-creador").value,
     tipoContenido: document.getElementById("f-tipoContenido").value,
