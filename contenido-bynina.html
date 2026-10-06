@@ -289,7 +289,7 @@
   /* --- Clasificar --- */
   .clas-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
   .clas-count{font-size:13px;color:var(--ink-soft);}
-  .clas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+  .clas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,560px),1fr));gap:14px;}
   .clas-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;gap:12px;flex-wrap:wrap;}
   .clas-card.done{border-color:var(--green);background:#f7fbf8;}
   .clas-photo{width:110px;aspect-ratio:4/5;object-fit:cover;border-radius:10px;background:var(--bg);flex:none;cursor:pointer;display:block;}
@@ -299,8 +299,11 @@
   .clas-state{font-size:11.5px;color:var(--ink-soft);}
   .clas-row-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);margin-bottom:4px;}
   .clas-row-label.falta{color:var(--red);}
-  .clas-opts{display:flex;flex-wrap:wrap;gap:6px;}
-  .clas-btn{min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;}
+  .clas-opts{display:flex;flex-wrap:wrap;gap:5px;}
+  .clas-btn{min-height:30px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+  .clas-body>div{display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:start;}
+  .clas-body>div:first-child{display:block;}
+  .clas-body .clas-row-label{margin:7px 0 0;}
   .clas-btn.on{background:#1e3b2f;color:#fff;border-color:#1e3b2f;}
   .sheet-overlay{position:fixed;inset:0;background:rgba(37,35,31,.5);display:none;align-items:flex-end;justify-content:center;z-index:70;}
   .sheet-overlay.show{display:flex;}
@@ -527,7 +530,7 @@
       <select id="f-angulo" hidden></select>
       <select id="f-creador" hidden></select>
       <select id="f-tipoContenido" hidden></select>
-      <select id="f-propuesta" hidden><option value=""></option><option value="BAS">BAS</option><option value="TEND">TEND</option><option value="LOOK">LOOK</option></select>
+      <select id="f-propuesta" hidden></select>
       <select id="f-estilo" hidden><option value=""></option><option>HABLADO</option><option>MUSICA</option><option>POV</option><option>TEXTO</option><option>MOCKUP</option></select>
       <select id="f-lugar" hidden><option value=""></option><option>CASA</option><option>LOCAL</option><option>FABRICA</option><option>PRODU</option><option>ESTUDIO</option><option>EXTERIOR</option></select>
     </div>
@@ -535,6 +538,7 @@
     <details class="mx-det" id="det-campanas">
       <summary>Campañas</summary>
       <div class="checklist" id="campanas-list"></div>
+      <div id="campanas-chips-modal"></div>
       <div class="mx-campadd">
         <select id="f-campTipo" aria-label="Tipo de campaña"></select>
         <input type="text" id="f-campNombre" list="camp-nombres" placeholder="Nombre (elegí o escribí)">
@@ -572,6 +576,9 @@
       <div class="field"><label>Ángulo</label><div class="optlist" id="optlist-angulos"></div><div class="newopt"><input type="text" id="new-angulo" placeholder="Nuevo ángulo"><button class="btn btn-ghost btn-sm" onclick="addOption('angulos','new-angulo','f-angulo')">Agregar</button></div></div>
       <div class="field"><label>Creador</label><div class="optlist" id="optlist-creadores"></div><div class="newopt"><input type="text" id="new-creador" placeholder="Nuevo creador"><button class="btn btn-ghost btn-sm" onclick="addOption('creadores','new-creador','f-creador')">Agregar</button></div></div>
       <div class="field"><label>Formato</label><div class="optlist" id="optlist-tiposContenido"></div><div class="newopt"><input type="text" id="new-tipoContenido" placeholder="Nuevo formato"><button class="btn btn-ghost btn-sm" onclick="addOption('tiposContenido','new-tipoContenido','f-tipoContenido')">Agregar</button></div></div>
+      <div class="field" id="adm-propuestas"><label>Propuesta (solo Ariel)</label><div class="optlist" id="optlist-propuestas"></div><div class="newopt"><input type="text" id="new-propuesta" placeholder="Nueva propuesta (ej: PROMO)"><button class="btn btn-ghost btn-sm" onclick="addOption('propuestas','new-propuesta','f-propuesta')">Agregar</button></div></div>
+      <div class="field" id="adm-campanas"><label>Campañas (solo Ariel) — aparecen como botones para cargar con un toque</label><div id="campanas-admin"></div>
+        <div class="newopt" style="flex-wrap:wrap"><select id="new-camp-tipo" style="padding:9px;border:1px solid var(--line);border-radius:8px"></select><input type="text" id="new-camp-nombre" placeholder="Nombre de la campaña"><button class="btn btn-ghost btn-sm" onclick="addCampanaLista()">Agregar</button></div></div>
       <div class="field"><label>Tipo de campaña</label><div class="optlist" id="optlist-tiposCampana"></div><div class="newopt"><input type="text" id="new-tiposCampana" placeholder="Nuevo tipo"><button class="btn btn-ghost btn-sm" onclick="addOption('tiposCampana','new-tiposCampana','f-campTipo')">Agregar</button></div></div>
       <div class="field"><label>Productos</label><div class="optlist" id="optlist-prendas"></div></div>
     </details>
@@ -628,7 +635,8 @@ db.ref(".info/connected").on("value", snap => {
 });
 
 let items = {};
-let listas = { productos: [], angulos: [], creadores: [], tiposContenido: [], prendas: [], tiposCampana: [], lineas: [] };
+let listas = { productos: [], angulos: [], creadores: [], tiposContenido: [], prendas: [], tiposCampana: [], lineas: [], propuestas: [] };
+let campanasLista = {};   // listas/campanas: {id: {nombre, tipo}} — las administra Ariel
 let currentId = null;
 let currentPrendas = [];
 let currentThumbFile = null;
@@ -690,13 +698,15 @@ function logAction(action, data) {
 })();
 
 // Listas editables (categoría, ángulo, creador, tipo de contenido, prendas mostradas).
-let listasRaw = { productos: {}, angulos: {}, creadores: {}, tiposContenido: {}, prendas: {}, tiposCampana: {}, lineas: {} };
+let listasRaw = { productos: {}, angulos: {}, creadores: {}, tiposContenido: {}, prendas: {}, tiposCampana: {}, lineas: {}, propuestas: {} };
 let listasFlags = null;
 const DEFAULT_TIPOS = ["Video Persona - Casa", "Video Persona - Local", "Gráfica Texto Informativo", "Video Piso/Percha"];
 const DEFAULT_TIPOS_CAMPANA = ["TOFU", "ADV+", "ABO", "CBO"];
 const PARA_QUE_DEFAULT = ["Vender", "Captar mayoristas", "Atraer", "Confianza"];
 // ---- Nomenclatura de pauta (ver doc "Nomenclatura de pauta Meta — By Nina") ----
-const PROPUESTAS = ["BAS", "TEND", "LOOK"];
+const PROPUESTAS_DEFAULT = ["BAS", "TEND", "LOOK"];
+function propuestasLista() { return listas.propuestas && listas.propuestas.length ? listas.propuestas : PROPUESTAS_DEFAULT; }
+const esAriel = () => persona === "ari";
 const PROPUESTA_LABEL = { BAS: "Básico", TEND: "Tendencia", LOOK: "Look" };
 const FORMATOS = ["TRYON", "PERSONA", "HAUL", "VIDEO-ESPEJO", "FOTO-ESPEJO", "VIDEO-PRENDA", "FOTO-PRENDA", "VIDEO-LIFESTYLE", "FOTO-LIFESTYLE", "GRAFICA"];
 const ESTILOS = ["HABLADO", "MUSICA", "POV", "TEXTO", "MOCKUP"];
@@ -850,6 +860,13 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
   listasRaw.prendas = v.prendas || {};
   listasRaw.tiposCampana = v.tiposCampana || {};
   listasRaw.lineas = v.lineas || {};
+  listasRaw.propuestas = v.propuestas || {};
+  campanasLista = v.campanas || {};
+  // primera vez: la lista de propuestas arranca con BAS / TEND / LOOK (después la edita Ariel)
+  if (esAriel() && !v.propuestas && !v._propuestasSeed) {
+    const ini = {}; PROPUESTAS_DEFAULT.forEach((x, i) => ini["p" + i] = x);
+    db.ref(`${ROOT}/listas`).update({ propuestas: ini, _propuestasSeed: true });
+  }
   listasFlags = v;
 
   // Siembra los 4 tipos de contenido conocidos una sola vez, si la lista está vacía y nunca se sembró.
@@ -870,6 +887,10 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
   listas.prendas = Object.values(listasRaw.prendas);
   listas.tiposCampana = Object.values(listasRaw.tiposCampana);
   listas.lineas = Object.values(listasRaw.lineas);
+  listas.propuestas = Object.values(listasRaw.propuestas);
+  fillSelect("f-propuesta", listas.propuestas.length ? listas.propuestas : PROPUESTAS_DEFAULT, true);
+  renderOptList("propuestas");
+  renderCampanasAdmin();
   fillSelect("f-linea", listas.lineas);
   fillFilterSelect("pauta-filter-linea", listas.lineas, "Línea: todas");
   fillFilterSelect("camp-filter-linea", listas.lineas, "Línea: todas");
@@ -973,6 +994,7 @@ function removeOption(kind, key) {
 const KIND_SELECT = {
   productos: "f-producto",
   lineas: "f-linea",
+  propuestas: "f-propuesta",
   angulos: "f-angulo",
   creadores: "f-creador",
   tiposContenido: "f-tipoContenido",
@@ -985,6 +1007,50 @@ function selectOption(kind, val) {
   document.getElementById(selectId).value = val;
   renderOptList(kind);
   renderModalChips();
+}
+
+// ---- Campañas administradas por Ariel: se cargan en una pieza con un toque ----
+function campanasOrdenadas() { return Object.entries(campanasLista).filter(([, c]) => c && c.nombre && !c.archivada).sort((a, b) => (b[1].creadoEn || 0) - (a[1].creadoEn || 0)); }
+function renderCampanasAdmin() {
+  const box = document.getElementById("campanas-admin");
+  const pr = document.getElementById("adm-propuestas"), ca = document.getElementById("adm-campanas");
+  if (pr) pr.style.display = esAriel() ? "" : "none";
+  if (ca) ca.style.display = esAriel() ? "" : "none";
+  const sel = document.getElementById("new-camp-tipo");
+  if (sel) sel.innerHTML = `<option value="">Tipo…</option>` + listas.tiposCampana.map(t => `<option>${escapeHtml(t)}</option>`).join("");
+  if (!box) return;
+  const arr = campanasOrdenadas();
+  box.innerHTML = arr.length ? `<div class="optlist">${arr.map(([id, c]) => `<span class="optchip">${c.tipo ? escapeHtml(c.tipo) + " · " : ""}${escapeHtml(c.nombre)}<button onclick="borrarCampanaLista('${id}')" title="Sacar de la lista">×</button></span>`).join("")}</div>` : `<div class="empty-col" style="padding:6px 0">Todavía no hay campañas en la lista.</div>`;
+}
+function addCampanaLista() {
+  if (!esAriel()) return;
+  const nombre = document.getElementById("new-camp-nombre").value.trim();
+  const tipo = document.getElementById("new-camp-tipo").value;
+  if (!nombre) { alert("Escribí el nombre de la campaña."); return; }
+  db.ref(`${ROOT}/listas/campanas`).push({ nombre, tipo, creadoEn: Date.now() });
+  document.getElementById("new-camp-nombre").value = "";
+}
+function borrarCampanaLista(id) {
+  if (!esAriel()) return;
+  const c = campanasLista[id]; if (!c) return;
+  if (!confirm(`¿Sacar "${c.nombre}" de la lista? Las piezas que ya la tienen cargada no cambian.`)) return;
+  db.ref(`${ROOT}/listas/campanas/${id}`).remove();
+}
+// Botones de campañas para cargar con un toque (en la tarjeta de pauta y en Editar pieza)
+function chipsCampanasHtml(itemId) {
+  const arr = campanasOrdenadas();
+  if (!arr.length) return "";
+  const it = items[itemId] || {};
+  const yaTiene = new Set(Object.values(it.campanas || {}).map(c => (c.tipo || "") + "||" + (c.nombre || "")));
+  return `<div class="camp-chips" onclick="event.stopPropagation()" style="display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 6px">${arr.map(([cid, c]) => {
+    const ya = yaTiene.has((c.tipo || "") + "||" + c.nombre);
+    return `<button type="button" class="clas-btn ${ya ? "on" : ""}" ${ya ? "disabled" : ""} onclick="cargarCampanaRapida('${itemId}','${cid}')">${ya ? "✓ " : "+ "}${c.tipo ? escapeHtml(c.tipo) + " · " : ""}${escapeHtml(c.nombre)}</button>`;
+  }).join("")}</div>`;
+}
+function cargarCampanaRapida(itemId, cid) {
+  const c = campanasLista[cid]; if (!c) return;
+  const hoy = new Date(); const f = hoy.getFullYear() + "-" + String(hoy.getMonth() + 1).padStart(2, "0") + "-" + String(hoy.getDate()).padStart(2, "0");
+  addCampana(itemId, c.tipo || (listas.tiposCampana[0] || "CBO"), c.nombre, f);
 }
 
 function renderOptList(kind) {
@@ -1064,6 +1130,7 @@ db.ref(`${ROOT}/items`).on("value", snap => {
   if (currentView === "clas") renderClasificar();
   if (currentId && document.getElementById("overlay").classList.contains("show")) {
     renderCampanasList(currentId, "campanas-list");
+    const cm = document.getElementById("campanas-chips-modal"); if (cm) cm.innerHTML = chipsCampanasHtml(currentId);
   }
 });
 
@@ -1612,6 +1679,7 @@ function renderCard(it, estado) {
   const formAbierto = pautaFormsAbiertos.has(it.id);
   const tipoOptions = `<option value="">Tipo…</option>` + listas.tiposCampana.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
   const formHtml = formAbierto ? `
+    ${chipsCampanasHtml(it.id)}
     <div class="camp-quickadd" onclick="event.stopPropagation()" style="margin-top:0;">
       <select id="camp-tipo-${it.id}">${tipoOptions}</select>
       <input type="text" id="camp-nombre-${it.id}" list="camp-nombres" placeholder="Nombre campaña (elegí o escribí)">
@@ -1755,7 +1823,7 @@ function clasRowsHtml(it, id) {
       <div class="clas-opts">${opts.map(o => `<button class="clas-btn ${it[campo] === o ? "on" : ""}" onclick="event.stopPropagation(); setCampo('${id}','${campo}','${escapeAttr(o)}')">${escapeHtml(o)}</button>`).join("")}</div></div>`;
   };
   return row("producto", "Para qué", listas.productos, true)
-    + row("propuesta", "Propuesta", PROPUESTAS, true)
+    + row("propuesta", "Propuesta", propuestasLista(), true)
     + row("publico", "Público", PUBLICOS, true)
     + row("linea", "Línea", listas.lineas, true)
     + row("tipoContenido", "Formato", FORMATOS, true)
@@ -1883,6 +1951,7 @@ function openModal(id) {
 
   fillSelect("f-producto", listas.productos, true);
   fillSelect("f-linea", listas.lineas, true);
+  fillSelect("f-propuesta", propuestasLista(), true);
   fillSelect("f-angulo", listas.angulos, true);
   fillSelect("f-creador", listas.creadores, true);
   fillSelect("f-tipoContenido", listas.tiposContenido, true);
@@ -1928,6 +1997,7 @@ function openModal(id) {
   document.getElementById("f-campNombre").value = "";
   document.getElementById("f-campFecha").value = "";
   renderCampanasList(id, "campanas-list");
+  document.getElementById("campanas-chips-modal").innerHTML = id ? chipsCampanasHtml(id) : "";
   document.getElementById("prenda-search").value = "";
   renderPrendaCheckList();
   document.getElementById("mx-name").textContent = id ? (nombrePieza(it) || "Sin producto") : "";
