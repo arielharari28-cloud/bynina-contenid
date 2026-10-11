@@ -343,6 +343,68 @@
   .mx-det summary::-webkit-details-marker{display:none;}
   .mx-det summary::after{content:"＋";color:var(--ink-soft);font-weight:400;}
   .mx-det[open] summary::after{content:"－";}
+  /* --- Formatos y ángulos (guía + listas editables) --- */
+  .mx-desc{font-size:12px;color:var(--ink-soft);margin-top:5px;line-height:1.4;}
+  .mx-antes{font-size:11.5px;color:var(--ink-soft);background:var(--bg);border-radius:8px;padding:6px 10px;}
+  .g-wrap{display:flex;flex-direction:column;gap:14px;max-width:760px;}
+  .g-panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;}
+  .g-panel h3{font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;margin:0;color:#1e3b2f;}
+  .g-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+  .g-pasos{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:13.5px;}
+  .g-nota{font-size:13px;background:var(--green-soft);border-radius:10px;padding:10px 12px;line-height:1.45;}
+  .g-nota code,.g-panel code{font-size:12px;background:var(--bg);border-radius:6px;padding:2px 6px;word-break:break-all;}
+  .g-item{display:flex;flex-direction:column;gap:4px;padding:10px 0;border-top:1px solid var(--line);}
+  .g-item:first-of-type{border-top:none;}
+  .g-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .g-nom{font-weight:600;font-size:14px;}
+  .g-desc{font-size:13px;color:var(--ink);line-height:1.45;}
+  .g-cod{font-size:11px;font-weight:700;letter-spacing:.04em;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:var(--ink-soft);}
+  .g-pill{font-size:11px;font-weight:600;border-radius:999px;padding:2px 9px;background:var(--blue-soft);color:var(--blue);}
+  .g-pill.vp{background:var(--amber-soft);color:var(--amber);}
+  .g-pill.any{background:var(--rust-soft);color:var(--rust);}
+  .g-uso{font-size:11px;color:var(--ink-soft);}
+  .g-in{padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;background:#fff;color:var(--ink);min-width:0;}
+  .g-in.nom{flex:1 1 160px;font-weight:600;}
+  .g-in.cod{width:96px;text-transform:uppercase;}
+  .g-in.desc{width:100%;}
+  .g-add{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding-top:10px;border-top:1px dashed var(--line);}
+  .g-err{font-size:12px;color:var(--red);width:100%;}
+  .cs-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px;}
+  .cs-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;}
+  .cs-tile b{font-family:'Poppins',sans-serif;font-size:22px;font-variant-numeric:tabular-nums;}
+  .cs-tile span{font-size:12px;color:var(--ink-soft);}
+  .cs-tile.alert{background:var(--red-soft);border-color:var(--red);color:var(--red);}
+  .cs-tile.alert span{color:var(--red);}
+  .cs-camp{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px;}
+  .cs-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:6px;}
+  .cs-name{font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;}
+  .cs-meta{font-size:12px;color:var(--ink-soft);}
+  .cs-set{border-top:1px solid var(--line);}
+  .cs-set>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:11px 2px;min-height:46px;}
+  .cs-set>summary::-webkit-details-marker{display:none;}
+  .cs-sname{font-weight:700;font-size:14px;}
+  .cs-sname small{display:block;font-weight:500;font-size:12px;color:var(--ink-soft);}
+  .cs-dots{display:flex;gap:4px;align-items:center;}
+  .cs-dots i{width:12px;height:12px;border-radius:50%;background:var(--line);}
+  .cs-dots i.p{background:#1e3b2f;} .cs-dots i.l{background:#6fae8a;} .cs-dots i.e{background:#d9b25a;}
+  .cs-dots em{font-style:normal;font-size:11px;color:var(--ink-soft);margin-left:2px;}
+  .cs-flecha{color:var(--ink-soft);font-size:18px;transition:transform .15s;}
+  .cs-set[open] .cs-flecha{transform:rotate(90deg);}
+  .cs-est{display:inline-block;margin-top:3px;font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px;}
+  .cs-est.ok{background:var(--green-soft);color:var(--green);}
+  .cs-est.falta{background:var(--red-soft);color:var(--red);}
+  .cs-est.proc{background:var(--amber-soft);color:var(--amber);}
+  .cs-body{padding:2px 0 14px;display:flex;flex-direction:column;gap:12px;}
+  .cs-gtit{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:7px;}
+  .cs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
+  .cs-pz{cursor:pointer;display:flex;flex-direction:column;gap:3px;min-width:0;}
+  .cs-photo{position:relative;}
+  .cs-badge{position:absolute;top:6px;right:6px;font-size:10.5px;font-weight:700;border-radius:999px;padding:2px 7px;background:rgba(255,255,255,.93);color:var(--ink);}
+  .cs-pz b{font-size:12.5px;}
+  .cs-pz small{font-size:11.5px;color:var(--ink-soft);line-height:1.3;}
+  .cs-pedir{border:1px dashed var(--red);border-radius:10px;aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;font-weight:600;color:var(--red);padding:8px;}
+  .cs-conj{display:flex;flex-wrap:wrap;gap:5px;padding:4px 0 10px;}
+  .g-ocultos summary{cursor:pointer;font-size:12px;color:var(--ink-soft);padding-top:8px;}
   .mx-det[open] summary{margin-bottom:10px;}
   .mx-det .two-col{grid-template-columns:1fr 1fr;}
   .mx-campadd{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
@@ -374,6 +436,7 @@
       <button class="btn btn-ghost btn-sm" id="tab-pauta" onclick="setView('pauta')">Pauta Ari</button>
       <button class="btn btn-ghost btn-sm" id="tab-camp" onclick="setView('camp')">Por campaña</button>
       <button class="btn btn-ghost btn-sm" id="tab-clas" onclick="setView('clas')">Clasificar</button>
+      <button class="btn btn-ghost btn-sm" id="tab-guia" onclick="setView('guia')">Formatos y ángulos</button>
     </div>
     <button class="btn btn-primary" onclick="openModal(null)">+ Nueva pieza</button>
   </div>
@@ -422,8 +485,12 @@
     <div class="clas-grid" id="clas-list"></div>
   </div>
 
+  <div id="view-guia" style="display:none;">
+    <div class="g-wrap" id="guia-wrap"></div>
+  </div>
+
   <div id="view-camp" style="display:none;">
-    <div class="camp-toolbar">
+    <div class="camp-toolbar" style="display:none">
       <select id="camp-filter-quien" onchange="renderPorCampana()">
         <option value="">Ari y Fede</option>
         <option value="ari">Solo Pauta Ari</option>
@@ -504,26 +571,28 @@
     </div>
 
     <div class="mx-sec">
+      <div class="mx-row"><div class="mx-label">Va para la campaña</div><div class="clas-opts" id="chips-f-campanaDestino"></div><input type="hidden" id="f-campanaDestino"></div>
       <div class="mx-nombre" id="mx-nombre-wrap">
         <div class="mx-label">Nombre del anuncio</div>
         <div class="mx-nombre-row"><code id="mx-nombre"></code><button type="button" class="btn btn-ghost btn-sm" onclick="copiarNombre(null, this)">Copiar</button></div>
       </div>
-      <div class="mx-row"><div class="mx-label" data-req="f-producto">Para qué</div><div class="clas-opts" id="chips-f-producto"></div></div>
-      <div class="mx-row"><div class="mx-label" data-req="f-propuesta">Propuesta</div><div class="clas-opts" id="chips-f-propuesta"></div></div>
-      <div class="mx-row"><div class="mx-label" data-req="f-publico">Público</div><div class="clas-opts" id="chips-f-publico"></div></div>
+      <div class="mx-antes" id="mx-antes" hidden></div>
+      <div class="mx-row" hidden><div class="mx-label">Para qué</div><div class="clas-opts" id="chips-f-producto"></div></div>
+      <div class="mx-row" hidden><div class="mx-label">Público</div><div class="clas-opts" id="chips-f-publico"></div></div>
       <div class="mx-row"><div class="mx-label" data-req="f-linea">Línea</div><div class="clas-opts" id="chips-f-linea"></div></div>
-      <div class="mx-row">
+      <div class="mx-row" hidden>
         <div class="mx-label">Productos</div>
         <div id="check-prendas"></div>
         <input type="text" id="prenda-search" class="mx-search" placeholder="Buscar producto para sumar…" oninput="renderPrendaCheckList()">
         <div id="prenda-results" class="mx-results"></div>
         <input type="hidden" id="new-prenda">
       </div>
-      <div class="mx-row"><div class="mx-label">Creador</div><div class="clas-opts" id="chips-f-creador"></div></div>
-      <div class="mx-row"><div class="mx-label" data-req="f-tipoContenido">Formato</div><div class="clas-opts" id="chips-f-tipoContenido"></div></div>
-      <div class="mx-row" id="row-estilo"><div class="mx-label">Estilo</div><div class="clas-opts" id="chips-f-estilo"></div></div>
-      <div class="mx-row"><div class="mx-label">Lugar</div><div class="clas-opts" id="chips-f-lugar"></div></div>
       <div class="mx-row"><div class="mx-label">Código del artículo</div><input type="text" id="f-codigo" class="mx-search" style="margin-top:0;" placeholder="Ej: 4727 (si es un look: VARIOS)" oninput="renderModalChips()"></div>
+      <div class="mx-row"><div class="mx-label" data-req="f-anguloCod">Ángulo</div><div class="clas-opts" id="chips-f-anguloCod"></div><div class="mx-desc" id="help-f-anguloCod" hidden></div></div>
+      <div class="mx-row"><div class="mx-label" data-req="f-cantProd">Productos en el video</div><div class="clas-opts" id="chips-f-cantProd"></div></div>
+      <div class="mx-row"><div class="mx-label" data-req="f-formatoCod">Formato</div><div class="clas-opts" id="chips-f-formatoCod"></div><div class="mx-desc" id="help-f-formatoCod" hidden></div></div>
+      <div class="mx-row"><div class="mx-label" data-req="f-creadoraCod">Creadora</div><div class="clas-opts" id="chips-f-creadoraCod"></div></div>
+      <input type="hidden" id="f-anguloCod"><input type="hidden" id="f-cantProd"><input type="hidden" id="f-formatoCod"><input type="hidden" id="f-creadoraCod">
       <select id="f-producto" hidden></select>
       <select id="f-publico" hidden><option value="">—</option><option value="Minorista">Minorista</option><option value="Mayorista">Mayorista</option><option value="Ambos">Ambos</option></select>
       <select id="f-linea" hidden></select>
@@ -549,7 +618,6 @@
 
     <details class="mx-det">
       <summary>Contenido e idea</summary>
-      <div class="field"><label>Ángulo (opcional)</label><div class="clas-opts" id="chips-f-angulo"></div></div>
       <div class="field"><label>Gancho / Hook</label><textarea id="f-gancho" placeholder="La frase o idea puntual del video"></textarea></div>
       <div class="field"><label>Descripción del video</label><textarea id="f-descripcion" placeholder="Qué muestra el video ya hecho"></textarea></div>
       <div class="field"><label>Link a Drive</label><input type="text" id="f-drive" placeholder="https://drive.google.com/..."></div>
@@ -573,10 +641,7 @@
       <div class="mx-help">Agregá o borrá opciones. Borrar una opción no cambia las piezas que ya la usan.</div>
       <div class="field"><label>Para qué</label><div class="optlist" id="optlist-productos"></div><div class="newopt"><input type="text" id="new-producto" placeholder="Nueva opción"><button class="btn btn-ghost btn-sm" onclick="addOption('productos','new-producto','f-producto')">Agregar</button></div></div>
       <div class="field"><label>Línea</label><div class="optlist" id="optlist-lineas"></div><div class="newopt"><input type="text" id="new-linea" placeholder="Nueva línea"><button class="btn btn-ghost btn-sm" onclick="addOption('lineas','new-linea','f-linea')">Agregar</button></div></div>
-      <div class="field"><label>Ángulo</label><div class="optlist" id="optlist-angulos"></div><div class="newopt"><input type="text" id="new-angulo" placeholder="Nuevo ángulo"><button class="btn btn-ghost btn-sm" onclick="addOption('angulos','new-angulo','f-angulo')">Agregar</button></div></div>
-      <div class="field"><label>Creador</label><div class="optlist" id="optlist-creadores"></div><div class="newopt"><input type="text" id="new-creador" placeholder="Nuevo creador"><button class="btn btn-ghost btn-sm" onclick="addOption('creadores','new-creador','f-creador')">Agregar</button></div></div>
-      <div class="field"><label>Formato</label><div class="optlist" id="optlist-tiposContenido"></div><div class="newopt"><input type="text" id="new-tipoContenido" placeholder="Nuevo formato"><button class="btn btn-ghost btn-sm" onclick="addOption('tiposContenido','new-tipoContenido','f-tipoContenido')">Agregar</button></div></div>
-      <div class="field" id="adm-propuestas"><label>Propuesta (solo Ariel)</label><div class="optlist" id="optlist-propuestas"></div><div class="newopt"><input type="text" id="new-propuesta" placeholder="Nueva propuesta (ej: PROMO)"><button class="btn btn-ghost btn-sm" onclick="addOption('propuestas','new-propuesta','f-propuesta')">Agregar</button></div></div>
+      <div class="mx-help">Ángulos, formatos y creadoras se editan en la pestaña <b>Formatos y ángulos</b>.</div>
       <div class="field" id="adm-campanas"><label>Campañas (solo Ariel) — aparecen como botones para cargar con un toque</label><div id="campanas-admin"></div>
         <div class="newopt" style="flex-wrap:wrap"><select id="new-camp-tipo" style="padding:9px;border:1px solid var(--line);border-radius:8px"></select><input type="text" id="new-camp-nombre" placeholder="Nombre de la campaña"><button class="btn btn-ghost btn-sm" onclick="addCampanaLista()">Agregar</button></div></div>
       <div class="field"><label>Tipo de campaña</label><div class="optlist" id="optlist-tiposCampana"></div><div class="newopt"><input type="text" id="new-tiposCampana" placeholder="Nuevo tipo"><button class="btn btn-ghost btn-sm" onclick="addOption('tiposCampana','new-tiposCampana','f-campTipo')">Agregar</button></div></div>
@@ -715,13 +780,74 @@ const LUGARES = ["CASA", "LOCAL", "FABRICA", "PRODU", "ESTUDIO", "EXTERIOR"];
 const ESTILOS_POR_FORMATO = { "TRYON": ["MUSICA", "HABLADO"], "PERSONA": [], "HAUL": ["HABLADO", "MUSICA"], "VIDEO-ESPEJO": ["HABLADO", "MUSICA"], "FOTO-ESPEJO": [],
   "VIDEO-PRENDA": ["HABLADO", "MUSICA", "POV"], "FOTO-PRENDA": [], "VIDEO-LIFESTYLE": ["HABLADO", "MUSICA", "POV"], "FOTO-LIFESTYLE": [], "GRAFICA": ["TEXTO", "MOCKUP"] };
 const LINEAS_CODIGOS = ["REMERAS", "TOPS", "BODYS", "BUZOS", "SWEATERS", "TEJIDOS", "JEANS", "PANTALONES", "SHORTS-MINIS", "CONJUNTOS", "ACCESORIOS", "VARIOS"];
-function nombreAnuncio(it) {
-  const formato = [it.tipoContenido, it.estilo, it.lugar].filter(Boolean).join(" ");
-  const partes = [it.propuesta || "¿PROPUESTA?", it.linea || "¿CATEGORÍA?", formato || "¿FORMATO?", it.codigo || "¿CÓDIGO?"];
-  if (it.creador) partes.push(it.creador);
-  return partes.join(" | ");
+// ---- Clasificación nueva (oct 2026): Producto → Ángulo → Formato → Creadora ----
+// Cada pieza guarda el CÓDIGO de formato, ángulo y creadora (formatoCod, anguloCod, creadoraCod)
+// y cuántos productos muestra (cantProd: 1P / VP). Nombres y explicaciones se editan en la pestaña
+// "Formatos y ángulos" sin tocar código. Los campos de la clasificación anterior (tipoContenido,
+// estilo, lugar, propuesta, angulo) NO se borran: quedan guardados y se muestran como "Antes".
+const CANT_LABEL = { "1P": "1 producto", "VP": "Varios productos", "": "1 o varios" };
+const CLS_SEED = {
+  formatos: [
+    ["PROB", "Probador", "Te probás la prenda frente al espejo. Que se vea cómo calza, cómo cae y cómo se mueve. Decí tu talle y tu altura."],
+    ["OUTF", "1 prenda x outfits", "Una misma prenda combinada de 3 o 4 formas distintas, con cortes rápidos."],
+    ["FIT", "Fit check", "El look completo de pies a cabeza, en un plano. Mostrás qué tenés puesto prenda por prenda."],
+    ["COMEN", "Reaccionando comentarios", "Respondés en video una duda real de una clienta, con el comentario en pantalla. Ej: ¿qué talle me llevo si uso 40 de jean?"],
+    ["RESEN", "Imagen review", "Captura de un mensaje o reseña real de una clienta, con la prenda al lado."],
+    ["PISO", "Piso múltiple", "Varias prendas en el piso o en percha, sin persona. Para mostrar variedad o un pedido armado."],
+    ["EMPAQ", "Empaquetado", "Cómo se arma y se despacha un pedido mayorista, de principio a fin."],
+    ["LOCAL", "Visita local", "Recorrida por el local de Avellaneda: percheros, probadores, movimiento."]
+  ],
+  angulos: [
+    ["CALCE", "Calce", "Cómo me va a quedar a mí. Talles, medidas y cuerpos reales.", "1P"],
+    ["COMBI", "Combinación", "Una prenda, muchos usos. Todo lo que se puede armar.", "VP"],
+    ["TEND", "Tendencia", "Lo que se está usando ahora.", "1P"],
+    ["BASIC", "Básico", "El que no puede faltar y siempre se vende.", "1P"],
+    ["BENEF", "Beneficio", "Envío en el día en CABA y GBA, mínimo de $70.000, cuotas.", ""],
+    ["REVTA", "Reventa", "Rotación, margen y cómo se vende en el local. Solo para mayorista.", "VP"]
+  ],
+  creadoras: [["CARO", "Caro"], ["MEL", "Mel"], ["VALEN", "Valen"], ["STEF", "Stef"], ["MAR", "Mar"], ["LARA", "Lara"], ["CANDE", "Cande"]]
+};
+const CLS_CAMPO = { formatos: "formatoCod", angulos: "anguloCod", creadoras: "creadoraCod" };
+let clsRaw = { formatos: {}, angulos: {}, creadoras: {} };
+let guiaEditando = false;
+function clsList(tipo, archivados) {
+  return Object.entries(clsRaw[tipo] || {}).map(([key, e]) => ({ key, ...e }))
+    .filter(e => e.codigo && (archivados ? e.archivado : !e.archivado))
+    .sort((a, b) => (a.orden ?? 999) - (b.orden ?? 999) || String(a.nombre).localeCompare(String(b.nombre), "es"));
 }
-function nombreAnuncioCompleto(it) { return !!(it.propuesta && it.linea && it.tipoContenido && it.codigo); }
+function clsByCod(tipo, cod) {
+  if (!cod) return null;
+  const e = Object.values(clsRaw[tipo] || {}).find(x => x && x.codigo === cod);
+  return e || null;
+}
+function clsNombre(tipo, cod) { const e = clsByCod(tipo, cod); return e ? e.nombre : (cod || ""); }
+// La creadora: el código nuevo, o si la pieza es vieja, la que coincide con el nombre del campo "creador".
+function creCodDe(it) {
+  if (it.creadoraCod) return it.creadoraCod;
+  const n = String(it.creador || "").trim().toLowerCase();
+  if (!n) return "";
+  const e = Object.values(clsRaw.creadoras || {}).find(x => x && String(x.nombre).trim().toLowerCase() === n);
+  return e ? e.codigo : "";
+}
+function angTxt(it) { return it.anguloCod ? clsNombre("angulos", it.anguloCod) : (it.angulo || ""); }
+function fmtTxt(it) { return it.formatoCod ? clsNombre("formatos", it.formatoCod) : ""; }
+function creTxt(it) { const c = creCodDe(it); return c ? clsNombre("creadoras", c) : (it.creador || ""); }
+function sinTildes(s) { return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+function normCod(s) { return sinTildes(s).toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+function slugProd(s) { return sinTildes(s).trim().replace(/[\s_]+/g, "-").replace(/[^A-Za-z0-9-]/g, ""); }
+function usosCod(tipo, cod) {
+  const campo = CLS_CAMPO[tipo];
+  return Object.values(items).filter(it => it && it[campo] === cod).length;
+}
+function nombreAnuncio(it) {
+  return [it.formatoCod || "¿FORMATO?", it.anguloCod || "¿ANGULO?", it.cantProd || "¿1P-VP?", creCodDe(it) || "¿CREADORA?", slugProd(it.codigo) || "¿PRODUCTO?"].join("_");
+}
+function nombreAnuncioCompleto(it) { return !!(it.formatoCod && it.anguloCod && it.cantProd && creCodDe(it) && slugProd(it.codigo)); }
+function antesTxt(it) {
+  const p = [it.tipoContenido, it.estilo, it.lugar, it.propuesta].filter(Boolean);
+  if (it.angulo && !it.anguloCod) p.push("ángulo " + it.angulo);
+  return p.length ? "Clasificación anterior: " + p.join(" · ") : "";
+}
 function copiarNombre(id, btn) {
   const it = id ? (items[id] || {}) : leerFormNombre();
   const txt = nombreAnuncio(it);
@@ -902,12 +1028,8 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
   fillSelect("f-tipoContenido", listas.tiposContenido);
   fillSelect("f-campTipo", listas.tiposCampana);
   fillFilterSelect("filter-categoria", listas.productos, "Para qué: todos");
-  fillFilterSelect("filter-angulo", listas.angulos, "Todos los ángulos");
-  fillFilterSelect("filter-creador", listas.creadores, "Todos los creadores");
   fillFilterSelect("pauta-filter-categoria", listas.productos, "Para qué: todos");
   fillFilterSelect("camp-filter-paraque", listas.productos, "Para qué: todos");
-  fillFilterSelect("pauta-filter-angulo", listas.angulos, "Todos los ángulos");
-  fillFilterSelect("pauta-filter-creador", listas.creadores, "Todos los creadores");
   renderOptList("productos");
   renderOptList("angulos");
   renderOptList("creadores");
@@ -940,6 +1062,35 @@ function fillSelect(id, opts, includeBlank) {
   });
   if (opts.includes(prev)) sel.value = prev;
 }
+
+// ---- Listas de formatos, ángulos y creadoras (las edita Ariel desde la pestaña "Formatos y ángulos") ----
+db.ref(`${ROOT}/clasif`).on("value", snap => {
+  const v = snap.val() || {};
+  if (!v._seed && esAriel()) {   // primera vez: se cargan las listas que definimos
+    const U = { _seed: true };
+    Object.entries(CLS_SEED).forEach(([tipo, arr]) => arr.forEach((r, i) => {
+      const e = { codigo: r[0], nombre: r[1], orden: i };
+      if (r[2]) e.desc = r[2];
+      if (tipo === "angulos") e.cant = r[3] || "";
+      U[`${tipo}/${r[0].toLowerCase()}`] = e;
+    }));
+    db.ref(`${ROOT}/clasif`).update(U);
+    return;
+  }
+  clsRaw = { formatos: v.formatos || {}, angulos: v.angulos || {}, creadoras: v.creadoras || {} };
+  const angs = clsList("angulos").map(e => e.nombre), cres = clsList("creadoras").map(e => e.nombre);
+  fillFilterSelect("filter-angulo", angs, "Todos los ángulos");
+  fillFilterSelect("filter-creador", cres, "Todas las creadoras");
+  fillFilterSelect("pauta-filter-angulo", angs, "Todos los ángulos");
+  fillFilterSelect("pauta-filter-creador", cres, "Todas las creadoras");
+  renderModalChips();
+  const enAlta = document.activeElement && document.activeElement.id && document.activeElement.id.startsWith("add-");
+  if (currentView === "guia" && !enAlta) renderGuia();
+  if (currentView === "clas") renderClasificar();
+  if (currentView === "pauta") renderPautaAri();
+  if (currentView === "board") renderBoardList();
+  if (currentView === "camp") renderPorCampana();
+});
 
 function fillFilterSelect(id, opts, allLabel) {
   const sel = document.getElementById(id);
@@ -1147,10 +1298,10 @@ function filteredBoardItems() {
     .map(([id, it]) => ({ id, ...it, estadoKey: normalizeEstado(it.estado) }))
     .filter(it => {
       if (fp && it.producto !== fp) return false;
-      if (fa && it.angulo !== fa) return false;
-      if (fc && it.creador !== fc) return false;
+      if (fa && angTxt(it) !== fa) return false;
+      if (fc && creTxt(it) !== fc) return false;
       if (fs) {
-        const haystack = [it.producto, it.linea, it.publico, it.angulo, it.creador, it.tipoContenido, it.descripcion, it.propuesta, it.estilo, it.lugar, it.codigo, ...(it.prendas || [])]
+        const haystack = [it.producto, it.linea, it.publico, angTxt(it), creTxt(it), fmtTxt(it), it.angulo, it.creador, it.tipoContenido, it.descripcion, it.propuesta, it.estilo, it.lugar, it.codigo, ...(it.prendas || [])]
           .filter(Boolean).join(" ").toLowerCase();
         if (!haystack.includes(fs)) return false;
       }
@@ -1225,7 +1376,7 @@ function renderBoardCard(it) {
   div.dataset.id = it.id;
   div.onclick = () => openModal(it.id);
   const thumb = thumbHtml(it, "board-thumb", 120);
-  const subParts = [it.producto, it.publico, it.angulo, it.creador].filter(Boolean).join(" · ");
+  const subParts = [it.producto, it.publico, angTxt(it), creTxt(it)].filter(Boolean).join(" · ");
 
   const miniToggle = (field, label) => {
     const on = !!it[field];
@@ -1294,6 +1445,9 @@ function setView(v) {
   document.getElementById("view-pauta").style.display = v === "pauta" ? "block" : "none";
   document.getElementById("view-camp").style.display = v === "camp" ? "block" : "none";
   document.getElementById("tab-camp").classList.toggle("active", v === "camp");
+  document.getElementById("view-guia").style.display = v === "guia" ? "block" : "none";
+  document.getElementById("tab-guia").classList.toggle("active", v === "guia");
+  if (v === "guia") renderGuia();
   document.getElementById("view-clas").style.display = v === "clas" ? "block" : "none";
   document.getElementById("tab-clas").classList.toggle("active", v === "clas");
   if (v !== "clas") clasSesion.clear();
@@ -1474,7 +1628,10 @@ function renderPautaAri() {
   const sortBy = document.getElementById("pauta-sortby").value;
   const sorter = sortBy === "campanaActual"
     ? (a, b) => campanaActualLabel(a).localeCompare(campanaActualLabel(b), "es")
-    : (a, b) => (a[sortBy] || "").localeCompare(b[sortBy] || "", "es");
+    : (a, b) => {
+        const val = it => sortBy === "angulo" ? angTxt(it) : sortBy === "creador" ? creTxt(it) : (it[sortBy] || "");
+        return String(val(a)).localeCompare(String(val(b)), "es");
+      };
   const all = Object.entries(items).map(([id, it]) => ({ id, ...it }));
   // Solo entra al tablero de Pauta Ari el contenido que ya está en condiciones de usarse
   // (Listo el Contenido en adelante) — si todavía está sin comenzar/en edición, no se puede pautar.
@@ -1492,8 +1649,8 @@ function renderPautaAri() {
   const fPub = document.getElementById("pauta-filter-publico").value;
   if (fLin) ready = ready.filter(it => it.linea === fLin);
   if (fPub) ready = ready.filter(it => it.publico === fPub || (it.publico === "Ambos" && fPub !== "Ambos"));
-  if (fAng) ready = ready.filter(it => it.angulo === fAng);
-  if (fCreador) ready = ready.filter(it => it.creador === fCreador);
+  if (fAng) ready = ready.filter(it => angTxt(it) === fAng);
+  if (fCreador) ready = ready.filter(it => creTxt(it) === fCreador);
   if (fCamp) ready = ready.filter(it => campanasSearchHaystack(it).includes(fCamp));
 
   // Pendiente Utilizar: todavía no tiene ni Pauta Fede ni Pauta Ari — es el banco listo para pautar.
@@ -1663,7 +1820,7 @@ function renderCard(it, estado) {
   const entries = Object.entries(camps).sort((a, b) => (b[1].creadoEn || 0) - (a[1].creadoEn || 0));
   const detalle = c => [c.tipo, c.nombre, c.fecha ? formatDateShort(c.fecha) : ""].filter(Boolean).join(" · ");
   const canales = [it.feed ? "Feed" : "", it.tiktok ? "TikTok" : ""].filter(Boolean).join(" · ");
-  const titulo = it.descripcion || it.angulo || "Sin descripción";
+  const titulo = it.descripcion || angTxt(it) || "Sin descripción";
   let campHtml;
   if (entries.length) {
     const [k, c] = entries[0];
@@ -1690,7 +1847,7 @@ function renderCard(it, estado) {
     ? `<button class="btn btn-ghost btn-sm" style="color:#c0392b;" title="Reactivar anuncio" onclick="event.stopPropagation(); toggleAnuncioApagado('${it.id}', false)">↺ Reactivar</button>`
     : `<button class="btn btn-ghost btn-sm" title="Marcar anuncio apagado" onclick="event.stopPropagation(); toggleAnuncioApagado('${it.id}', true)">🔴 Apagar</button>`;
   const nombre = nombrePieza(it);
-  const sub = [(it.prendas && it.prendas.length) ? it.linea : "", it.publico, it.angulo, it.tipoContenido].filter(Boolean).join(" · ");
+  const sub = [(it.prendas && it.prendas.length) ? it.linea : "", it.publico, angTxt(it), fmtTxt(it)].filter(Boolean).join(" · ");
   div.innerHTML = `
     <div class="pcard-photo-wrap">
       ${thumbHtml(it, "pcard-photo", 480)}
@@ -1700,7 +1857,7 @@ function renderCard(it, estado) {
     <div class="pcard-body">
       ${nombre ? `<div class="pcard-title" style="margin-top:0;">${escapeHtml(nombre)}</div>` : ""}
       <span class="pq-badge" style="${paraQueStyle(it.producto)}">${escapeHtml(it.producto || "Sin para qué")}</span>
-      <div class="pcard-who">por ${escapeHtml(it.creador || "—")}</div>
+      <div class="pcard-who">por ${escapeHtml(creTxt(it) || "—")}</div>
       ${sub ? `<div class="pcard-sub">${escapeHtml(sub)}</div>` : ""}
       <div class="quick-row" onclick="event.stopPropagation()">
         ${["pautaAri:Pauta Ari", "pautaFede:Pauta Fede", "feed:Feed", "tiktok:TikTok"].map(x => { const [f, l] = x.split(":"); const on = !!it[f];
@@ -1729,7 +1886,7 @@ function nombrePieza(it) {
 }
 function miniHtml(it) {
   const nombre = it.linea || nombrePieza(it);
-  const who = [it.creador ? "por " + it.creador : "", it.publico].filter(Boolean).join(" · ");
+  const who = [creTxt(it) ? "por " + creTxt(it) : "", it.publico].filter(Boolean).join(" · ");
   return `<div class="mini" onclick="openModal('${it.id}')">
     ${thumbHtml(it, "mini-photo", 300)}
     ${nombre ? `<div class="mini-name">${escapeHtml(nombre)}</div>` : ""}
@@ -1737,61 +1894,140 @@ function miniHtml(it) {
     ${who ? `<div class="mini-who">${escapeHtml(who)}</div>` : ""}
   </div>`;
 }
+// Resumen por campaña: cada campaña tiene conjuntos (uno por ángulo) de PIEZAS_POR_CONJUNTO piezas.
+// Una pieza va a una campaña por "Va para la campaña" (se elige al crearla) o por la campaña cargada al pautarla.
+const PIEZAS_POR_CONJUNTO = 5;
+const ESTADOS_LISTOS = ["listo", "reutilizar", "programado", "subido"];
+const csAbiertos = new Set(), csEditConj = new Set();
+function campKey(c) { return (c.tipo || "") + "||" + (c.nombre || ""); }
+function etapaPieza(it) {
+  if (it.anuncioApagado) return "apagado";
+  if (it.pautaAri || it.pautaFede) return "pautado";
+  return ESTADOS_LISTOS.includes(normalizeEstado(it.estado)) ? "listo" : "proceso";
+}
+function campanaDePieza(it, porKey) {
+  const camps = Object.values(it.campanas || {}).sort((a, b) => (b.creadoEn || 0) - (a.creadoEn || 0));
+  const cargada = camps.length ? (porKey[campKey(camps[0])] || "v:" + campKey(camps[0])) : "";
+  const destOk = it.campanaDestino && campanasLista[it.campanaDestino] && !campanasLista[it.campanaDestino].archivada;
+  if (etapaPieza(it) === "pautado" && cargada) return cargada;   // si ya se pautó, manda la campaña cargada
+  return destOk ? it.campanaDestino : cargada;
+}
+function csPiezaHtml(it) {
+  const et = etapaPieza(it);
+  const badge = et === "pautado" ? [it.pautaAri ? "Pauta Ari" : "", it.pautaFede ? "Pauta Fede" : ""].filter(Boolean).join(" + ")
+    : et === "proceso" ? estadoInfo(normalizeEstado(it.estado)).label : "";
+  const extra = et === "proceso" && it.fechaLimite ? " · entrega " + formatDateShort(it.fechaLimite) : "";
+  return `<div class="cs-pz" onclick="openModal('${it.id}')">
+    <div class="cs-photo">${thumbHtml(it, "mini-photo", 300)}${badge ? `<span class="cs-badge">${escapeHtml(badge)}</span>` : ""}</div>
+    <b>${escapeHtml([nombrePieza(it), it.codigo].filter(Boolean).join(" ") || "Sin producto")}</b>
+    <small>${escapeHtml([creTxt(it), fmtTxt(it)].filter(Boolean).join(" · ") || "Sin clasificar")}${escapeHtml(extra)}</small>
+  </div>`;
+}
+function csGrupoHtml(titulo, arr) {
+  return arr.length ? `<div><div class="cs-gtit">${titulo} (${arr.length})</div><div class="cs-grid">${arr.map(csPiezaHtml).join("")}</div></div>` : "";
+}
+function csToggle(det, key) { if (det.open) csAbiertos.add(key); else csAbiertos.delete(key); }
+function csToggleConj(cid, cod) {
+  if (!esAriel()) return;
+  const c = campanasLista[cid]; if (!c) return;
+  const act = Array.isArray(c.conjuntos) ? c.conjuntos.slice() : Object.values(c.conjuntos || {});
+  const i = act.indexOf(cod);
+  if (i >= 0) act.splice(i, 1); else act.push(cod);
+  db.ref(`${ROOT}/listas/campanas/${cid}`).update({ conjuntos: act });
+}
 function renderPorCampana() {
   const el = document.getElementById("camp-list");
   if (!el) return;
-  const quien = document.getElementById("camp-filter-quien").value;
-  const fPq = document.getElementById("camp-filter-paraque").value;
-  const READY_STATES = ["listo", "reutilizar", "programado", "subido"];
-  let all = Object.entries(items).map(([id, it]) => ({ id, ...it }));
-  if (fPq) all = all.filter(it => it.producto === fPq);
-  const fLin = document.getElementById("camp-filter-linea").value;
-  const fPub = document.getElementById("camp-filter-publico").value;
-  if (fLin) all = all.filter(it => it.linea === fLin);
-  if (fPub) all = all.filter(it => it.publico === fPub || (it.publico === "Ambos" && fPub !== "Ambos"));
-
-  const grupos = {};
-  const sinCampana = [];
-  const apagados = [];
-  all.forEach(it => {
-    const enPauta = quien === "ari" ? it.pautaAri : quien === "fede" ? it.pautaFede : (it.pautaAri || it.pautaFede);
-    const camps = Object.values(it.campanas || {}).sort((a, b) => (b.creadoEn || 0) - (a.creadoEn || 0));
-    if (it.anuncioApagado) { if (enPauta || camps.length) apagados.push(it); return; }
-    if (!enPauta) return;
-    if (!camps.length) { sinCampana.push(it); return; }
-    const c = camps[0];
-    const key = (c.tipo || "") + "||" + (c.nombre || "");
-    if (!grupos[key]) grupos[key] = { tipo: c.tipo || "", nombre: c.nombre || "Sin nombre", fecha: c.fecha || "", ari: 0, fede: 0, items: [] };
-    const g = grupos[key];
-    g.items.push(it);
-    if (it.pautaAri) g.ari++;
-    if (it.pautaFede) g.fede++;
-    if ((c.fecha || "") > g.fecha) g.fecha = c.fecha;
+  const N = PIEZAS_POR_CONJUNTO;
+  const activas = campanasOrdenadas();
+  const porKey = {};
+  activas.forEach(([id, c]) => { porKey[campKey(c)] = id; });
+  const grupos = {}, orden = [];
+  activas.forEach(([id, c]) => {
+    grupos[id] = { id, tipo: c.tipo || "", nombre: c.nombre, conjuntos: Array.isArray(c.conjuntos) ? c.conjuntos : Object.values(c.conjuntos || {}), items: [] };
+    orden.push(id);
   });
-  const listas = all.filter(it => READY_STATES.includes(normalizeEstado(it.estado)) && !it.pautaFede && !it.pautaAri && !it.anuncioApagado);
-
-  let html = "";
-  const orden = Object.values(grupos).sort((a, b) => (b.fecha || "").localeCompare(a.fecha || "") || a.nombre.localeCompare(b.nombre, "es"));
-  if (!orden.length) html += `<div class="empty-col">No hay piezas en campañas activas con este filtro.</div>`;
-  orden.forEach(g => {
-    const quienTxt = [g.ari ? "Pauta Ari" : "", g.fede ? "Pauta Fede" : ""].filter(Boolean).join(" + ");
-    html += `<div class="camp-group">
-      <div class="camp-group-head">
-        <div class="camp-group-name">${g.tipo ? `<span class="camp-tipo">${escapeHtml(g.tipo)}</span>` : ""}${escapeHtml(g.nombre)}</div>
-        <div class="camp-group-meta">${g.items.length} pieza${g.items.length !== 1 ? "s" : ""}${quienTxt ? " · " + quienTxt : ""}${g.fecha ? " · desde " + formatDateShort(g.fecha) : ""}</div>
+  const sin = [], apagados = [];
+  Object.entries(items).forEach(([id, raw]) => {
+    const it = { id, ...raw };
+    if (etapaPieza(it) === "apagado") { apagados.push(it); return; }
+    const g = campanaDePieza(it, porKey);
+    if (!g) { sin.push(it); return; }
+    if (!grupos[g]) {   // campaña cargada en la pieza que no está en la lista de campañas
+      const [tipo, nombre] = g.slice(2).split("||");
+      grupos[g] = { id: g, tipo, nombre: nombre || "Sin nombre", virtual: true, conjuntos: [], items: [] };
+      orden.push(g);
+    }
+    grupos[g].items.push(it);
+  });
+  const angOrden = clsList("angulos").map(e => e.codigo);
+  let totP = 0, totL = 0, totE = 0, conjFaltan = 0, cuerpo = "";
+  orden.forEach(gid => {
+    const g = grupos[gid];
+    if (g.virtual && !g.items.length) return;
+    const cods = g.conjuntos.slice().sort((a, b) => angOrden.indexOf(a) - angOrden.indexOf(b));
+    g.items.forEach(it => { const c = it.anguloCod || ""; if (!cods.includes(c)) cods.push(c); });
+    let filas = "";
+    cods.forEach(cod => {
+      const its = g.items.filter(it => (it.anguloCod || "") === cod);
+      const P = its.filter(it => etapaPieza(it) === "pautado"), L = its.filter(it => etapaPieza(it) === "listo"), E = its.filter(it => etapaPieza(it) === "proceso");
+      totP += P.length; totL += L.length; totE += E.length;
+      const conObjetivo = !!cod && !g.virtual;   // las campañas fuera de la lista y "Sin ángulo" no tienen objetivo
+      const faltan = conObjetivo ? Math.max(0, N - P.length - L.length - E.length) : 0;
+      let est = "";
+      if (!conObjetivo) est = "";
+      else if (P.length + L.length >= N) est = `<span class="cs-est ok">Cubierto</span>`;
+      else if (!faltan) est = `<span class="cs-est proc">Cubierto si se termina lo que está en proceso</span>`;
+      else { est = `<span class="cs-est falta">Falta${faltan !== 1 ? "n" : ""} ${faltan} pieza${faltan !== 1 ? "s" : ""}</span>`; conjFaltan++; }
+      const dots = [...P.map(() => "p"), ...L.map(() => "l"), ...E.map(() => "e")];
+      const dotsHtml = dots.slice(0, N).map(c => `<i class="${c}"></i>`).join("") + "<i></i>".repeat(faltan) + (dots.length > N ? `<em>+${dots.length - N}</em>` : "");
+      const key = gid + "|" + cod;
+      filas += `<details class="cs-set" ${csAbiertos.has(key) ? "open" : ""} ontoggle="csToggle(this,'${escapeAttr(key)}')">
+        <summary>
+          <div class="cs-sname">${escapeHtml(cod ? clsNombre("angulos", cod) : "Sin ángulo")}<small>${P.length} pautado${P.length !== 1 ? "s" : ""} · ${L.length} listo${L.length !== 1 ? "s" : ""} · ${E.length} en proceso</small>${est}</div>
+          <div class="cs-dots" aria-hidden="true">${dotsHtml}</div>
+          <span class="cs-flecha">›</span>
+        </summary>
+        <div class="cs-body">
+          ${csGrupoHtml("Pautados", P)}${csGrupoHtml("Listos para usar", L)}${csGrupoHtml("En proceso", E)}
+          ${faltan && cod ? `<div><div class="cs-grid"><div class="cs-pedir">Falta${faltan !== 1 ? "n" : ""} ${faltan} pieza${faltan !== 1 ? "s" : ""}.${!E.length && !L.length ? "<br>Nada listo ni en proceso." : ""}</div></div></div>` : ""}
+        </div>
+      </details>`;
+    });
+    const edit = !g.virtual && esAriel();
+    const conjChips = edit && csEditConj.has(gid)
+      ? `<div class="cs-conj">${clsList("angulos").map(a => `<button type="button" class="clas-btn ${g.conjuntos.includes(a.codigo) ? "on" : ""}" onclick="csToggleConj('${gid}','${escapeAttr(a.codigo)}')">${escapeHtml(a.nombre)}</button>`).join("")}</div>` : "";
+    cuerpo += `<div class="cs-camp">
+      <div class="cs-head">
+        <div class="cs-name">${g.tipo ? `<span class="camp-tipo">${escapeHtml(g.tipo)}</span>` : ""}${escapeHtml(g.nombre)}</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="cs-meta">${g.virtual ? "No está en la lista de campañas" : `${g.conjuntos.length} conjunto${g.conjuntos.length !== 1 ? "s" : ""} · ${N} piezas por conjunto`}</span>
+          ${edit ? `<button class="btn btn-ghost btn-sm" onclick="${csEditConj.has(gid) ? `csEditConj.delete('${gid}')` : `csEditConj.add('${gid}')`}; renderPorCampana()">${csEditConj.has(gid) ? "Listo" : "✎ Conjuntos"}</button>` : ""}
+        </div>
       </div>
-      <div class="camp-grid">${g.items.map(miniHtml).join("")}</div>
+      ${conjChips}
+      ${filas || `<div class="empty-col">${edit ? "Tocá ✎ Conjuntos y elegí los ángulos de esta campaña." : "Esta campaña todavía no tiene conjuntos."}</div>`}
     </div>`;
   });
-  html += `<div class="camp-section-title">Listas para usar (${listas.length})</div>`;
-  html += listas.length ? `<div class="camp-grid">${listas.map(miniHtml).join("")}</div>` : `<div class="empty-col">No queda contenido listo sin usar.</div>`;
-  if (sinCampana.length) {
-    html += `<div class="camp-section-title">Marcadas en pauta pero sin campaña cargada (${sinCampana.length})</div>
-      <div class="camp-grid">${sinCampana.map(miniHtml).join("")}</div>`;
+  const sinL = sin.filter(it => etapaPieza(it) === "listo"), sinE = sin.filter(it => etapaPieza(it) === "proceso"), sinP = sin.filter(it => etapaPieza(it) === "pautado");
+  let html = `<div class="cs-tiles">
+    <div class="cs-tile"><b>${totP}</b><span>Pautados</span></div>
+    <div class="cs-tile"><b>${totL}</b><span>Listos para usar</span></div>
+    <div class="cs-tile"><b>${totE}</b><span>En proceso</span></div>
+    <div class="cs-tile ${conjFaltan ? "alert" : ""}"><b>${conjFaltan}</b><span>Conjuntos con piezas faltantes</span></div>
+  </div>`;
+  html += cuerpo || `<div class="empty-col">No hay campañas. Se crean en Editar listas → Campañas (dentro de cualquier pieza).</div>`;
+  if (sin.length) {
+    html += `<details class="cs-camp cs-set" ${csAbiertos.has("sin") ? "open" : ""} ontoggle="csToggle(this,'sin')" style="padding:4px 14px">
+      <summary><div class="cs-sname">Sin campaña asignada<small>${sinL.length} listos · ${sinE.length} en proceso${sinP.length ? ` · ${sinP.length} pautados sin campaña cargada` : ""}</small></div><span></span><span class="cs-flecha">›</span></summary>
+      <div class="cs-body">${csGrupoHtml("Listos para usar", sinL)}${csGrupoHtml("En proceso", sinE)}${csGrupoHtml("Pautados sin campaña cargada", sinP)}</div>
+    </details>`;
   }
   if (apagados.length) {
-    html += `<details style="margin-top:18px;"><summary class="camp-section-title" style="cursor:pointer;display:list-item;">Anuncios apagados (${apagados.length})</summary>
-      <div class="camp-grid">${apagados.map(miniHtml).join("")}</div></details>`;
+    html += `<details class="cs-camp cs-set" ${csAbiertos.has("apag") ? "open" : ""} ontoggle="csToggle(this,'apag')" style="padding:4px 14px">
+      <summary><div class="cs-sname">Anuncios apagados<small>${apagados.length} pieza${apagados.length !== 1 ? "s" : ""}</small></div><span></span><span class="cs-flecha">›</span></summary>
+      <div class="cs-body"><div class="cs-grid">${apagados.map(csPiezaHtml).join("")}</div></div>
+    </details>`;
   }
   el.innerHTML = html;
 }
@@ -1801,33 +2037,38 @@ function renderPorCampana() {
 const PUBLICOS = ["Minorista", "Mayorista", "Ambos"];
 function faltaClasif(it) {
   const f = [];
-  if (!it.producto || !listas.productos.includes(it.producto)) f.push("Para qué");
-  if (!it.publico) f.push("Público");
   if (!it.linea) f.push("Línea");
-  if (!it.propuesta) f.push("Propuesta");
-  if (!it.tipoContenido || !FORMATOS.includes(it.tipoContenido)) f.push("Formato");
+  if (!it.anguloCod) f.push("Ángulo");
+  if (!it.cantProd) f.push("Productos");
+  if (!it.formatoCod) f.push("Formato");
+  if (!creCodDe(it)) f.push("Creadora");
   return f;
 }
 function setCampo(id, campo, val) {
   const it = items[id] || {};
-  const nuevo = it[campo] === val ? "" : val;   // tocar de nuevo el mismo botón lo desmarca
+  const actual = campo === "creadoraCod" ? creCodDe(it) : it[campo];
+  const nuevo = actual === val ? "" : val;   // tocar de nuevo el mismo botón lo desmarca
   const extra = {};
-  if (campo === "tipoContenido" && it.estilo && !(ESTILOS_POR_FORMATO[nuevo] || []).includes(it.estilo)) extra.estilo = "";
+  if (campo === "anguloCod" && nuevo) { const a = clsByCod("angulos", nuevo); if (a && a.cant) extra.cantProd = a.cant; }
+  if (campo === "creadoraCod" && nuevo) extra.creador = clsNombre("creadoras", nuevo);
   db.ref(`${ROOT}/items/${id}`).update({ [campo]: nuevo, ...extra, updatedAt: Date.now() });
 }
 function clasRowsHtml(it, id) {
   const faltan = faltaClasif(it);
-  const row = (campo, label, opts, obligatorio) => {
+  // opts: [{v: valor guardado, l: texto del botón}]
+  const row = (campo, label, opts, obligatorio, actual) => {
     const falta = obligatorio && faltan.includes(label);
+    const cur = actual !== undefined ? actual : it[campo];
     return `<div><div class="clas-row-label ${falta ? "falta" : ""}">${label}${falta ? " · falta" : ""}</div>
-      <div class="clas-opts">${opts.map(o => `<button class="clas-btn ${it[campo] === o ? "on" : ""}" onclick="event.stopPropagation(); setCampo('${id}','${campo}','${escapeAttr(o)}')">${escapeHtml(o)}</button>`).join("")}</div></div>`;
+      <div class="clas-opts">${opts.map(o => `<button class="clas-btn ${cur === o.v ? "on" : ""}" onclick="event.stopPropagation(); setCampo('${id}','${campo}','${escapeAttr(o.v)}')">${escapeHtml(o.l)}</button>`).join("")}</div></div>`;
   };
-  return row("producto", "Para qué", listas.productos, true)
-    + row("propuesta", "Propuesta", propuestasLista(), true)
-    + row("publico", "Público", PUBLICOS, true)
-    + row("linea", "Línea", listas.lineas, true)
-    + row("tipoContenido", "Formato", FORMATOS, true)
-    + ((ESTILOS_POR_FORMATO[it.tipoContenido] || []).length || it.estilo ? row("estilo", "Estilo", ESTILOS_POR_FORMATO[it.tipoContenido] || ESTILOS, false) : "");
+  const simple = arr => arr.map(x => ({ v: x, l: x }));
+  const cls = tipo => clsList(tipo).map(e => ({ v: e.codigo, l: e.nombre }));
+  return row("linea", "Línea", simple(listas.lineas), true)
+    + row("anguloCod", "Ángulo", cls("angulos"), true)
+    + row("cantProd", "Productos", [{ v: "1P", l: CANT_LABEL["1P"] }, { v: "VP", l: CANT_LABEL.VP }], true)
+    + row("formatoCod", "Formato", cls("formatos"), true)
+    + row("creadoraCod", "Creadora", cls("creadoras"), true, creCodDe(it));
 }
 // Piezas que arrancaron incompletas en esta sesión: siguen a la vista (en verde) hasta salir de la pestaña.
 const clasSesion = new Set();
@@ -1851,7 +2092,7 @@ function renderClasificar() {
       <div onclick="openModal('${it.id}')">${thumbHtml(it, "clas-photo", 300)}</div>
       <div class="clas-body">
         <div><div class="clas-name">${escapeHtml(nombrePieza(it) || "Sin producto")}${ok ? " ✓" : ""}</div>
-        <div class="clas-state">${escapeHtml(estado)}${it.creador ? " · por " + escapeHtml(it.creador) : ""}</div></div>
+        <div class="clas-state">${escapeHtml(estado)}${creTxt(it) ? " · por " + escapeHtml(creTxt(it)) : ""}</div></div>
         ${clasRowsHtml(it, it.id)}
       </div>
     </div>`;
@@ -1897,9 +2138,164 @@ function fillCampNombres() {
   if (dl) dl.innerHTML = [...set].sort((a, b) => a.localeCompare(b, "es")).map(n => `<option value="${escapeHtml(n)}"></option>`).join("");
 }
 
+// ---------- Pestaña "Formatos y ángulos": guía para creadoras + listas que edita Ariel ----------
+const CLS_SECC = [
+  { tipo: "angulos", titulo: "Ángulos", sub: "Qué idea le llega a la clienta. Define si el video muestra uno o varios productos." },
+  { tipo: "formatos", titulo: "Formatos", sub: "Cómo se filma: dónde, con quién y qué se ve." },
+  { tipo: "creadoras", titulo: "Creadoras", sub: "Quién hace la pieza." }
+];
+function cantPill(c) { return `<span class="g-pill ${c === "VP" ? "vp" : c ? "" : "any"}">${CANT_LABEL[c || ""]}</span>`; }
+function renderGuia() {
+  const el = document.getElementById("guia-wrap");
+  if (!el) return;
+  const ed = guiaEditando && esAriel();
+  let html = `<div class="g-panel">
+    <div class="g-head"><h3>Cómo se arma cada pieza</h3>
+      ${esAriel() ? `<button class="btn ${ed ? "btn-primary" : "btn-ghost"} btn-sm" onclick="guiaEditando=!guiaEditando; renderGuia()">${ed ? "Listo" : "✎ Editar listas"}</button>` : ""}</div>
+    <ol class="g-pasos">
+      <li><b>Producto:</b> qué necesitamos vender (línea y código del artículo).</li>
+      <li><b>Ángulo:</b> qué idea le llega a la clienta.</li>
+      <li><b>Formato:</b> cómo se filma.</li>
+      <li><b>Creadora:</b> quién lo hace.</li>
+    </ol>
+    <div class="g-nota"><b>Nombre del anuncio:</b> <code>FORMATO_ANGULO_PRODUCTOS_CREADORA_producto</code><br>Ej: <code>PROB_CALCE_1P_CARO_4727</code>. Se arma solo en cada pieza: tocá <b>Copiar</b> y pegalo en Meta.</div>
+    <div class="g-nota"><b>Para comparar se cambia una sola cosa por vez.</b> Para comparar creadoras, mismo formato. Para comparar ángulos, mismo formato y, si se puede, la misma creadora.</div>
+  </div>`;
+  CLS_SECC.forEach(({ tipo, titulo, sub }) => {
+    const lista = clsList(tipo), ocultos = clsList(tipo, true);
+    html += `<div class="g-panel"><div><h3>${titulo}</h3><div class="g-uso" style="margin-top:3px">${sub}</div></div><div>`;
+    if (!lista.length) html += `<div class="empty-col">Todavía no hay ${titulo.toLowerCase()} cargados.</div>`;
+    lista.forEach(e => { html += ed ? guiaItemEdit(tipo, e) : guiaItem(tipo, e); });
+    html += `</div>`;
+    if (ed) {
+      html += `<div class="g-add">
+        <input class="g-in nom" id="add-nom-${tipo}" placeholder="Nombre nuevo" oninput="clsSugerir('${tipo}')">
+        <input class="g-in cod" id="add-cod-${tipo}" placeholder="CÓDIGO" oninput="this.dataset.manual='1'">
+        ${tipo === "angulos" ? `<select class="g-in" id="add-cant-${tipo}"><option value="1P">1 producto</option><option value="VP">Varios productos</option><option value="">1 o varios</option></select>` : ""}
+        ${tipo !== "creadoras" ? `<input class="g-in desc" id="add-desc-${tipo}" placeholder="Explicación en una línea (la ven las creadoras)">` : ""}
+        <button class="btn btn-primary btn-sm" onclick="clsAgregar('${tipo}')">Agregar</button>
+        <div class="g-err" id="err-${tipo}"></div>
+      </div>`;
+      if (ocultos.length) html += `<details class="g-ocultos"><summary>Ocultos (${ocultos.length})</summary>${ocultos.map(e => `<div class="g-row" style="padding:6px 0"><span class="g-nom">${escapeHtml(e.nombre)}</span><span class="g-cod">${escapeHtml(e.codigo)}</span><button class="btn btn-ghost btn-sm" onclick="clsSet('${tipo}','${e.key}','archivado',false)">Volver a mostrar</button></div>`).join("")}</details>`;
+    }
+    html += `</div>`;
+  });
+  el.innerHTML = html;
+}
+function guiaItem(tipo, e) {
+  return `<div class="g-item">
+    <div class="g-row"><span class="g-nom">${escapeHtml(e.nombre)}</span><span class="g-cod">${escapeHtml(e.codigo)}</span>${tipo === "angulos" ? cantPill(e.cant) : ""}</div>
+    ${e.desc ? `<div class="g-desc">${escapeHtml(e.desc)}</div>` : ""}
+  </div>`;
+}
+function guiaItemEdit(tipo, e) {
+  const usos = usosCod(tipo, e.codigo);
+  const cod = usos
+    ? `<span class="g-cod" title="No se puede cambiar: ya está en uso">${escapeHtml(e.codigo)} 🔒</span><span class="g-uso">en ${usos} pieza${usos !== 1 ? "s" : ""}</span>`
+    : `<input class="g-in cod" value="${escapeHtml(e.codigo)}" aria-label="Código" onchange="clsSetCodigo('${tipo}','${e.key}',this)">`;
+  return `<div class="g-item">
+    <div class="g-row">
+      <input class="g-in nom" value="${escapeHtml(e.nombre)}" aria-label="Nombre" onchange="clsSet('${tipo}','${e.key}','nombre',this.value)">
+      ${cod}
+      <button class="btn btn-ghost btn-sm" onclick="clsSet('${tipo}','${e.key}','archivado',true)" title="Deja de aparecer como opción. Las piezas que lo usan no cambian.">Ocultar</button>
+    </div>
+    ${tipo === "angulos" ? `<div class="clas-opts">${["1P", "VP", ""].map(c => `<button type="button" class="clas-btn ${(e.cant || "") === c ? "on" : ""}" onclick="clsSet('angulos','${e.key}','cant','${c}')">${CANT_LABEL[c]}</button>`).join("")}</div>` : ""}
+    ${tipo !== "creadoras" ? `<textarea class="g-in desc" rows="2" placeholder="Explicación en una línea" aria-label="Explicación" onchange="clsSet('${tipo}','${e.key}','desc',this.value)">${escapeHtml(e.desc || "")}</textarea>` : ""}
+    <div class="g-err" id="err-${tipo}-${e.key}"></div>
+  </div>`;
+}
+function clsSet(tipo, key, campo, val) {
+  if (!esAriel()) return;
+  if (campo === "nombre") { val = String(val).trim(); if (!val) { renderGuia(); return; } }
+  if (campo === "desc") val = String(val).trim();
+  db.ref(`${ROOT}/clasif/${tipo}/${key}`).update({ [campo]: val });
+}
+function clsCodigoLibre(tipo, cod, keyPropia) {
+  return !Object.entries(clsRaw[tipo] || {}).some(([k, e]) => k !== keyPropia && e && e.codigo === cod);
+}
+function clsSetCodigo(tipo, key, input) {
+  if (!esAriel()) return;
+  const e = (clsRaw[tipo] || {})[key]; if (!e) return;
+  const err = document.getElementById(`err-${tipo}-${key}`);
+  const cod = normCod(input.value);
+  const falla = msg => { if (err) err.textContent = msg; input.value = e.codigo; };
+  if (!cod) return falla("El código no puede quedar vacío.");
+  if (usosCod(tipo, e.codigo)) return falla("Ya está en uso: no se puede cambiar.");
+  if (!clsCodigoLibre(tipo, cod, key)) return falla(`El código ${cod} ya existe.`);
+  db.ref(`${ROOT}/clasif/${tipo}/${key}`).update({ codigo: cod });
+}
+function clsSugerir(tipo) {
+  const cod = document.getElementById(`add-cod-${tipo}`);
+  if (cod.dataset.manual) return;
+  const nom = document.getElementById(`add-nom-${tipo}`).value;
+  let base = normCod(sinTildes(nom).trim().split(/\s+/)[0] || "").slice(0, 8), s = base, n = 2;
+  while (s && !clsCodigoLibre(tipo, s)) s = base + n++;
+  cod.value = s;
+}
+function clsAgregar(tipo) {
+  if (!esAriel()) return;
+  const err = document.getElementById(`err-${tipo}`);
+  const nomEl = document.getElementById(`add-nom-${tipo}`), codEl = document.getElementById(`add-cod-${tipo}`);
+  const nombre = nomEl.value.trim();
+  if (!nombre) { err.textContent = "Escribí el nombre."; nomEl.focus(); return; }
+  if (!codEl.value.trim()) { delete codEl.dataset.manual; clsSugerir(tipo); }
+  const codigo = normCod(codEl.value);
+  if (!codigo) { err.textContent = "Escribí un código (letras o números)."; codEl.focus(); return; }
+  if (!clsCodigoLibre(tipo, codigo)) { err.textContent = `El código ${codigo} ya existe. Elegí otro.`; codEl.focus(); return; }
+  const todos = Object.values(clsRaw[tipo] || {});
+  const e = { codigo, nombre, orden: todos.reduce((m, x) => Math.max(m, (x && x.orden) || 0), -1) + 1 };
+  const descEl = document.getElementById(`add-desc-${tipo}`);
+  if (descEl && descEl.value.trim()) e.desc = descEl.value.trim();
+  const cantEl = document.getElementById(`add-cant-${tipo}`);
+  if (cantEl) e.cant = cantEl.value;
+  nomEl.value = ""; codEl.value = ""; delete codEl.dataset.manual;
+  if (descEl) descEl.value = "";
+  err.textContent = "";
+  nomEl.blur();
+  db.ref(`${ROOT}/clasif/${tipo}`).push(e);
+}
+
 // ---------- Botones del formulario ----------
-const MX_CHIPS = ["f-producto", "f-propuesta", "f-publico", "f-linea", "f-angulo", "f-creador", "f-tipoContenido", "f-estilo", "f-lugar"];
+const MX_CHIPS = ["f-linea"];
+// Botones de ángulo, cantidad, formato y creadora en Editar pieza (guardan el código).
+function renderClsChips() {
+  [["angulos", "f-anguloCod"], ["formatos", "f-formatoCod"], ["creadoras", "f-creadoraCod"]].forEach(([tipo, inp]) => {
+    const box = document.getElementById("chips-" + inp), el = document.getElementById(inp);
+    if (!box || !el) return;
+    const val = el.value;
+    let opts = clsList(tipo);
+    if (val && !opts.some(o => o.codigo === val)) opts = opts.concat([clsByCod(tipo, val) || { codigo: val, nombre: val }]);
+    box.innerHTML = opts.length
+      ? opts.map(o => `<button type="button" class="clas-btn ${val === o.codigo ? "on" : ""}" onclick="clsPick('${inp}','${escapeAttr(o.codigo)}')">${escapeHtml(o.nombre)}</button>`).join("")
+      : `<div class="mx-empty">Sin opciones — se cargan en la pestaña Formatos y ángulos.</div>`;
+    const help = document.getElementById("help-" + inp);
+    if (help) { const e = clsByCod(tipo, val); help.textContent = e && e.desc ? e.desc : ""; help.hidden = !(e && e.desc); }
+  });
+  const cd = document.getElementById("chips-f-campanaDestino");
+  if (cd) {
+    const dest = document.getElementById("f-campanaDestino").value;
+    const arr = campanasOrdenadas();
+    cd.innerHTML = arr.length
+      ? arr.map(([cid, c]) => `<button type="button" class="clas-btn ${dest === cid ? "on" : ""}" onclick="clsPick('f-campanaDestino','${cid}')">${escapeHtml(c.nombre)}</button>`).join("")
+      : `<div class="mx-empty">Todavía no hay campañas. Se crean en Editar listas → Campañas.</div>`;
+  }
+  const cb = document.getElementById("chips-f-cantProd");
+  if (cb) {
+    const cant = document.getElementById("f-cantProd").value;
+    cb.innerHTML = ["1P", "VP"].map(c => `<button type="button" class="clas-btn ${cant === c ? "on" : ""}" onclick="clsPick('f-cantProd','${c}')">${CANT_LABEL[c]}</button>`).join("");
+  }
+}
+function clsPick(inp, val) {
+  const el = document.getElementById(inp);
+  el.value = el.value === val ? "" : val;
+  if (inp === "f-anguloCod" && el.value) {   // el ángulo propone la cantidad de productos (se puede cambiar)
+    const a = clsByCod("angulos", el.value);
+    if (a && a.cant) document.getElementById("f-cantProd").value = a.cant;
+  }
+  renderModalChips();
+}
 function renderModalChips() {
+  renderClsChips();
   MX_CHIPS.forEach(selId => {
     const sel = document.getElementById(selId);
     const box = document.getElementById("chips-" + selId);
@@ -1923,7 +2319,7 @@ function renderModalChips() {
 }
 function leerFormNombre() {
   const v = id => (document.getElementById(id) || {}).value || "";
-  return { propuesta: v("f-propuesta"), linea: v("f-linea"), tipoContenido: v("f-tipoContenido"), estilo: v("f-estilo"), lugar: v("f-lugar"), codigo: v("f-codigo").trim(), creador: v("f-creador") };
+  return { formatoCod: v("f-formatoCod"), anguloCod: v("f-anguloCod"), cantProd: v("f-cantProd"), creadoraCod: v("f-creadoraCod"), codigo: v("f-codigo").trim() };
 }
 function mxPick(selId, val) {
   const sel = document.getElementById(selId);
@@ -1968,6 +2364,13 @@ function openModal(id) {
   document.getElementById("f-angulo").value = it.angulo || "";
   document.getElementById("f-creador").value = it.creador || "";
   document.getElementById("f-tipoContenido").value = it.tipoContenido || "";
+  document.getElementById("f-campanaDestino").value = it.campanaDestino || "";
+  document.getElementById("f-anguloCod").value = it.anguloCod || "";
+  document.getElementById("f-cantProd").value = it.cantProd || "";
+  document.getElementById("f-formatoCod").value = it.formatoCod || "";
+  document.getElementById("f-creadoraCod").value = creCodDe(it);
+  const antes = document.getElementById("mx-antes");
+  antes.textContent = ""; antes.hidden = true;
   renderOptList("productos");
   renderOptList("angulos");
   renderOptList("creadores");
@@ -2047,6 +2450,11 @@ async function saveCurrent() {
     angulo: document.getElementById("f-angulo").value,
     creador: document.getElementById("f-creador").value,
     tipoContenido: document.getElementById("f-tipoContenido").value,
+    campanaDestino: document.getElementById("f-campanaDestino").value,
+    anguloCod: document.getElementById("f-anguloCod").value,
+    cantProd: document.getElementById("f-cantProd").value,
+    formatoCod: document.getElementById("f-formatoCod").value,
+    creadoraCod: document.getElementById("f-creadoraCod").value,
     gancho: document.getElementById("f-gancho").value.trim(),
     prendas: currentPrendas.slice(),
     ideaLink: document.getElementById("f-ideaLink").value.trim(),
@@ -2068,6 +2476,9 @@ async function saveCurrent() {
     updatedAt: Date.now()
   };
   const prev = currentId ? (items[currentId] || {}) : {};
+  // Los campos viejos se guardan tal como estaban (no se pierde nada de la clasificación anterior).
+  ["angulo", "creador", "tipoContenido", "propuesta", "estilo", "lugar"].forEach(k => { if (!data[k] && prev[k]) data[k] = prev[k]; });
+  if (data.creadoraCod) data.creador = clsNombre("creadoras", data.creadoraCod);
   const marcaPautaNueva = (data.pautaAri && !prev.pautaAri) || (data.pautaFede && !prev.pautaFede);
   if (marcaPautaNueva) {
     const faltan = faltaClasif(data);
