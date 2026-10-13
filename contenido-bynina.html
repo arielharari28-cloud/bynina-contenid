@@ -470,6 +470,33 @@
   .pcard-nombre{display:flex;gap:6px;align-items:center;background:var(--bg);border-radius:8px;padding:6px 8px;}
   .pcard-nombre code{font-size:10.5px;}
   .pcard-nombre button{border:1px solid var(--line);background:#fff;border-radius:6px;font-size:11px;font-weight:600;padding:4px 8px;cursor:pointer;color:var(--ink);}
+
+  /* ---- Planificar (crear varias piezas de una vez) ---- */
+  .plan-wrap{max-width:980px;}
+  .plan-tabs{display:flex;gap:8px;margin-bottom:14px;}
+  .plan-tab{min-height:34px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+  .plan-tab.on{background:#1e3b2f;color:#fff;border-color:#1e3b2f;}
+  .plan-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
+  .plan-row .mx-label{margin-bottom:6px;}
+  .plan-hint{font-size:12px;color:var(--ink-soft);margin-top:4px;}
+  .plan-input{width:100%;max-width:320px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;}
+  .plan-text{width:100%;min-height:120px;padding:10px;border:1px solid var(--line);border-radius:10px;font-family:ui-monospace,Menlo,monospace;font-size:13px;line-height:1.5;resize:vertical;}
+  .plan-err{font-size:12.5px;color:var(--red);background:var(--red-soft);border-radius:8px;padding:8px 10px;line-height:1.45;}
+  .plan-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:16px 0 10px;}
+  .plan-count{font-size:14px;font-weight:600;}
+  .plan-ok{font-size:13px;color:var(--green);background:var(--green-soft);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .plan-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;}
+  .plan-card{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;}
+  .plan-card.skip{opacity:.55;border-style:dashed;}
+  .plan-card-ph{height:80px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--ink-soft);border-bottom:1px solid var(--line);}
+  .plan-card-body{padding:8px 10px;display:flex;flex-direction:column;gap:3px;}
+  .plan-card-est{font-size:11px;font-weight:600;color:var(--red);}
+  .plan-card-fmt{font-size:13.5px;font-weight:600;}
+  .plan-card-sub{font-size:12px;color:var(--ink-soft);}
+  .plan-card-cre{font-size:11.5px;color:var(--amber);}
+  .plan-card code{font-size:10.5px;color:var(--ink-soft);word-break:break-all;margin-top:3px;}
+  .plan-dup{font-size:11.5px;color:var(--amber);background:var(--amber-soft);border-radius:8px;padding:6px 8px;margin-top:4px;line-height:1.35;}
+  .plan-dup button{margin-top:5px;border:1px solid var(--amber);background:#fff;color:var(--amber);border-radius:6px;font-size:11px;font-weight:600;padding:3px 8px;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -478,6 +505,7 @@
   <div class="side-brand"><div class="side-sup">BYNINA</div><div class="side-title">Contenido</div></div>
   <nav class="tabs side-nav">
     <button class="nav-item" id="tab-board" onclick="setView('board')"><span>🗂️</span>Tablero</button>
+    <button class="nav-item" id="tab-plan" onclick="setView('plan')"><span>📝</span>Planificar</button>
     <button class="nav-item" id="tab-cal" onclick="setView('cal')"><span>📅</span>Calendario</button>
     <button class="nav-item" id="tab-log" onclick="setView('log')"><span>🕘</span>Historial</button>
     <button class="nav-item" id="tab-pauta" onclick="setView('pauta')"><span>📣</span>Pauta Ari</button>
@@ -509,6 +537,10 @@
   <div id="view-board">
     <div class="stage-bar" id="stage-bar"></div>
     <div class="pgrid" id="board-grid"></div>
+  </div>
+
+  <div id="view-plan" style="display:none;">
+    <div class="plan-wrap" id="plan-wrap"></div>
   </div>
 
   <div id="view-cal" style="display:none;">
@@ -1043,6 +1075,7 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
   listasRaw.lineas = v.lineas || {};
   listasRaw.propuestas = v.propuestas || {};
   campanasLista = v.campanas || {};
+  if (currentView === "plan") setTimeout(renderPlan, 0);
   // primera vez: la lista de propuestas arranca con BAS / TEND / LOOK (después la edita Ariel)
   if (esAriel() && !v.propuestas && !v._propuestasSeed) {
     const ini = {}; PROPUESTAS_DEFAULT.forEach((x, i) => ini["p" + i] = x);
@@ -1133,6 +1166,7 @@ db.ref(`${ROOT}/clasif`).on("value", snap => {
     return;
   }
   clsRaw = { formatos: v.formatos || {}, angulos: v.angulos || {}, creadoras: v.creadoras || {} };
+  if (currentView === "plan") setTimeout(renderPlan, 0);
   const angs = clsList("angulos").map(e => e.nombre), cres = clsList("creadoras").map(e => e.nombre);
   fillFilterSelect("filter-angulo", angs, "Todos los ángulos");
   fillFilterSelect("filter-creador", cres, "Todas las creadoras");
@@ -1334,6 +1368,7 @@ db.ref(`${ROOT}/items`).on("value", snap => {
   if (currentView === "pauta") renderPautaAri();
   if (currentView === "camp") renderPorCampana();
   if (currentView === "clas") renderClasificar();
+  if (currentView === "plan") renderPlan();
   if (currentId && document.getElementById("overlay").classList.contains("show")) {
     renderCampanasList(currentId, "campanas-list");
     const cm = document.getElementById("campanas-chips-modal"); if (cm) cm.innerHTML = chipsCampanasHtml(currentId);
@@ -1486,7 +1521,8 @@ function moveItemEstado(id, newEstado) {
 const VIEW_TITULOS = {
   board:["🗂️ Tablero","Las piezas por etapa. Tocá una para editarla; arrastrala a otra etapa para moverla."],
   cal:["📅 Calendario",""], log:["🕘 Historial",""], pauta:["📣 Pauta Ari",""],
-  camp:["🎯 Por campaña",""], clas:["🏷️ Clasificar",""], guia:["🧩 Formatos y ángulos",""]
+  camp:["🎯 Por campaña",""], clas:["🏷️ Clasificar",""], guia:["🧩 Formatos y ángulos",""],
+  plan:["📝 Planificar","Armá el contenido de la semana de una vez: cada formato que tildes es una pieza nueva en Sin Comenzar. La creadora se asigna después."]
 };
 function toggleSide(open) {
   const s = document.getElementById("shell");
@@ -1502,6 +1538,9 @@ function setView(v) {
   document.getElementById("view-board").style.display = v === "board" ? "block" : "none";
   document.getElementById("board-filters").style.display = v === "board" ? "flex" : "none";
   document.getElementById("view-cal").style.display = v === "cal" ? "block" : "none";
+  document.getElementById("view-plan").style.display = v === "plan" ? "block" : "none";
+  document.getElementById("tab-plan").classList.toggle("active", v === "plan");
+  if (v === "plan") renderPlan();
   document.getElementById("view-log").style.display = v === "log" ? "block" : "none";
   document.getElementById("view-pauta").style.display = v === "pauta" ? "block" : "none";
   document.getElementById("view-camp").style.display = v === "camp" ? "block" : "none";
@@ -2197,6 +2236,185 @@ function fillCampNombres() {
   Object.values(items).forEach(it => Object.values(it.campanas || {}).forEach(c => { if (c.nombre) set.add(c.nombre); }));
   const dl = document.getElementById("camp-nombres");
   if (dl) dl.innerHTML = [...set].sort((a, b) => a.localeCompare(b, "es")).map(n => `<option value="${escapeHtml(n)}"></option>`).join("");
+}
+
+
+// ---------- Planificar: crear varias piezas de una sola vez ----------
+// Cada formato tildado = una pieza nueva en "Sin Comenzar", sin creadora (se asigna después).
+// "Pegar plan": una línea por grupo -> LÍNEA [código] / Ángulo / Formato, Formato [/ Campaña]
+let plan = { modo: "elegir", linea: "", codigo: "", ang: "", cant: "", cantManual: false, fmts: [], camp: "",
+  texto: "", filasTexto: [], errores: [], forzar: new Set(), ok: "" };
+const PLAN_EJEMPLO = "VARIOS / Básico / Probador, 1 prenda x outfits, Producción, Prenda sola\nJEANS 4727 / Calce / Fit check, Probador";
+function planLineas() { return listas.lineas && listas.lineas.length ? listas.lineas : LINEAS_CODIGOS; }
+function planCantDefault(linea, codigo, angCod) {
+  if (normCod(linea) === "VARIOS" || normCod(codigo) === "VARIOS") return "VP";
+  const a = clsByCod("angulos", angCod);
+  return a && a.cant ? a.cant : "";
+}
+function planBuscarCls(tipo, txt) {
+  const n = normCod(txt);
+  if (!n) return null;
+  return clsList(tipo).find(e => normCod(e.nombre) === n || normCod(e.codigo) === n) || null;
+}
+function planLeerTexto() {
+  const filas = [], errores = [];
+  String(plan.texto || "").split("\n").map(t => t.trim()).filter(Boolean).forEach((ln, i) => {
+    const pts = ln.split("/").map(t => t.trim());
+    const nro = `Renglón ${i + 1}`;
+    if (pts.length < 3) { errores.push(`${nro}: tiene que ser línea / ángulo / formatos.`); return; }
+    const toks = pts[0].split(/\s+/).filter(Boolean);
+    const linea = planLineas().find(l => normCod(l) === normCod(toks[0] || ""));
+    if (!linea) { errores.push(`${nro}: no encuentro la línea "${toks[0] || ""}".`); return; }
+    const codigo = toks.slice(1).join(" ") || (normCod(linea) === "VARIOS" ? "VARIOS" : "");
+    const ang = planBuscarCls("angulos", pts[1]);
+    if (!ang) { errores.push(`${nro}: no encuentro el ángulo "${pts[1]}".`); return; }
+    let camp = "";
+    if (pts[3]) {
+      const c = campanasOrdenadas().find(([, c]) => normCod(c.nombre) === normCod(pts[3]));
+      if (c) camp = c[0]; else errores.push(`${nro}: no encuentro la campaña "${pts[3]}" (se crea igual, sin campaña).`);
+    }
+    pts[2].split(",").map(t => t.trim()).filter(Boolean).forEach(fw => {
+      const f = planBuscarCls("formatos", fw);
+      if (!f) { errores.push(`${nro}: no encuentro el formato "${fw}" (lo salteo).`); return; }
+      filas.push({ linea, codigo, anguloCod: ang.codigo, cantProd: planCantDefault(linea, codigo, ang.codigo), formatoCod: f.codigo, campanaDestino: camp });
+    });
+  });
+  plan.filasTexto = filas; plan.errores = errores;
+}
+function planFilas() {
+  if (plan.modo === "pegar") return plan.filasTexto;
+  if (!plan.linea || !plan.ang) return [];
+  const codigo = plan.codigo.trim() || (normCod(plan.linea) === "VARIOS" ? "VARIOS" : "");
+  return plan.fmts.map(f => ({ linea: plan.linea, codigo, anguloCod: plan.ang, cantProd: plan.cant, formatoCod: f, campanaDestino: plan.camp }));
+}
+function planClave(f) { return [f.linea, normCod(f.codigo), f.anguloCod, f.formatoCod].join("|"); }
+function planDuplicada(f) {
+  const k = planClave(f);
+  return Object.values(items).some(it => it && normalizeEstado(it.estado) === "sin_comenzar" && planClave(it) === k);
+}
+function planSet(campo, val) {
+  plan.ok = "";
+  if (campo === "fmt") {
+    const i = plan.fmts.indexOf(val);
+    if (i >= 0) plan.fmts.splice(i, 1); else plan.fmts.push(val);
+  } else if (campo === "cant") {
+    plan.cant = plan.cant === val ? "" : val; plan.cantManual = true;
+  } else {
+    plan[campo] = plan[campo] === val ? "" : val;
+    if (!plan.cantManual && (campo === "linea" || campo === "ang")) plan.cant = planCantDefault(plan.linea, plan.codigo, plan.ang);
+  }
+  renderPlan();
+}
+function planCodigo(v) {
+  plan.codigo = v; plan.ok = "";
+  if (!plan.cantManual) plan.cant = planCantDefault(plan.linea, plan.codigo, plan.ang);
+  renderPlanPreview();
+}
+function planModo(m) { plan.modo = m; plan.ok = ""; if (m === "pegar") planLeerTexto(); renderPlan(); }
+function planTexto(v) { plan.texto = v; plan.ok = ""; planLeerTexto(); renderPlanPreview(); }
+function planForzar(k) { if (plan.forzar.has(k)) plan.forzar.delete(k); else plan.forzar.add(k); renderPlanPreview(); }
+function planChips(opts, actual, campo, multi) {
+  if (!opts.length) return `<div class="mx-empty">Sin opciones — se cargan en la pestaña Formatos y ángulos.</div>`;
+  return opts.map(o => {
+    const on = multi ? actual.includes(o.v) : actual === o.v;
+    return `<button type="button" class="clas-btn ${on ? "on" : ""}" onclick="planSet('${campo}','${escapeAttr(o.v)}')">${escapeHtml(o.l)}</button>`;
+  }).join("");
+}
+function renderPlan() {
+  const el = document.getElementById("plan-wrap");
+  if (!el) return;
+  if (plan.modo === "pegar") planLeerTexto();
+  const cls = tipo => clsList(tipo).map(e => ({ v: e.codigo, l: e.nombre }));
+  const camps = campanasOrdenadas().map(([cid, c]) => ({ v: cid, l: c.nombre }));
+  const tabs = `<div class="plan-tabs">
+    <button class="plan-tab ${plan.modo === "elegir" ? "on" : ""}" onclick="planModo('elegir')">Elegir</button>
+    <button class="plan-tab ${plan.modo === "pegar" ? "on" : ""}" onclick="planModo('pegar')">Pegar plan</button></div>`;
+  let box;
+  if (plan.modo === "elegir") {
+    box = `<div class="plan-box">
+      <div class="plan-row"><div class="mx-label">Línea</div><div class="clas-opts">${planChips(planLineas().map(l => ({ v: l, l })), plan.linea, "linea")}</div></div>
+      <div class="plan-row"><div class="mx-label">Código del artículo</div><input class="plan-input" value="${escapeHtml(plan.codigo)}" placeholder="4727 (si es un look: VARIOS)" oninput="planCodigo(this.value)">
+        <div class="plan-hint">Opcional. Si la línea es VARIOS queda VARIOS solo.</div></div>
+      <div class="plan-row"><div class="mx-label">Ángulo</div><div class="clas-opts">${planChips(cls("angulos"), plan.ang, "ang")}</div></div>
+      <div class="plan-row"><div class="mx-label">Productos en el video</div><div class="clas-opts">${planChips([{ v: "1P", l: CANT_LABEL["1P"] }, { v: "VP", l: CANT_LABEL.VP }], plan.cant, "cant")}</div></div>
+      <div class="plan-row"><div class="mx-label">Formatos — tildá todos los que quieras</div><div class="clas-opts">${planChips(cls("formatos"), plan.fmts, "fmt", true)}</div></div>
+      ${camps.length ? `<div class="plan-row"><div class="mx-label">Va para la campaña (opcional)</div><div class="clas-opts">${planChips(camps, plan.camp, "camp")}</div></div>` : ""}
+    </div>`;
+  } else {
+    box = `<div class="plan-box">
+      <div class="plan-row"><div class="mx-label">Un renglón por grupo: línea [código] / ángulo / formatos separados por coma [/ campaña]</div>
+        <textarea class="plan-text" placeholder="${escapeHtml(PLAN_EJEMPLO)}" oninput="planTexto(this.value)">${escapeHtml(plan.texto)}</textarea>
+        <div class="plan-hint">Ej: <code>VARIOS / Básico / Probador, Prenda sola</code> · <code>JEANS 4727 / Calce / Fit check</code>. Los nombres se escriben como en las listas; mayúsculas y tildes no importan.</div></div>
+      <div id="plan-errores"></div>
+    </div>`;
+  }
+  el.innerHTML = tabs + box + `<div id="plan-ok"></div><div class="plan-bar"><span class="plan-count" id="plan-count"></span>
+    <button class="btn btn-primary" id="plan-crear" onclick="planCrear()">Crear piezas</button></div><div class="plan-grid" id="plan-grid"></div>`;
+  renderPlanPreview();
+}
+function renderPlanPreview() {
+  const filas = planFilas();
+  const errEl = document.getElementById("plan-errores");
+  if (errEl) errEl.innerHTML = plan.errores.length ? `<div class="plan-err">${plan.errores.map(escapeHtml).join("<br>")}</div>` : "";
+  const okEl = document.getElementById("plan-ok");
+  if (okEl) okEl.innerHTML = plan.ok ? `<div class="plan-ok"><span>${escapeHtml(plan.ok)}</span><button class="btn btn-ghost btn-sm" onclick="setView('board'); setBoardEstado('sin_comenzar')">Ver en el tablero</button></div>` : "";
+  const vistas = new Set();
+  let n = 0;
+  const cards = filas.map(f => {
+    const k = planClave(f);
+    const repetidaEnPlan = vistas.has(k); vistas.add(k);
+    const dup = repetidaEnPlan || planDuplicada(f);
+    const va = !dup || plan.forzar.has(k);
+    if (va) n++;
+    const camp = f.campanaDestino && campanasLista[f.campanaDestino] ? ` · ${escapeHtml(campanasLista[f.campanaDestino].nombre)}` : "";
+    return `<div class="plan-card ${va ? "" : "skip"}">
+      <div class="plan-card-ph">🎬</div>
+      <div class="plan-card-body">
+        <div class="plan-card-est">Sin Comenzar</div>
+        <div class="plan-card-fmt">${escapeHtml(clsNombre("formatos", f.formatoCod))}</div>
+        <div class="plan-card-sub">${escapeHtml(f.linea)}${f.codigo && f.codigo !== f.linea ? " " + escapeHtml(f.codigo) : ""} · ${escapeHtml(clsNombre("angulos", f.anguloCod))}${camp}</div>
+        <div class="plan-card-cre">Creadora: a asignar</div>
+        <code>${escapeHtml(nombreAnuncio(f))}</code>
+        ${dup ? `<div class="plan-dup">${repetidaEnPlan ? "Está repetida en este plan." : "Ya hay una igual en Sin Comenzar."} ${va ? "Se va a crear igual." : "No se crea."}
+          <br><button onclick="planForzar('${escapeAttr(k)}')">${va ? "No crearla" : "Crear igual"}</button></div>` : ""}
+      </div></div>`;
+  });
+  document.getElementById("plan-grid").innerHTML = cards.join("") || `<div class="empty-col">${plan.modo === "elegir" ? "Elegí línea, ángulo y al menos un formato para ver las piezas que se van a crear." : "Pegá el plan para ver las piezas que se van a crear."}</div>`;
+  document.getElementById("plan-count").textContent = filas.length ? `Se van a crear ${n} pieza${n === 1 ? "" : "s"}` : "";
+  const b = document.getElementById("plan-crear");
+  b.textContent = n ? `Crear ${n} pieza${n === 1 ? "" : "s"}` : "Crear piezas";
+  b.style.opacity = n ? "1" : ".5";
+}
+function planCrear() {
+  const filas = planFilas();
+  const vistas = new Set();
+  const aCrear = filas.filter(f => {
+    const k = planClave(f);
+    const dup = vistas.has(k) || planDuplicada(f); vistas.add(k);
+    return !dup || plan.forzar.has(k);
+  });
+  if (!aCrear.length) {
+    alert(filas.length ? "Todas las piezas ya existen en Sin Comenzar. Tocá \"Crear igual\" en las que quieras duplicar." : (plan.modo === "elegir" ? "Elegí línea, ángulo y al menos un formato." : "Pegá el plan primero."));
+    return;
+  }
+  const ahora = Date.now(), lote = "plan_" + ahora, U = {};
+  aCrear.forEach(f => {
+    const key = db.ref(`${ROOT}/items`).push().key;
+    U[`items/${key}`] = {
+      linea: f.linea, codigo: f.codigo, anguloCod: f.anguloCod, cantProd: f.cantProd || "", formatoCod: f.formatoCod,
+      creadoraCod: "", campanaDestino: f.campanaDestino || "", estado: "sin_comenzar", prendas: [],
+      feed: false, tiktok: false, pautaAri: false, pautaFede: false, anuncioApagado: false,
+      planificado: true, planLote: lote, createdAt: ahora, updatedAt: ahora
+    };
+  });
+  db.ref(ROOT).update(U).then(() => {
+    const grupos = [...new Set(aCrear.map(f => `${f.linea} / ${clsNombre("angulos", f.anguloCod)}`))].join(", ");
+    logAction(`planificó ${aCrear.length} pieza${aCrear.length === 1 ? "" : "s"}`, { producto: grupos });
+    plan.ok = `Listo: ${aCrear.length} pieza${aCrear.length === 1 ? "" : "s"} en Sin Comenzar (${grupos}).`;
+    plan.fmts = []; plan.forzar.clear();
+    if (plan.modo === "pegar") plan.texto = "";
+    renderPlan();
+  }).catch(() => alert("No se pudieron crear las piezas. Revisá la conexión y probá de nuevo."));
 }
 
 // ---------- Pestaña "Formatos y ángulos": guía para creadoras + listas que edita Ariel ----------
