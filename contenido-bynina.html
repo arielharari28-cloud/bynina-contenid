@@ -11,7 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <style>
   :root{
-    --bg:#f5f4ef;
+    --bg:#f6f6f4;
     --card:#ffffff;
     --ink:#25231f;
     --ink-soft:#847d70;
@@ -39,10 +39,61 @@
     font-family:'Inter',sans-serif;
     padding:0 0 60px 0;
   }
-  .wrap{max-width:1100px;margin:0 auto;padding:20px 14px;}
+  .wrap{max-width:1240px;margin:0;padding:20px 26px;min-width:0;}
+  /* Menú a la izquierda, como el Dashboard */
+  .shell{display:grid;grid-template-columns:210px minmax(0,1fr);min-height:100vh;}
+  .side{background:#fafafa;border-right:1px solid #ebebeb;padding:18px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;overflow-y:auto;}
+  .side-brand{padding:0 8px 14px;border-bottom:1px solid #ebebeb;margin-bottom:10px;}
+  .side-sup{font-size:10px;letter-spacing:.08em;color:#8a8a8a;font-weight:600;}
+  .side-title{font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;color:var(--ink);}
+  .side-nav{display:flex;flex-direction:column;gap:2px;}
+  .nav-item{display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:none;background:transparent;padding:9px 10px;border-radius:9px;font-family:'Inter',sans-serif;font-size:13.5px;color:#333;cursor:pointer;}
+  .nav-item:hover{background:#f0f0f2;}
+  .nav-item.active{background:#eef0ff;color:#4338ca;font-weight:600;}
+  .side-new{margin-top:12px;width:100%;}
+  .side-foot{margin-top:auto;padding:10px 8px 0;font-size:11px;color:var(--ink-soft);}
+  .side-foot .persona-tag{margin-left:0;}
+  .menu-btn{display:none;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;font-size:16px;cursor:pointer;margin-right:10px;}
+  .side-backdrop{display:none;}
+  .view-sub{font-size:12.5px;color:var(--ink-soft);margin-top:3px;}
+  /* Tablero: etapas como botones + grilla de miniaturas */
+  .stage-bar{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px;}
+  .stage-pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 13px;font-family:'Inter',sans-serif;font-size:12.5px;color:#444;cursor:pointer;display:flex;align-items:center;gap:6px;}
+  .stage-pill b{font-weight:700;}
+  .stage-pill.drop-hover{outline:2px dashed var(--ink-soft);outline-offset:2px;}
+  .stage-pill .board-card{display:none;}
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+  .pcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px;cursor:grab;display:flex;flex-direction:column;min-width:0;}
+  .pcard:hover{border-color:#cfcabd;}
+  .pcard.dragging{opacity:.4;}
+  .pcard-ph{position:relative;margin-bottom:8px;}
+  .grid-thumb{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:9px;display:block;background:var(--bg);}
+  .grid-thumb-ph{width:100%;aspect-ratio:9/16;border-radius:9px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:30px;}
+  .pcard-tag{position:absolute;top:8px;left:8px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:#fef3c7;color:#92400e;}
+  .pcard-tag.venc{background:#dc2626;color:#fff;}
+  .pcard-play{position:absolute;bottom:8px;right:8px;font-size:11px;font-weight:600;padding:4px 9px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;text-decoration:none;}
+  .pcard-name{font-weight:600;font-size:13px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .pcard-meta{font-size:11.5px;color:var(--ink-soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pcard-desc{font-size:11px;color:var(--ink);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pcard-dates{font-size:10.5px;color:var(--ink-soft);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pcard-ch{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+  .pcard-ch .board-mini-toggle{font-size:10px;padding:2px 6px;}
+  .pcard-ch .board-mini-toggle:not(.on){opacity:.4;}
+  .pcard-ch .board-mini-toggle:not(.on):hover{opacity:1;}
+  .empty-grid{grid-column:1/-1;font-size:13px;color:var(--ink-soft);background:#fff;border:1px dashed var(--line);border-radius:12px;padding:22px;text-align:center;}
+  @media (max-width:820px){
+    .shell{display:block;}
+    .side{position:fixed;left:0;top:0;bottom:0;width:240px;z-index:60;transform:translateX(-100%);transition:transform .2s;box-shadow:0 0 30px rgba(0,0,0,.12);}
+    .shell.side-open .side{transform:none;}
+    .shell.side-open .side-backdrop{display:block;position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:55;}
+    .menu-btn{display:inline-block;flex-shrink:0;}
+    header{flex-wrap:nowrap;align-items:flex-start;}
+    .wrap{padding:14px 12px;}
+    .pgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  }
   header{
     display:flex;
-    align-items:baseline;
+    align-items:center;
     justify-content:space-between;
     margin-bottom:16px;
     flex-wrap:wrap;
@@ -422,24 +473,27 @@
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="shell" id="shell">
+<aside class="side" id="side">
+  <div class="side-brand"><div class="side-sup">BYNINA</div><div class="side-title">Contenido</div></div>
+  <nav class="tabs side-nav">
+    <button class="nav-item" id="tab-board" onclick="setView('board')"><span>🗂️</span>Tablero</button>
+    <button class="nav-item" id="tab-cal" onclick="setView('cal')"><span>📅</span>Calendario</button>
+    <button class="nav-item" id="tab-log" onclick="setView('log')"><span>🕘</span>Historial</button>
+    <button class="nav-item" id="tab-pauta" onclick="setView('pauta')"><span>📣</span>Pauta Ari</button>
+    <button class="nav-item" id="tab-camp" onclick="setView('camp')"><span>🎯</span>Por campaña</button>
+    <button class="nav-item" id="tab-clas" onclick="setView('clas')"><span>🏷️</span>Clasificar</button>
+    <button class="nav-item" id="tab-guia" onclick="setView('guia')"><span>🧩</span>Formatos y ángulos</button>
+  </nav>
+  <button class="btn btn-primary side-new" onclick="openModal(null)">+ Nueva pieza</button>
+  <div class="side-foot"><span class="persona-tag" id="personaTag"></span> <span class="conn" id="connStatus">Conectando…</span></div>
+</aside>
+<div class="side-backdrop" onclick="toggleSide(false)"></div>
+<main class="wrap">
   <header>
-    <h1>Contenido By Nina <span class="persona-tag" id="personaTag"></span></h1>
-    <span class="conn" id="connStatus">Conectando…</span>
+    <button class="menu-btn" onclick="toggleSide()" aria-label="Menú">☰</button>
+    <div><h1 id="view-title">🗂️ Tablero</h1><div class="view-sub" id="view-sub"></div></div>
   </header>
-
-  <div class="addbar">
-    <div class="tabs">
-      <button class="btn btn-ghost btn-sm" id="tab-board" onclick="setView('board')">Tablero</button>
-      <button class="btn btn-ghost btn-sm" id="tab-cal" onclick="setView('cal')">Calendario</button>
-      <button class="btn btn-ghost btn-sm" id="tab-log" onclick="setView('log')">Historial</button>
-      <button class="btn btn-ghost btn-sm" id="tab-pauta" onclick="setView('pauta')">Pauta Ari</button>
-      <button class="btn btn-ghost btn-sm" id="tab-camp" onclick="setView('camp')">Por campaña</button>
-      <button class="btn btn-ghost btn-sm" id="tab-clas" onclick="setView('clas')">Clasificar</button>
-      <button class="btn btn-ghost btn-sm" id="tab-guia" onclick="setView('guia')">Formatos y ángulos</button>
-    </div>
-    <button class="btn btn-primary" onclick="openModal(null)">+ Nueva pieza</button>
-  </div>
 
   <div class="filterbar" id="board-filters">
     <div class="board-search">
@@ -452,9 +506,9 @@
     <button class="btn btn-ghost btn-sm" onclick="clearFilters()">Limpiar filtros</button>
   </div>
 
-  <div id="board-scroll-top"><div id="board-scroll-top-inner"></div></div>
   <div id="view-board">
-    <div class="board-columns" id="board-columns"></div>
+    <div class="stage-bar" id="stage-bar"></div>
+    <div class="pgrid" id="board-grid"></div>
   </div>
 
   <div id="view-cal" style="display:none;">
@@ -541,6 +595,7 @@
       </div>
     </div>
   </div>
+</main>
 </div>
 
 <div class="sheet-overlay" id="sheet-overlay" onclick="if(event.target===this) cerrarSheet()">
@@ -1310,109 +1365,101 @@ function filteredBoardItems() {
     .sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0));
 }
 
+// Tablero (oct 2026): las etapas son botones con contador y debajo va la grilla de miniaturas
+// grandes (9:16) de la etapa elegida, como el Foco del Dashboard. Para cambiar de etapa se
+// arrastra la tarjeta al botón de la etapa (o se cambia en la edición, como siempre).
+let boardEstado = "listo";
+try { boardEstado = localStorage.getItem("contenido_board_estado") || "listo"; } catch (e) {}
+function setBoardEstado(k) {
+  boardEstado = k;
+  try { localStorage.setItem("contenido_board_estado", k); } catch (e) {}
+  renderBoardList();
+}
+
 function renderBoardList() {
-  const container = document.getElementById("board-columns");
-  if (!container) return;
+  const bar = document.getElementById("stage-bar");
+  const grid = document.getElementById("board-grid");
+  if (!bar || !grid) return;
+  if (!ESTADOS.some(e => e.key === boardEstado)) boardEstado = "listo";
 
   const list = filteredBoardItems();
   boardSortables.forEach(s => s.destroy());
   boardSortables = [];
 
-  container.innerHTML = ESTADOS.map(e => `
-    <div class="board-col" data-estado="${e.key}">
-      <div class="board-col-head">
-        <span class="board-col-title" style="background:${e.bg};color:${e.color};">${e.label}</span>
-        <span class="board-col-count" id="col-count-${e.key}"></span>
-      </div>
-      <div class="board-col-cards" id="col-cards-${e.key}" data-estado="${e.key}"></div>
-    </div>
-  `).join("");
+  bar.innerHTML = ESTADOS.map(e => {
+    const n = list.filter(it => it.estadoKey === e.key).length;
+    const on = e.key === boardEstado;
+    return `<button class="stage-pill" data-estado="${e.key}" onclick="setBoardEstado('${e.key}')"
+      style="${on ? `background:${e.bg};color:${e.color};border-color:${e.color};font-weight:600;` : ""}">${e.label} · <b>${n}</b></button>`;
+  }).join("");
 
-  ESTADOS.forEach(e => {
-    const colItems = list.filter(it => it.estadoKey === e.key);
-    document.getElementById(`col-count-${e.key}`).textContent = colItems.length;
-    const cardsEl = document.getElementById(`col-cards-${e.key}`);
-    if (!colItems.length) {
-      cardsEl.innerHTML = `<div class="empty-col">Sin piezas</div>`;
-    } else {
-      cardsEl.innerHTML = "";
-      colItems.forEach(it => cardsEl.appendChild(renderBoardCard(it)));
-    }
-    boardSortables.push(new Sortable(cardsEl, {
-      group: "board",
-      animation: 150,
-      ghostClass: "dragging",
-      delay: 80,
-      delayOnTouchOnly: true,
-      onEnd: function(evt) {
+  const colItems = list.filter(it => it.estadoKey === boardEstado);
+  grid.innerHTML = "";
+  if (!colItems.length) {
+    grid.innerHTML = `<div class="empty-grid">No hay piezas en “${escapeHtml(estadoInfo(boardEstado).label)}”${list.length ? " con estos filtros" : ""}.</div>`;
+  } else {
+    colItems.forEach(it => grid.appendChild(renderBoardCard(it)));
+  }
+
+  // Arrastrar una tarjeta a un botón de etapa = moverla de etapa.
+  boardSortables.push(new Sortable(grid, {
+    group: { name: "board", pull: true, put: false },
+    sort: false, animation: 150, ghostClass: "dragging",
+    delay: 120, delayOnTouchOnly: true
+  }));
+  bar.querySelectorAll(".stage-pill").forEach(pill => {
+    boardSortables.push(new Sortable(pill, {
+      group: { name: "board", pull: false, put: true },
+      sort: false,
+      onMove: () => { bar.querySelectorAll(".stage-pill").forEach(p => p.classList.remove("drop-hover")); pill.classList.add("drop-hover"); },
+      onAdd: function(evt) {
         const id = evt.item.dataset.id;
-        const newEstado = evt.to.dataset.estado;
-        const oldEstado = evt.from.dataset.estado;
-        if (id && newEstado && newEstado !== oldEstado) {
-          moveItemEstado(id, newEstado);
-        }
+        const nuevo = pill.dataset.estado;
+        evt.item.remove();
+        if (id && nuevo && items[id] && normalizeEstado(items[id].estado) !== nuevo) moveItemEstado(id, nuevo);
+        renderBoardList();
       }
     }));
   });
-
-  syncBoardScrollTop();
 }
 
-function syncBoardScrollTop() {
-  const top = document.getElementById("board-scroll-top");
-  const topInner = document.getElementById("board-scroll-top-inner");
-  const cols = document.getElementById("board-columns");
-  if (!top || !cols) return;
-  topInner.style.width = cols.scrollWidth + "px";
-  if (top.dataset.wired) return;
-  top.dataset.wired = "1";
-  top.addEventListener("scroll", () => { cols.scrollLeft = top.scrollLeft; });
-  cols.addEventListener("scroll", () => { top.scrollLeft = cols.scrollLeft; });
-}
+function syncBoardScrollTop() {}
 
 function renderBoardCard(it) {
   const div = document.createElement("div");
-  div.className = "board-card";
+  div.className = "pcard";
   div.dataset.id = it.id;
   div.onclick = () => openModal(it.id);
-  const thumb = thumbHtml(it, "board-thumb", 120);
-  const subParts = [it.producto, it.publico, angTxt(it), creTxt(it)].filter(Boolean).join(" · ");
+  const thumb = thumbHtml(it, "grid-thumb", 480);
+  const meta = [it.producto, it.publico, angTxt(it), creTxt(it)].filter(Boolean).join(" · ");
 
   const miniToggle = (field, label) => {
     const on = !!it[field];
-    return `<span class="board-mini-toggle ${on?'on':''}" onclick="event.stopPropagation(); quickToggle('${it.id}','${field}',${!on})">${label}</span>`;
+    return `<span class="board-mini-toggle ${on?'on':''}" title="${on?'Quitar de':'Agregar a'} ${label}" onclick="event.stopPropagation(); quickToggle('${it.id}','${field}',${!on})">${label}</span>`;
   };
 
+  let tag = "";
+  if (it.fechaLimite && !["programado","subido"].includes(it.estadoKey)) {
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const venc = new Date(it.fechaLimite + "T00:00:00") < hoy;
+    tag = `<span class="pcard-tag ${venc ? "venc" : ""}">${venc ? "Venció" : "Límite"} ${formatDateShort(it.fechaLimite)}</span>`;
+  }
   const dateBits = [];
-  if (it.fechaCreacion) dateBits.push(`Creado: ${formatDateShort(it.fechaCreacion)}`);
-  if (it.fechaLimite) dateBits.push(`Límite: ${formatDateShort(it.fechaLimite)}`);
-  if (it.fechaEntregaReal) dateBits.push(`Entregado: ${formatDateShort(it.fechaEntregaReal)}`);
-  if (it.fechaFeed) dateBits.push(`Feed: ${formatDateShort(it.fechaFeed)}`);
-  if (it.fechaTiktok) dateBits.push(`TikTok: ${formatDateShort(it.fechaTiktok)}`);
-  const datesHtml = dateBits.length ? `<div class="board-dates">${dateBits.join(" · ")}</div>` : "";
-  const descHtml = it.descripcion ? `<div class="board-desc">${escapeHtml(it.descripcion)}</div>` : "";
-  const videoBtn = it.drive
-    ? `<a class="board-video-btn" href="${it.drive}" target="_blank" onclick="event.stopPropagation()">Ver video</a>`
-    : "";
+  if (it.fechaCreacion) dateBits.push(`Creado ${formatDateShort(it.fechaCreacion)}`);
+  if (it.fechaEntregaReal) dateBits.push(`Entregado ${formatDateShort(it.fechaEntregaReal)}`);
+  if (it.fechaFeed) dateBits.push(`Feed ${formatDateShort(it.fechaFeed)}`);
+  if (it.fechaTiktok) dateBits.push(`TikTok ${formatDateShort(it.fechaTiktok)}`);
+  const play = it.drive ? `<a class="pcard-play" href="${it.drive}" target="_blank" onclick="event.stopPropagation()">▶ Ver</a>` : "";
 
   div.innerHTML = `
-    <div class="board-card-main">
-      ${thumb}
-      <div class="board-mid">
-        <div class="board-cat">${escapeHtml(nombrePieza(it) || "Sin línea")}</div>
-        <div class="board-sub">${escapeHtml(subParts || "—")}</div>
-      </div>
-    </div>
-    ${descHtml}
-    ${datesHtml}
-    <div class="board-card-extra">
-      ${miniToggle("feed","Feed")}
-      ${miniToggle("tiktok","TikTok")}
-      ${miniToggle("pautaFede","Pauta Fede")}
-      ${miniToggle("pautaAri","Pauta Ari")}
-      ${videoBtn}
-    </div>
-  `;
+    <div class="pcard-ph">${thumb}${tag}${play}</div>
+    <div class="pcard-name">${escapeHtml(nombrePieza(it) || "Sin línea")}</div>
+    <div class="pcard-meta">${escapeHtml(meta || "—")}</div>
+    ${it.descripcion ? `<div class="pcard-desc" title="${escapeHtml(it.descripcion)}">${escapeHtml(it.descripcion)}</div>` : ""}
+    ${dateBits.length ? `<div class="pcard-dates">${dateBits.join(" · ")}</div>` : ""}
+    <div class="pcard-ch">
+      ${miniToggle("feed","Feed")}${miniToggle("tiktok","TikTok")}${miniToggle("pautaFede","Pauta Fede")}${miniToggle("pautaAri","Pauta Ari")}
+    </div>`;
   return div;
 }
 
@@ -1436,8 +1483,22 @@ function moveItemEstado(id, newEstado) {
 }
 
 // ---------- Calendario ----------
+const VIEW_TITULOS = {
+  board:["🗂️ Tablero","Las piezas por etapa. Tocá una para editarla; arrastrala a otra etapa para moverla."],
+  cal:["📅 Calendario",""], log:["🕘 Historial",""], pauta:["📣 Pauta Ari",""],
+  camp:["🎯 Por campaña",""], clas:["🏷️ Clasificar",""], guia:["🧩 Formatos y ángulos",""]
+};
+function toggleSide(open) {
+  const s = document.getElementById("shell");
+  if (!s) return;
+  s.classList.toggle("side-open", open === undefined ? !s.classList.contains("side-open") : !!open);
+}
 function setView(v) {
   currentView = v;
+  const vt = VIEW_TITULOS[v] || ["",""];
+  const tEl = document.getElementById("view-title"); if (tEl) tEl.textContent = vt[0];
+  const sEl = document.getElementById("view-sub"); if (sEl) sEl.textContent = vt[1];
+  toggleSide(false);
   document.getElementById("view-board").style.display = v === "board" ? "block" : "none";
   document.getElementById("board-filters").style.display = v === "board" ? "flex" : "none";
   document.getElementById("view-cal").style.display = v === "cal" ? "block" : "none";
