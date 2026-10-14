@@ -452,6 +452,8 @@
   .cs-photo{position:relative;}
   .cs-badge{position:absolute;top:6px;right:6px;font-size:10.5px;font-weight:700;border-radius:999px;padding:2px 7px;background:rgba(255,255,255,.93);color:var(--ink);}
   .cs-pz b{font-size:12.5px;}
+  .cs-ang{align-self:flex-start;font-size:11px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;border-radius:999px;padding:2px 8px;background:#e6efe9;color:#2f5d46;}
+  .cs-ang.falta{background:#f6e3df;color:#a8432f;}
   .cs-pz small{font-size:11.5px;color:var(--ink-soft);line-height:1.3;}
   .cs-pedir{border:1px dashed var(--red);border-radius:10px;aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;font-weight:600;color:var(--red);padding:8px;}
   .cs-conj{display:flex;flex-wrap:wrap;gap:5px;padding:4px 0 10px;}
@@ -2029,6 +2031,7 @@ function csPiezaHtml(it) {
   return `<div class="cs-pz" onclick="openModal('${it.id}')">
     <div class="cs-photo">${thumbHtml(it, "mini-photo", 300)}${badge ? `<span class="cs-badge">${escapeHtml(badge)}</span>` : ""}</div>
     <b>${escapeHtml([nombrePieza(it), it.codigo].filter((v, i, a) => v && a.findIndex(x => String(x).trim().toUpperCase() === String(v).trim().toUpperCase()) === i).join(" ") || "Sin producto")}</b>
+    ${angTxt(it) ? `<span class="cs-ang">${escapeHtml(angTxt(it))}</span>` : `<span class="cs-ang falta">Sin ángulo</span>`}
     <small>${escapeHtml([creTxt(it), fmtTxt(it)].filter(Boolean).join(" · ") || "Sin clasificar")}${escapeHtml(extra)}</small>
     ${et === "listo" ? `<button class="btn btn-ghost btn-sm" style="align-self:flex-start;margin-top:2px;" title="No usar esta pieza en pauta" onclick="event.stopPropagation(); toggleNoPautar('${it.id}', true)">🚫 No pautar</button>` : ""}
     ${et === "nopautar" ? `<button class="btn btn-ghost btn-sm" style="align-self:flex-start;margin-top:2px;" title="Volver a habilitar para pauta" onclick="event.stopPropagation(); toggleNoPautar('${it.id}', false)">↺ Volver a pendientes</button>` : ""}
