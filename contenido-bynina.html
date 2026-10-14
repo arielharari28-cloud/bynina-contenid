@@ -655,6 +655,7 @@
       <label class="toggle" id="tg-feed"><input type="checkbox" onchange="toggleClass('tg-feed')"> Feed</label>
       <label class="toggle" id="tg-tiktok"><input type="checkbox" onchange="toggleClass('tg-tiktok')"> TikTok</label>
       <label class="toggle" id="tg-anuncioApagado"><input type="checkbox" onchange="toggleClass('tg-anuncioApagado')"> Apagado</label>
+      <label class="toggle" id="tg-noPautar"><input type="checkbox" onchange="toggleClass('tg-noPautar')"> No pautar</label>
     </div>
 
     <div class="mx-sec">
@@ -1758,7 +1759,7 @@ function renderPautaAri() {
   // mientras el anuncio sigue activo — si se marcó "Anuncio apagado" sale de estas columnas
   // (se da por entendido que ya estuvo usado, y pasa a la columna de apagados).
   // Anuncio apagado: piezas cuyo anuncio se apagó por fatiga/sin entrega, para refrescar o revisar.
-  const pendientes = ready.filter(it => !it.pautaFede && !it.pautaAri && !it.anuncioApagado).sort(sorter);
+  const pendientes = ready.filter(it => !it.pautaFede && !it.pautaAri && !it.anuncioApagado && !it.noPautar).sort(sorter);
   const usadosAri = ready.filter(it => it.pautaAri && !it.anuncioApagado).sort(sorter);
   const usadosFede = ready.filter(it => it.pautaFede && !it.anuncioApagado).sort(sorter);
   const apagados = ready.filter(it => it.anuncioApagado).sort(sorter);
@@ -1910,6 +1911,13 @@ function toggleAnuncioApagado(itemId, next) {
   logAction((next ? "marcó" : "desmarcó") + " anuncio apagado", items[itemId] || {});
 }
 
+// "No pautar": la pieza está lista pero se decidió no usarla en pauta. Sale de Pendiente Utilizar
+// y de "Sin campaña asignada"; queda en una sección aparte para poder volver a habilitarla.
+function toggleNoPautar(itemId, next) {
+  db.ref(`${ROOT}/items/${itemId}`).update({ noPautar: next, updatedAt: Date.now() });
+  logAction((next ? "marcó" : "desmarcó") + " no pautar", items[itemId] || {});
+}
+
 // Tarjeta compacta de Pauta Ari: lo importante a la vista (qué es, quién, campaña actual) y las
 // acciones chicas; el formulario de campaña se abre solo cuando se necesita.
 function renderCard(it, estado) {
@@ -1969,7 +1977,7 @@ function renderCard(it, estado) {
       <div class="pcard-actions" onclick="event.stopPropagation()">
         <button class="btn ${formAbierto ? "btn-ghost" : "btn-primary"} btn-sm" onclick="togglePautaForm('${it.id}')">${formAbierto ? "Cancelar" : (entries.length ? "↪ Traspasar" : "+ Cargar campaña")}</button>
         <span style="flex:1"></span>
-        ${apagadoBtn}
+        ${estado === "pend" ? `<button class="btn btn-ghost btn-sm" title="No usar esta pieza en pauta" onclick="event.stopPropagation(); toggleNoPautar('${it.id}', true)">🚫 No pautar</button>` : apagadoBtn}
       </div>
     </div>
   `;
@@ -2003,6 +2011,7 @@ function campKey(c) { return (c.tipo || "") + "||" + (c.nombre || ""); }
 function etapaPieza(it) {
   if (it.anuncioApagado) return "apagado";
   if (it.pautaAri || it.pautaFede) return "pautado";
+  if (it.noPautar) return "nopautar";
   return ESTADOS_LISTOS.includes(normalizeEstado(it.estado)) ? "listo" : "proceso";
 }
 function campanaDePieza(it, porKey) {
@@ -2019,8 +2028,10 @@ function csPiezaHtml(it) {
   const extra = et === "proceso" && it.fechaLimite ? " · entrega " + formatDateShort(it.fechaLimite) : "";
   return `<div class="cs-pz" onclick="openModal('${it.id}')">
     <div class="cs-photo">${thumbHtml(it, "mini-photo", 300)}${badge ? `<span class="cs-badge">${escapeHtml(badge)}</span>` : ""}</div>
-    <b>${escapeHtml([nombrePieza(it), it.codigo].filter(Boolean).join(" ") || "Sin producto")}</b>
+    <b>${escapeHtml([nombrePieza(it), it.codigo].filter((v, i, a) => v && a.findIndex(x => String(x).trim().toUpperCase() === String(v).trim().toUpperCase()) === i).join(" ") || "Sin producto")}</b>
     <small>${escapeHtml([creTxt(it), fmtTxt(it)].filter(Boolean).join(" · ") || "Sin clasificar")}${escapeHtml(extra)}</small>
+    ${et === "listo" ? `<button class="btn btn-ghost btn-sm" style="align-self:flex-start;margin-top:2px;" title="No usar esta pieza en pauta" onclick="event.stopPropagation(); toggleNoPautar('${it.id}', true)">🚫 No pautar</button>` : ""}
+    ${et === "nopautar" ? `<button class="btn btn-ghost btn-sm" style="align-self:flex-start;margin-top:2px;" title="Volver a habilitar para pauta" onclick="event.stopPropagation(); toggleNoPautar('${it.id}', false)">↺ Volver a pendientes</button>` : ""}
   </div>`;
 }
 function csGrupoHtml(titulo, arr) {
@@ -2047,10 +2058,12 @@ function renderPorCampana() {
     grupos[id] = { id, tipo: c.tipo || "", nombre: c.nombre, conjuntos: Array.isArray(c.conjuntos) ? c.conjuntos : Object.values(c.conjuntos || {}), items: [] };
     orden.push(id);
   });
-  const sin = [], apagados = [];
+  const sin = [], apagados = [], noPaut = [];
   Object.entries(items).forEach(([id, raw]) => {
     const it = { id, ...raw };
+    if (it.pautaFede && !it.pautaAri) return;   // lo que pauta Fede no se muestra acá, para no pisarse
     if (etapaPieza(it) === "apagado") { apagados.push(it); return; }
+    if (etapaPieza(it) === "nopautar") { noPaut.push(it); return; }
     const g = campanaDePieza(it, porKey);
     if (!g) { sin.push(it); return; }
     if (!grupos[g]) {   // campaña cargada en la pieza que no está en la lista de campañas
@@ -2127,6 +2140,12 @@ function renderPorCampana() {
     html += `<details class="cs-camp cs-set" ${csAbiertos.has("apag") ? "open" : ""} ontoggle="csToggle(this,'apag')" style="padding:4px 14px">
       <summary><div class="cs-sname">Anuncios apagados<small>${apagados.length} pieza${apagados.length !== 1 ? "s" : ""}</small></div><span></span><span class="cs-flecha">›</span></summary>
       <div class="cs-body"><div class="cs-grid">${apagados.map(csPiezaHtml).join("")}</div></div>
+    </details>`;
+  }
+  if (noPaut.length) {
+    html += `<details class="cs-camp cs-set" ${csAbiertos.has("nopaut") ? "open" : ""} ontoggle="csToggle(this,'nopaut')" style="padding:4px 14px">
+      <summary><div class="cs-sname">No pautar<small>${noPaut.length} pieza${noPaut.length !== 1 ? "s" : ""} · tocá ↺ para volver a habilitarla</small></div><span></span><span class="cs-flecha">›</span></summary>
+      <div class="cs-body"><div class="cs-grid">${noPaut.map(csPiezaHtml).join("")}</div></div>
     </details>`;
   }
   el.innerHTML = html;
@@ -2674,6 +2693,7 @@ function openModal(id) {
   setToggle("tg-pautaFede", !!it.pautaFede);
   setToggle("tg-pautaAri", !!it.pautaAri);
   setToggle("tg-anuncioApagado", !!it.anuncioApagado);
+  setToggle("tg-noPautar", !!it.noPautar);
 
   renderPrendaCheckList();
   document.getElementById("f-campNombre").value = "";
@@ -2752,6 +2772,7 @@ async function saveCurrent() {
     pautaFede: document.getElementById("tg-pautaFede").querySelector("input").checked,
     pautaAri: document.getElementById("tg-pautaAri").querySelector("input").checked,
     anuncioApagado: document.getElementById("tg-anuncioApagado").querySelector("input").checked,
+    noPautar: document.getElementById("tg-noPautar").querySelector("input").checked,
     updatedAt: Date.now()
   };
   const prev = currentId ? (items[currentId] || {}) : {};
@@ -2790,6 +2811,7 @@ function duplicateCurrent() {
   setToggle("tg-pautaFede", false);
   setToggle("tg-pautaAri", false);
   setToggle("tg-anuncioApagado", false);
+  setToggle("tg-noPautar", false);
   document.getElementById("campanas-list").innerHTML = "";
 }
 
