@@ -699,8 +699,9 @@
       <div class="checklist" id="campanas-list"></div>
       <div id="campanas-chips-modal"></div>
       <div class="mx-campadd">
-        <select id="f-campTipo" aria-label="Tipo de campaña"></select>
-        <input type="text" id="f-campNombre" list="camp-nombres" placeholder="Nombre (elegí o escribí)">
+        <select id="f-campTipo" aria-label="Campaña"></select>
+        <input type="text" id="f-campNombre" list="camp-nombres" placeholder="Conjunto / ad set (elegí o escribí)">
+        <input type="text" id="f-campAnuncio" placeholder="Anuncio / creativo (vacío = nombre automático)">
         <input type="date" id="f-campFecha" aria-label="Fecha de carga">
         <button class="btn btn-primary btn-sm" onclick="addCampanaFromModal()">+ Cargar</button>
       </div>
@@ -734,7 +735,7 @@
       <div class="mx-help">Ángulos, formatos y creadoras se editan en la pestaña <b>Formatos y ángulos</b>.</div>
       <div class="field" id="adm-campanas"><label>Campañas (solo Ariel) — aparecen como botones para cargar con un toque</label><div id="campanas-admin"></div>
         <div class="newopt" style="flex-wrap:wrap"><select id="new-camp-tipo" style="padding:9px;border:1px solid var(--line);border-radius:8px"></select><input type="text" id="new-camp-nombre" placeholder="Nombre de la campaña"><button class="btn btn-ghost btn-sm" onclick="addCampanaLista()">Agregar</button></div></div>
-      <div class="field"><label>Tipo de campaña</label><div class="optlist" id="optlist-tiposCampana"></div><div class="newopt"><input type="text" id="new-tiposCampana" placeholder="Nuevo tipo"><button class="btn btn-ghost btn-sm" onclick="addOption('tiposCampana','new-tiposCampana','f-campTipo')">Agregar</button></div></div>
+      <div class="field"><label>Campañas de Meta (las que elegís al cargar una pieza)</label><div class="optlist" id="optlist-tiposCampana"></div><div class="newopt"><input type="text" id="new-tiposCampana" placeholder="Nueva campaña (ej. VERANO 2026)"><button class="btn btn-ghost btn-sm" onclick="addOption('tiposCampana','new-tiposCampana','f-campTipo')">Agregar</button></div></div>
       <div class="field"><label>Productos</label><div class="optlist" id="optlist-prendas"></div></div>
     </details>
 
@@ -1691,7 +1692,7 @@ function campanaActualLabel(it) {
 // después se hayan traspasado a otra.
 function campanasSearchHaystack(it) {
   const camps = it.campanas || {};
-  return Object.values(camps).map(c => [c.tipo, c.nombre].filter(Boolean).join(" ")).join(" ").toLowerCase();
+  return Object.values(camps).map(c => [c.tipo, c.nombre, c.anuncio].filter(Boolean).join(" ")).join(" ").toLowerCase();
 }
 
 // Columnas que se pueden ocultar (Pendiente y Usado por Ari siempre se ven). Se recuerda en
@@ -1709,7 +1710,7 @@ function togglePautaCol(key) {
 const pautaFormsAbiertos = new Set();
 function guardarCampanaCard(itemId) {
   const tipo = document.getElementById(`camp-tipo-${itemId}`).value;
-  if (!tipo) { alert("Elegí un tipo de campaña."); return; }
+  if (!tipo) { alert("Elegí la campaña."); return; }
   pautaFormsAbiertos.delete(itemId);
   addCampanaFromCard(itemId);
 }
@@ -1805,13 +1806,16 @@ function renderPautaAri() {
 }
 
 // ---------- Campañas cargadas por pieza ----------
-function addCampana(itemId, tipo, nombre, fecha, yaChequeado) {
-  if (!tipo) { alert("Elegí un tipo de campaña."); return; }
+// Cada carga guarda: tipo = campaña de Meta, nombre = conjunto (ad set), anuncio = nombre del creativo.
+function addCampana(itemId, tipo, nombre, fecha, yaChequeado, anuncio) {
+  if (!tipo) { alert("Elegí la campaña."); return; }
   if (!yaChequeado && faltaClasif(items[itemId] || {}).length) {
-    pedirClasifYHacer(itemId, "cargar la campaña", () => addCampana(itemId, tipo, nombre, fecha, true));
+    pedirClasifYHacer(itemId, "cargar la campaña", () => addCampana(itemId, tipo, nombre, fecha, true, anuncio));
     return;
   }
-  db.ref(`${ROOT}/items/${itemId}/campanas`).push({ tipo, nombre: nombre || "", fecha: fecha || "", creadoEn: Date.now() });
+  const it0 = items[itemId] || {};
+  const anun = (anuncio || "").trim() || (nombreAnuncioCompleto(it0) ? nombreAnuncio(it0) : "");
+  db.ref(`${ROOT}/items/${itemId}/campanas`).push({ tipo, nombre: nombre || "", anuncio: anun, fecha: fecha || "", creadoEn: Date.now() });
   // Cargar (o traspasar) una campaña la marca como usada: pasa de "Pendiente Utilizar" a "Ya utilizados".
   db.ref(`${ROOT}/items/${itemId}`).update({ pautaAri: true, updatedAt: Date.now() });
   logAction("cargó campaña " + tipo + (nombre ? " - " + nombre : ""), items[itemId] || {});
@@ -1827,8 +1831,10 @@ function addCampanaFromModal() {
   const tipo = document.getElementById("f-campTipo").value;
   const nombre = document.getElementById("f-campNombre").value.trim();
   const fecha = document.getElementById("f-campFecha").value;
-  addCampana(currentId, tipo, nombre, fecha);
+  const anuncio = document.getElementById("f-campAnuncio").value.trim();
+  addCampana(currentId, tipo, nombre, fecha, false, anuncio);
   document.getElementById("f-campNombre").value = "";
+  document.getElementById("f-campAnuncio").value = "";
   document.getElementById("f-campFecha").value = "";
 }
 
@@ -1836,7 +1842,8 @@ function addCampanaFromCard(itemId) {
   const tipo = document.getElementById(`camp-tipo-${itemId}`).value;
   const nombre = document.getElementById(`camp-nombre-${itemId}`).value.trim();
   const fecha = document.getElementById(`camp-fecha-${itemId}`).value;
-  addCampana(itemId, tipo, nombre, fecha);
+  const anEl = document.getElementById(`camp-anuncio-${itemId}`);
+  addCampana(itemId, tipo, nombre, fecha, false, anEl ? anEl.value.trim() : "");
 }
 
 // Lista de campañas ya cargadas, para el checklist del modal. La más reciente queda marcada como "Actual".
@@ -1854,7 +1861,7 @@ function renderCampanasList(itemId, containerId) {
     return;
   }
   el.innerHTML = entries.map(([key, c], i) => {
-    const detalle = [c.tipo, c.nombre, c.fecha ? formatDateShort(c.fecha) : ""].filter(Boolean).join(" · ");
+    const detalle = [c.tipo, c.nombre, c.anuncio, c.fecha ? formatDateShort(c.fecha) : ""].filter(Boolean).join(" · ");
     const tag = i === 0 ? "<strong>Actual —</strong> " : "";
     return `<div class="checkrow"><label style="flex:1;">${tag}${escapeHtml(detalle)}</label><button onclick="removeCampana('${itemId}','${key}')" title="Eliminar">×</button></div>`;
   }).join("");
@@ -1865,7 +1872,7 @@ function renderCampanasList(itemId, containerId) {
 function campanasCardHtml(it) {
   const camps = it.campanas || {};
   const entries = Object.entries(camps).sort((a, b) => (b[1].creadoEn || 0) - (a[1].creadoEn || 0));
-  const detalle = c => [c.tipo, c.nombre, c.fecha ? formatDateShort(c.fecha) : ""].filter(Boolean).join(" · ");
+  const detalle = c => [c.tipo, c.nombre, c.anuncio, c.fecha ? formatDateShort(c.fecha) : ""].filter(Boolean).join(" · ");
   let listHtml;
   if (!entries.length) {
     listHtml = `<div class="camp-empty">Sin campañas cargadas todavía</div>`;
@@ -1876,12 +1883,13 @@ function campanasCardHtml(it) {
     const histChips = historial.map(([key, c]) => `<span class="camp-chip camp-chip-hist">${escapeHtml(detalle(c))}<button onclick="event.stopPropagation(); removeCampana('${it.id}','${key}')" title="Eliminar">×</button></span>`).join("");
     listHtml = `<div class="camp-list">${actualChip}${histChips}</div>`;
   }
-  const tipoOptions = `<option value="">Tipo…</option>` + listas.tiposCampana.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+  const tipoOptions = `<option value="">Campaña…</option>` + listas.tiposCampana.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
   return `
     ${listHtml}
     <div class="camp-quickadd" onclick="event.stopPropagation()">
       <select id="camp-tipo-${it.id}">${tipoOptions}</select>
-      <input type="text" id="camp-nombre-${it.id}" list="camp-nombres" placeholder="Nombre campaña (elegí o escribí)">
+      <input type="text" id="camp-nombre-${it.id}" list="camp-nombres" placeholder="Conjunto / ad set (elegí o escribí)">
+      <input type="text" id="camp-anuncio-${it.id}" placeholder="Anuncio (vacío = automático)">
       <input type="date" id="camp-fecha-${it.id}">
       <button class="btn btn-primary btn-sm" onclick="addCampanaFromCard('${it.id}')">+ ${entries.length ? "Traspasar" : "Cargar"}</button>
     </div>
@@ -1928,7 +1936,7 @@ function renderCard(it, estado) {
   div.onclick = () => openModal(it.id);
   const camps = it.campanas || {};
   const entries = Object.entries(camps).sort((a, b) => (b[1].creadoEn || 0) - (a[1].creadoEn || 0));
-  const detalle = c => [c.tipo, c.nombre, c.fecha ? formatDateShort(c.fecha) : ""].filter(Boolean).join(" · ");
+  const detalle = c => [c.tipo, c.nombre, c.anuncio, c.fecha ? formatDateShort(c.fecha) : ""].filter(Boolean).join(" · ");
   const canales = [it.feed ? "Feed" : "", it.tiktok ? "TikTok" : ""].filter(Boolean).join(" · ");
   const titulo = it.descripcion || angTxt(it) || "Sin descripción";
   let campHtml;
@@ -1944,12 +1952,13 @@ function renderCard(it, estado) {
     campHtml = `<div class="pcard-camp none">Sin campaña todavía</div>`;
   }
   const formAbierto = pautaFormsAbiertos.has(it.id);
-  const tipoOptions = `<option value="">Tipo…</option>` + listas.tiposCampana.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+  const tipoOptions = `<option value="">Campaña…</option>` + listas.tiposCampana.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
   const formHtml = formAbierto ? `
     ${chipsCampanasHtml(it.id)}
     <div class="camp-quickadd" onclick="event.stopPropagation()" style="margin-top:0;">
       <select id="camp-tipo-${it.id}">${tipoOptions}</select>
-      <input type="text" id="camp-nombre-${it.id}" list="camp-nombres" placeholder="Nombre campaña (elegí o escribí)">
+      <input type="text" id="camp-nombre-${it.id}" list="camp-nombres" placeholder="Conjunto / ad set (elegí o escribí)">
+      <input type="text" id="camp-anuncio-${it.id}" placeholder="Anuncio (vacío = automático)">
       <input type="date" id="camp-fecha-${it.id}">
       <button class="btn btn-primary btn-sm" onclick="guardarCampanaCard('${it.id}')">Guardar</button>
     </div>` : "";
@@ -2032,6 +2041,7 @@ function csPiezaHtml(it) {
     <div class="cs-photo">${thumbHtml(it, "mini-photo", 300)}${badge ? `<span class="cs-badge">${escapeHtml(badge)}</span>` : ""}</div>
     <b>${escapeHtml([nombrePieza(it), it.codigo].filter((v, i, a) => v && a.findIndex(x => String(x).trim().toUpperCase() === String(v).trim().toUpperCase()) === i).join(" ") || "Sin producto")}</b>
     ${angTxt(it) ? `<span class="cs-ang">${escapeHtml(angTxt(it))}</span>` : `<span class="cs-ang falta">Sin ángulo</span>`}
+    ${(() => { const cs = Object.values(it.campanas || {}).sort((a, b) => (b.creadoEn || 0) - (a.creadoEn || 0)); return cs.length && cs[0].anuncio ? `<small style="font-family:monospace;font-size:10.5px;word-break:break-all;" title="Anuncio">📣 ${escapeHtml(cs[0].anuncio)}</small>` : ""; })()}
     <small>${escapeHtml([creTxt(it), fmtTxt(it)].filter(Boolean).join(" · ") || "Sin clasificar")}${escapeHtml(extra)}</small>
     ${et === "listo" ? `<button class="btn btn-ghost btn-sm" style="align-self:flex-start;margin-top:2px;" title="No usar esta pieza en pauta" onclick="event.stopPropagation(); toggleNoPautar('${it.id}', true)">🚫 No pautar</button>` : ""}
     ${et === "nopautar" ? `<button class="btn btn-ghost btn-sm" style="align-self:flex-start;margin-top:2px;" title="Volver a habilitar para pauta" onclick="event.stopPropagation(); toggleNoPautar('${it.id}', false)">↺ Volver a pendientes</button>` : ""}
@@ -2054,8 +2064,8 @@ function csApagarCampana(gid) {
   ids.forEach(id => logAction("marcó anuncio apagado", items[id] || {}));
 }
 // "Sin campaña asignada" arranca abierta; se recuerda si la cerrás.
-let csSinCerrada = false;
-function csToggleSin(det) { csSinCerrada = !det.open; }
+const csSinEstado = {};
+function csToggleSin(key, det) { csSinEstado[key] = det.open; }
 function csToggle(det, key) { if (det.open) csAbiertos.add(key); else csAbiertos.delete(key); }
 function csToggleConj(cid, cod) {
   if (!esAriel()) return;
@@ -2087,7 +2097,7 @@ function renderPorCampana() {
     if (!g) { sin.push(it); return; }
     if (!grupos[g]) {   // campaña cargada en la pieza que no está en la lista de campañas
       const [tipo, nombre] = g.slice(2).split("||");
-      grupos[g] = { id: g, tipo, nombre: nombre || "Sin nombre", virtual: true, conjuntos: [], items: [] };
+      grupos[g] = { id: g, tipo, nombre: nombre || "", virtual: true, conjuntos: [], items: [] };
       orden.push(g);
     }
     grupos[g].items.push(it);
@@ -2096,7 +2106,7 @@ function renderPorCampana() {
   let totP = 0, totL = 0, totE = 0, conjFaltan = 0, cuerpo = "";
   orden.forEach(gid => {
     const g = grupos[gid];
-    if (g.virtual && !g.items.length) return;
+    if (g.virtual) return;   // las campañas cargadas en piezas se dibujan abajo, agrupadas campaña → conjunto
     const cods = g.conjuntos.slice().sort((a, b) => angOrden.indexOf(a) - angOrden.indexOf(b));
     g.items.forEach(it => { const c = it.anguloCod || ""; if (!cods.includes(c)) cods.push(c); });
     let filas = "";
@@ -2144,6 +2154,51 @@ function renderPorCampana() {
       ${filas || `<div class="empty-col">${edit ? "Tocá ✎ Conjuntos y elegí los ángulos de esta campaña." : "Esta campaña todavía no tiene conjuntos."}</div>`}
     </div>`;
   });
+  // Campañas cargadas en las piezas: una tarjeta por campaña, una fila por conjunto (ad set),
+  // y adentro los anuncios.
+  const virt = {}, virtOrden = [];
+  orden.forEach(gid => {
+    const g = grupos[gid]; if (!g.virtual || !g.items.length) return;
+    const t = g.tipo || "Sin campaña";
+    if (!virt[t]) { virt[t] = { orden: [], conj: {} }; virtOrden.push(t); }
+    if (!virt[t].conj[g.nombre]) { virt[t].conj[g.nombre] = []; virt[t].orden.push(g.nombre); }
+    virt[t].conj[g.nombre].push(...g.items);
+  });
+  virtOrden.forEach(tipo => {
+    const v = virt[tipo], campId = "vc:" + tipo, todos = [];
+    let filas = "";
+    v.orden.forEach(nom => {
+      const its = v.conj[nom];
+      const P = its.filter(it => etapaPieza(it) === "pautado"), L = its.filter(it => etapaPieza(it) === "listo"), E = its.filter(it => etapaPieza(it) === "proceso");
+      totP += P.length; totL += L.length; totE += E.length;
+      const key = campId + "|" + nom;
+      csIdsPorCamp[key] = P.map(it => it.id); todos.push(...P.map(it => it.id));
+      const dots = [...P.map(() => "p"), ...L.map(() => "l"), ...E.map(() => "e")];
+      const dotsHtml = dots.slice(0, 8).map(c => `<i class="${c}"></i>`).join("") + (dots.length > 8 ? `<em>+${dots.length - 8}</em>` : "");
+      filas += `<details class="cs-set" ${csAbiertos.has(key) ? "open" : ""} ontoggle="csToggle(this,'${escapeAttr(key)}')">
+        <summary>
+          <div class="cs-sname"><span style="font-size:10.5px;font-weight:700;color:var(--ink-soft);letter-spacing:.04em;">CONJUNTO</span> ${escapeHtml(nom || "Sin conjunto cargado")}<small>${its.length} anuncio${its.length !== 1 ? "s" : ""} · ${P.length} pautado${P.length !== 1 ? "s" : ""}</small></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            ${P.length ? `<button class="btn btn-ghost btn-sm" title="Apagar los anuncios de este conjunto" onclick="event.preventDefault(); event.stopPropagation(); csApagarCampana('${escapeAttr(key)}')">🔴 Apagar conjunto</button>` : ""}
+            <div class="cs-dots" aria-hidden="true">${dotsHtml}</div>
+          </div>
+          <span class="cs-flecha">›</span>
+        </summary>
+        <div class="cs-body">${csGrupoHtml("Anuncios pautados", P)}${csGrupoHtml("Listos para usar", L)}${csGrupoHtml("En proceso", E)}</div>
+      </details>`;
+    });
+    csIdsPorCamp[campId] = todos;
+    cuerpo += `<div class="cs-camp">
+      <div class="cs-head">
+        <div class="cs-name"><span class="camp-tipo">CAMPAÑA</span>${escapeHtml(tipo)}</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="cs-meta">${v.orden.length} conjunto${v.orden.length !== 1 ? "s" : ""} · ${todos.length} anuncio${todos.length !== 1 ? "s" : ""} pautado${todos.length !== 1 ? "s" : ""}</span>
+          ${todos.length ? `<button class="btn btn-ghost btn-sm" title="Apagar todos los anuncios de esta campaña" onclick="csApagarCampana('${escapeAttr(campId)}')">🔴 Apagar campaña</button>` : ""}
+        </div>
+      </div>
+      ${filas}
+    </div>`;
+  });
   const sinL = sin.filter(it => etapaPieza(it) === "listo"), sinE = sin.filter(it => etapaPieza(it) === "proceso"), sinP = sin.filter(it => etapaPieza(it) === "pautado");
   let html = `<div class="cs-tiles">
     <div class="cs-tile"><b>${totP}</b><span>Pautados</span></div>
@@ -2151,12 +2206,13 @@ function renderPorCampana() {
     <div class="cs-tile"><b>${totE}</b><span>En proceso</span></div>
     <div class="cs-tile ${conjFaltan ? "alert" : ""}"><b>${conjFaltan}</b><span>Conjuntos con piezas faltantes</span></div>
   </div>`;
-  if (sin.length) {
-    html += `<details class="cs-camp cs-set" ${csSinCerrada ? "" : "open"} ontoggle="csToggleSin(this)" style="padding:4px 14px;border:2px solid var(--purple);">
-      <summary><div class="cs-sname">🆕 Sin campaña asignada<small>${sinL.length} listos · ${sinE.length} en proceso${sinP.length ? ` · ${sinP.length} pautados sin campaña cargada` : ""}</small></div><span></span><span class="cs-flecha">›</span></summary>
-      <div class="cs-body">${csGrupoHtml("Listos para usar", sinL)}${csGrupoHtml("En proceso", sinE)}${csGrupoHtml("Pautados sin campaña cargada", sinP)}</div>
-    </details>`;
-  }
+  const sinBloque = (key, titulo, sub, arr, abiertoDef, destacado) => arr.length ? `<details class="cs-camp cs-set" ${(csSinEstado[key] ?? abiertoDef) ? "open" : ""} ontoggle="csToggleSin('${key}', this)" style="padding:4px 14px;${destacado ? "border:2px solid var(--purple);" : ""}">
+      <summary><div class="cs-sname">${titulo}<small>${sub}</small></div><span></span><span class="cs-flecha">›</span></summary>
+      <div class="cs-body"><div class="cs-grid">${arr.map(csPiezaHtml).join("")}</div></div>
+    </details>` : "";
+  html += sinBloque("listos", "🆕 Listos para pautar", `${sinL.length} pieza${sinL.length !== 1 ? "s" : ""} sin campaña`, sinL, true, true);
+  html += sinBloque("pautsin", "⚠️ Pautados sin campaña cargada", `${sinP.length} pieza${sinP.length !== 1 ? "s" : ""} · abrí cada una y cargale campaña, conjunto y anuncio`, sinP, true, false);
+  html += sinBloque("proceso", "⏳ En proceso", `${sinE.length} pieza${sinE.length !== 1 ? "s" : ""} todavía no están listas`, sinE, false, false);
   html += cuerpo || `<div class="empty-col">No hay campañas. Se crean en Editar listas → Campañas (dentro de cualquier pieza).</div>`;
   if (apagados.length) {
     html += `<details class="cs-camp cs-set" ${csAbiertos.has("apag") ? "open" : ""} ontoggle="csToggle(this,'apag')" style="padding:4px 14px">
