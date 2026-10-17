@@ -701,7 +701,7 @@
       <div class="mx-campadd">
         <select id="f-campTipo" aria-label="Campaña"></select>
         <input type="text" id="f-campNombre" list="camp-nombres" placeholder="Conjunto / ad set (elegí o escribí)">
-        <input type="text" id="f-campAnuncio" placeholder="Anuncio / creativo (vacío = nombre automático)">
+        <input type="text" id="f-campAnuncio" placeholder="Anuncio / creativo" oninput="this.dataset.manual = this.value ? '1' : ''; if (!this.value) syncAnuncioModal();">
         <input type="date" id="f-campFecha" aria-label="Fecha de carga">
         <button class="btn btn-primary btn-sm" onclick="addCampanaFromModal()">+ Cargar</button>
       </div>
@@ -1834,7 +1834,8 @@ function addCampanaFromModal() {
   const anuncio = document.getElementById("f-campAnuncio").value.trim();
   addCampana(currentId, tipo, nombre, fecha, false, anuncio);
   document.getElementById("f-campNombre").value = "";
-  document.getElementById("f-campAnuncio").value = "";
+  document.getElementById("f-campAnuncio").dataset.manual = "";
+  syncAnuncioModal();
   document.getElementById("f-campFecha").value = "";
 }
 
@@ -1857,7 +1858,7 @@ function renderCampanasList(itemId, containerId) {
   const camps = (items[itemId] && items[itemId].campanas) || {};
   const entries = Object.entries(camps).sort((a, b) => (b[1].creadoEn || 0) - (a[1].creadoEn || 0));
   if (!entries.length) {
-    el.innerHTML = `<div class="empty-col">Todavía no cargaste ninguna campaña para esta pieza.</div>`;
+    el.innerHTML = `<div class="empty-col">Esta pieza todavía no está en ninguna campaña. Elegí campaña y conjunto abajo y tocá + Cargar.</div>`;
     return;
   }
   el.innerHTML = entries.map(([key, c], i) => {
@@ -2689,9 +2690,17 @@ function renderModalChips() {
   });
   const nm = document.getElementById("mx-nombre");
   if (nm) { const f = leerFormNombre(); nm.textContent = nombreAnuncio(f); nm.classList.toggle("incompleto", !nombreAnuncioCompleto(f)); }
+  syncAnuncioModal();
   document.querySelectorAll(".mx-label[data-req]").forEach(l => {
     l.classList.toggle("falta", !document.getElementById(l.dataset.req).value);
   });
+}
+// El campo "Anuncio" de Campañas toma el nombre sugerido de arriba (el que va en Meta),
+// salvo que lo hayas escrito a mano.
+function syncAnuncioModal() {
+  const an = document.getElementById("f-campAnuncio");
+  if (!an || an.dataset.manual === "1") return;
+  an.value = nombreAnuncio(leerFormNombre());
 }
 function leerFormNombre() {
   const v = id => (document.getElementById(id) || {}).value || "";
@@ -2714,6 +2723,7 @@ function escapeHtml(s) {
 // ---------- Modal ----------
 function openModal(id) {
   currentId = id;
+  { const an = document.getElementById("f-campAnuncio"); if (an) { an.dataset.manual = ""; an.value = ""; } }
   const it = id ? items[id] : {};
   currentPrendas = (it.prendas || []).slice();
 
