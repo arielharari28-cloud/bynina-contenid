@@ -2035,11 +2035,27 @@ function csPiezaHtml(it) {
     <small>${escapeHtml([creTxt(it), fmtTxt(it)].filter(Boolean).join(" · ") || "Sin clasificar")}${escapeHtml(extra)}</small>
     ${et === "listo" ? `<button class="btn btn-ghost btn-sm" style="align-self:flex-start;margin-top:2px;" title="No usar esta pieza en pauta" onclick="event.stopPropagation(); toggleNoPautar('${it.id}', true)">🚫 No pautar</button>` : ""}
     ${et === "nopautar" ? `<button class="btn btn-ghost btn-sm" style="align-self:flex-start;margin-top:2px;" title="Volver a habilitar para pauta" onclick="event.stopPropagation(); toggleNoPautar('${it.id}', false)">↺ Volver a pendientes</button>` : ""}
+    ${et === "pautado" ? `<button class="btn btn-ghost btn-sm" style="align-self:flex-start;margin-top:2px;" title="Marcar anuncio apagado" onclick="event.stopPropagation(); toggleAnuncioApagado('${it.id}', true)">🔴 Apagar</button>` : ""}
+    ${et === "apagado" ? `<button class="btn btn-ghost btn-sm" style="align-self:flex-start;margin-top:2px;color:#c0392b;" title="Reactivar anuncio" onclick="event.stopPropagation(); toggleAnuncioApagado('${it.id}', false)">↺ Reactivar</button>` : ""}
   </div>`;
 }
 function csGrupoHtml(titulo, arr) {
   return arr.length ? `<div><div class="cs-gtit">${titulo} (${arr.length})</div><div class="cs-grid">${arr.map(csPiezaHtml).join("")}</div></div>` : "";
 }
+// Apaga de una todas las piezas pautadas de una campaña (ej. una campaña que ya no existe en Meta).
+const csIdsPorCamp = {};
+function csApagarCampana(gid) {
+  const ids = csIdsPorCamp[gid] || [];
+  if (!ids.length) return;
+  if (!confirm(`¿Marcar como apagadas las ${ids.length} pieza${ids.length !== 1 ? "s" : ""} pautada${ids.length !== 1 ? "s" : ""} de esta campaña?`)) return;
+  const upd = {}, ahora = Date.now();
+  ids.forEach(id => { upd[`${id}/anuncioApagado`] = true; upd[`${id}/updatedAt`] = ahora; });
+  db.ref(`${ROOT}/items`).update(upd);
+  ids.forEach(id => logAction("marcó anuncio apagado", items[id] || {}));
+}
+// "Sin campaña asignada" arranca abierta; se recuerda si la cerrás.
+let csSinCerrada = false;
+function csToggleSin(det) { csSinCerrada = !det.open; }
 function csToggle(det, key) { if (det.open) csAbiertos.add(key); else csAbiertos.delete(key); }
 function csToggleConj(cid, cod) {
   if (!esAriel()) return;
@@ -2111,6 +2127,8 @@ function renderPorCampana() {
       </details>`;
     });
     const edit = !g.virtual && esAriel();
+    const pautadosCamp = g.items.filter(it => etapaPieza(it) === "pautado").map(it => it.id);
+    csIdsPorCamp[gid] = pautadosCamp;
     const conjChips = edit && csEditConj.has(gid)
       ? `<div class="cs-conj">${clsList("angulos").map(a => `<button type="button" class="clas-btn ${g.conjuntos.includes(a.codigo) ? "on" : ""}" onclick="csToggleConj('${gid}','${escapeAttr(a.codigo)}')">${escapeHtml(a.nombre)}</button>`).join("")}</div>` : "";
     cuerpo += `<div class="cs-camp">
@@ -2118,6 +2136,7 @@ function renderPorCampana() {
         <div class="cs-name">${g.tipo ? `<span class="camp-tipo">${escapeHtml(g.tipo)}</span>` : ""}${escapeHtml(g.nombre)}</div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <span class="cs-meta">${g.virtual ? "No está en la lista de campañas" : `${g.conjuntos.length} conjunto${g.conjuntos.length !== 1 ? "s" : ""} · ${N} piezas por conjunto`}</span>
+          ${pautadosCamp.length ? `<button class="btn btn-ghost btn-sm" title="Marcar como apagadas todas las piezas pautadas de esta campaña" onclick="csApagarCampana('${escapeAttr(gid)}')">🔴 Apagar todas</button>` : ""}
           ${edit ? `<button class="btn btn-ghost btn-sm" onclick="${csEditConj.has(gid) ? `csEditConj.delete('${gid}')` : `csEditConj.add('${gid}')`}; renderPorCampana()">${csEditConj.has(gid) ? "Listo" : "✎ Conjuntos"}</button>` : ""}
         </div>
       </div>
@@ -2132,13 +2151,13 @@ function renderPorCampana() {
     <div class="cs-tile"><b>${totE}</b><span>En proceso</span></div>
     <div class="cs-tile ${conjFaltan ? "alert" : ""}"><b>${conjFaltan}</b><span>Conjuntos con piezas faltantes</span></div>
   </div>`;
-  html += cuerpo || `<div class="empty-col">No hay campañas. Se crean en Editar listas → Campañas (dentro de cualquier pieza).</div>`;
   if (sin.length) {
-    html += `<details class="cs-camp cs-set" ${csAbiertos.has("sin") ? "open" : ""} ontoggle="csToggle(this,'sin')" style="padding:4px 14px">
-      <summary><div class="cs-sname">Sin campaña asignada<small>${sinL.length} listos · ${sinE.length} en proceso${sinP.length ? ` · ${sinP.length} pautados sin campaña cargada` : ""}</small></div><span></span><span class="cs-flecha">›</span></summary>
+    html += `<details class="cs-camp cs-set" ${csSinCerrada ? "" : "open"} ontoggle="csToggleSin(this)" style="padding:4px 14px;border:2px solid var(--purple);">
+      <summary><div class="cs-sname">🆕 Sin campaña asignada<small>${sinL.length} listos · ${sinE.length} en proceso${sinP.length ? ` · ${sinP.length} pautados sin campaña cargada` : ""}</small></div><span></span><span class="cs-flecha">›</span></summary>
       <div class="cs-body">${csGrupoHtml("Listos para usar", sinL)}${csGrupoHtml("En proceso", sinE)}${csGrupoHtml("Pautados sin campaña cargada", sinP)}</div>
     </details>`;
   }
+  html += cuerpo || `<div class="empty-col">No hay campañas. Se crean en Editar listas → Campañas (dentro de cualquier pieza).</div>`;
   if (apagados.length) {
     html += `<details class="cs-camp cs-set" ${csAbiertos.has("apag") ? "open" : ""} ontoggle="csToggle(this,'apag')" style="padding:4px 14px">
       <summary><div class="cs-sname">Anuncios apagados<small>${apagados.length} pieza${apagados.length !== 1 ? "s" : ""}</small></div><span></span><span class="cs-flecha">›</span></summary>
