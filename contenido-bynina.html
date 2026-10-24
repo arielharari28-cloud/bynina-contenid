@@ -422,6 +422,34 @@
   .g-in.desc{width:100%;}
   .g-add{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding-top:10px;border-top:1px dashed var(--line);}
   .g-err{font-size:12px;color:var(--red);width:100%;}
+  .mx-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;font-size:12.5px;color:var(--ink-soft);}
+  .mx-tools select{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;}
+  .mx-scroll{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px;}
+  .mx-tab{border-collapse:collapse;width:100%;min-width:640px;font-size:12px;}
+  .mx-tab th,.mx-tab td{border-bottom:1px solid var(--line);padding:6px;text-align:center;vertical-align:middle;}
+  .mx-tab thead th{font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;background:var(--bg);position:sticky;top:0;}
+  .mx-tab th.mx-lin{text-align:left;position:sticky;left:0;background:var(--card);z-index:1;min-width:130px;}
+  .mx-tab thead th.mx-lin{background:var(--bg);z-index:2;}
+  .mx-lin b{display:block;font-size:13px;color:var(--ink);}
+  .mx-lin small{display:block;font-size:10.5px;color:var(--ink-soft);font-weight:500;text-transform:none;letter-spacing:0;}
+  .mx-lin small.sin{color:var(--red);}
+  .mx-cel{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;min-width:74px;border:1px solid transparent;border-radius:8px;padding:6px 4px;cursor:pointer;font:inherit;background:var(--bg);color:var(--ink-soft);}
+  .mx-cel:hover{border-color:var(--ink-soft);}
+  .mx-cel b{font-size:11px;font-weight:700;}
+  .mx-cel span{font-size:10.5px;font-variant-numeric:tabular-nums;}
+  .mx-cel.vacio b{font-weight:500;}
+  .mx-cel.proc{background:var(--amber-soft);color:var(--amber);}
+  .mx-cel.uno{background:var(--rust-soft);color:var(--rust);}
+  .mx-cel.armable{background:var(--purple-soft);color:var(--purple);}
+  .mx-cel.paut{background:var(--green-soft);color:var(--green);}
+  .mx-cel.sel{outline:2px solid var(--ink);outline-offset:1px;}
+  .mx-leg{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;font-size:11.5px;}
+  .mx-leg span{padding:3px 9px;border-radius:999px;}
+  .mx-det{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:14px;}
+  .mx-det-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+  .mx-det-head h3{font-family:'Poppins',sans-serif;font-size:15px;margin:0;}
+  .mx-det-head p{margin:2px 0 0;font-size:12px;color:var(--ink-soft);}
+  .camp-lin{font-size:10.5px;font-weight:700;background:var(--teal-soft);color:var(--teal);padding:2px 8px;border-radius:999px;margin-right:6px;}
   .cs-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px;}
   .cs-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;}
   .cs-tile b{font-family:'Poppins',sans-serif;font-size:22px;font-variant-numeric:tabular-nums;}
@@ -514,6 +542,7 @@
     <button class="nav-item" id="tab-log" onclick="setView('log')"><span>🕘</span>Historial</button>
     <button class="nav-item" id="tab-pauta" onclick="setView('pauta')"><span>📣</span>Pauta Ari</button>
     <button class="nav-item" id="tab-camp" onclick="setView('camp')"><span>🎯</span>Por campaña</button>
+    <button class="nav-item" id="tab-mx" onclick="setView('mx')"><span>🧮</span>Matriz</button>
     <button class="nav-item" id="tab-clas" onclick="setView('clas')"><span>🏷️</span>Clasificar</button>
     <button class="nav-item" id="tab-guia" onclick="setView('guia')"><span>🧩</span>Formatos y ángulos</button>
   </nav>
@@ -591,6 +620,10 @@
       <select id="camp-filter-publico" onchange="renderPorCampana()"><option value="">Público: todos</option><option>Minorista</option><option>Mayorista</option><option>Ambos</option></select>
     </div>
     <div id="camp-list"></div>
+  </div>
+
+  <div id="view-mx" style="display:none;">
+    <div id="mx-wrap"></div>
   </div>
 
   <div id="view-pauta" style="display:none;">
@@ -736,7 +769,7 @@
       <div class="field"><label>Línea</label><div class="optlist" id="optlist-lineas"></div><div class="newopt"><input type="text" id="new-linea" placeholder="Nueva línea"><button class="btn btn-ghost btn-sm" onclick="addOption('lineas','new-linea','f-linea')">Agregar</button></div></div>
       <div class="mx-help">Ángulos, formatos y creadoras se editan en la pestaña <b>Formatos y ángulos</b>.</div>
       <div class="field" id="adm-campanas"><label>Campañas (solo Ariel) — aparecen como botones para cargar con un toque</label><div id="campanas-admin"></div>
-        <div class="newopt" style="flex-wrap:wrap"><select id="new-camp-tipo" style="padding:9px;border:1px solid var(--line);border-radius:8px"></select><input type="text" id="new-camp-nombre" placeholder="Nombre de la campaña"><button class="btn btn-ghost btn-sm" onclick="addCampanaLista()">Agregar</button></div></div>
+        <div class="newopt" style="flex-wrap:wrap"><select id="new-camp-tipo" style="padding:9px;border:1px solid var(--line);border-radius:8px"></select><select id="new-camp-linea" style="padding:9px;border:1px solid var(--line);border-radius:8px"></select><input type="text" id="new-camp-nombre" placeholder="Nombre de la campaña"><button class="btn btn-ghost btn-sm" onclick="addCampanaLista()">Agregar</button></div></div>
       <div class="field"><label>Campañas de Meta (las que elegís al cargar una pieza)</label><div class="optlist" id="optlist-tiposCampana"></div><div class="newopt"><input type="text" id="new-tiposCampana" placeholder="Nueva campaña (ej. VERANO 2026)"><button class="btn btn-ghost btn-sm" onclick="addOption('tiposCampana','new-tiposCampana','f-campTipo')">Agregar</button></div></div>
       <div class="field"><label>Productos</label><div class="optlist" id="optlist-prendas"></div></div>
     </details>
@@ -1082,6 +1115,7 @@ db.ref(`${ROOT}/listas`).on("value", snap => {
   listasRaw.propuestas = v.propuestas || {};
   campanasLista = v.campanas || {};
   if (currentView === "plan") setTimeout(renderPlan, 0);
+  if (currentView === "mx") setTimeout(renderMatriz, 0);
   // primera vez: la lista de propuestas arranca con BAS / TEND / LOOK (después la edita Ariel)
   if (esAriel() && !v.propuestas && !v._propuestasSeed) {
     const ini = {}; PROPUESTAS_DEFAULT.forEach((x, i) => ini["p" + i] = x);
@@ -1173,6 +1207,7 @@ db.ref(`${ROOT}/clasif`).on("value", snap => {
   }
   clsRaw = { formatos: v.formatos || {}, angulos: v.angulos || {}, creadoras: v.creadoras || {} };
   if (currentView === "plan") setTimeout(renderPlan, 0);
+  if (currentView === "mx") setTimeout(renderMatriz, 0);
   const angs = clsList("angulos").map(e => e.nombre), cres = clsList("creadoras").map(e => e.nombre);
   fillFilterSelect("filter-angulo", angs, "Todos los ángulos");
   fillFilterSelect("filter-creador", cres, "Todas las creadoras");
@@ -1256,7 +1291,17 @@ function selectOption(kind, val) {
 }
 
 // ---- Campañas administradas por Ariel: se cargan en una pieza con un toque ----
-function campanasOrdenadas() { return Object.entries(campanasLista).filter(([, c]) => c && c.nombre && !c.archivada).sort((a, b) => (b[1].creadoEn || 0) - (a[1].creadoEn || 0)); }
+function campanasOrdenadas() { return Object.entries(campanasLista).filter(([, c]) => c && c.nombre && !c.archivada).sort((a, b) => ((a[1].orden ?? -1) - (b[1].orden ?? -1)) || ((b[1].creadoEn || 0) - (a[1].creadoEn || 0))); }
+function moverCampana(cid, dir) {
+  if (!esAriel()) return;
+  const arr = campanasOrdenadas().map(([id]) => id);
+  const i = arr.indexOf(cid), j = i + dir;
+  if (i < 0 || j < 0 || j >= arr.length) return;
+  [arr[i], arr[j]] = [arr[j], arr[i]];
+  const U = {};
+  arr.forEach((id, k) => { U[`listas/campanas/${id}/orden`] = k; });
+  db.ref(ROOT).update(U);
+}
 function renderCampanasAdmin() {
   const box = document.getElementById("campanas-admin");
   const pr = document.getElementById("adm-propuestas"), ca = document.getElementById("adm-campanas");
@@ -1264,17 +1309,24 @@ function renderCampanasAdmin() {
   if (ca) ca.style.display = esAriel() ? "" : "none";
   const sel = document.getElementById("new-camp-tipo");
   if (sel) sel.innerHTML = `<option value="">Tipo…</option>` + listas.tiposCampana.map(t => `<option>${escapeHtml(t)}</option>`).join("");
+  const selL = document.getElementById("new-camp-linea");
+  if (selL) { const pv = selL.value; selL.innerHTML = `<option value="">Línea (opcional)…</option>` + (listas.lineas || []).map(t => `<option>${escapeHtml(t)}</option>`).join(""); selL.value = pv; }
   if (!box) return;
   const arr = campanasOrdenadas();
-  box.innerHTML = arr.length ? `<div class="optlist">${arr.map(([id, c]) => `<span class="optchip">${c.tipo ? escapeHtml(c.tipo) + " · " : ""}${escapeHtml(c.nombre)}<button onclick="borrarCampanaLista('${id}')" title="Sacar de la lista">×</button></span>`).join("")}</div>` : `<div class="empty-col" style="padding:6px 0">Todavía no hay campañas en la lista.</div>`;
+  box.innerHTML = arr.length ? `<div class="optlist">${arr.map(([id, c]) => `<span class="optchip">${c.tipo ? escapeHtml(c.tipo) + " · " : ""}${escapeHtml(c.nombre)}${c.linea ? " · " + escapeHtml(c.linea) : ""}<select title="Línea de la campaña" onchange="setLineaCampana('${id}', this.value)" style="margin-left:6px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;font-size:11px"><option value="">Sin línea</option>${(listas.lineas || []).map(l => `<option ${c.linea === l ? "selected" : ""}>${escapeHtml(l)}</option>`).join("")}</select><button onclick="borrarCampanaLista('${id}')" title="Sacar de la lista">×</button></span>`).join("")}</div>` : `<div class="empty-col" style="padding:6px 0">Todavía no hay campañas en la lista.</div>`;
 }
 function addCampanaLista() {
   if (!esAriel()) return;
   const nombre = document.getElementById("new-camp-nombre").value.trim();
   const tipo = document.getElementById("new-camp-tipo").value;
+  const lnEl = document.getElementById("new-camp-linea"), linea = lnEl ? lnEl.value : "";
   if (!nombre) { alert("Escribí el nombre de la campaña."); return; }
-  db.ref(`${ROOT}/listas/campanas`).push({ nombre, tipo, creadoEn: Date.now() });
+  db.ref(`${ROOT}/listas/campanas`).push({ nombre, tipo, linea, creadoEn: Date.now() });
   document.getElementById("new-camp-nombre").value = "";
+}
+function setLineaCampana(id, linea) {
+  if (!esAriel() || !campanasLista[id]) return;
+  db.ref(`${ROOT}/listas/campanas/${id}`).update({ linea: linea || "" });
 }
 function borrarCampanaLista(id) {
   if (!esAriel()) return;
@@ -1375,6 +1427,7 @@ db.ref(`${ROOT}/items`).on("value", snap => {
   if (currentView === "camp") renderPorCampana();
   if (currentView === "clas") renderClasificar();
   if (currentView === "plan") renderPlan();
+  if (currentView === "mx") renderMatriz();
   if (currentId && document.getElementById("overlay").classList.contains("show")) {
     renderCampanasList(currentId, "campanas-list");
     const cm = document.getElementById("campanas-chips-modal"); if (cm) cm.innerHTML = chipsCampanasHtml(currentId);
@@ -1535,7 +1588,7 @@ function moveItemEstado(id, newEstado) {
 const VIEW_TITULOS = {
   board:["🗂️ Tablero","Las piezas por etapa. Tocá una para editarla; arrastrala a otra etapa para moverla."],
   cal:["📅 Calendario",""], log:["🕘 Historial",""], pauta:["📣 Pauta Ari",""],
-  camp:["🎯 Por campaña",""], clas:["🏷️ Clasificar",""], guia:["🧩 Formatos y ángulos",""],
+  camp:["🎯 Por campaña",""], mx:["🧮 Matriz","Línea × ángulo: qué conjuntos podés armar y qué falta grabar. Tocá una celda para ver las piezas."], clas:["🏷️ Clasificar",""], guia:["🧩 Formatos y ángulos",""],
   plan:["📝 Planificar","Armá el contenido de la semana de una vez: cada formato que tildes es una pieza nueva en Sin Comenzar. La creadora se asigna después."]
 };
 function toggleSide(open) {
@@ -1559,6 +1612,9 @@ function setView(v) {
   document.getElementById("view-pauta").style.display = v === "pauta" ? "block" : "none";
   document.getElementById("view-camp").style.display = v === "camp" ? "block" : "none";
   document.getElementById("tab-camp").classList.toggle("active", v === "camp");
+  document.getElementById("view-mx").style.display = v === "mx" ? "block" : "none";
+  document.getElementById("tab-mx").classList.toggle("active", v === "mx");
+  if (v === "mx") renderMatriz();
   document.getElementById("view-guia").style.display = v === "guia" ? "block" : "none";
   document.getElementById("tab-guia").classList.toggle("active", v === "guia");
   if (v === "guia") renderGuia();
@@ -2086,6 +2142,38 @@ function csToggleConj(cid, cod) {
   if (i >= 0) act.splice(i, 1); else act.push(cod);
   db.ref(`${ROOT}/listas/campanas/${cid}`).update({ conjuntos: act });
 }
+let csF = { linea: "", ang: "", fmt: "", pub: "", cre: "", q: "" };
+function csFiltrar(arr) {
+  const q = sinTildes(csF.q).toLowerCase().trim();
+  return arr.filter(it => {
+    if (csF.linea && (it.linea || "") !== (csF.linea === "-" ? "" : csF.linea)) return false;
+    if (csF.ang && (it.anguloCod || "") !== (csF.ang === "-" ? "" : csF.ang)) return false;
+    if (csF.fmt && (it.formatoCod || "") !== (csF.fmt === "-" ? "" : csF.fmt)) return false;
+    if (csF.pub && !(it.publico === csF.pub || it.publico === "Ambos")) return false;
+    if (csF.cre && creCodDe(it) !== csF.cre) return false;
+    if (q) {
+      const t = sinTildes([nombrePieza(it), it.codigo, it.linea, angTxt(it), fmtTxt(it), creTxt(it), it.descripcion].filter(Boolean).join(" ")).toLowerCase();
+      if (!t.includes(q)) return false;
+    }
+    return true;
+  });
+}
+function csSetF(k, v) { csF[k] = v; renderPorCampana(); }
+function csFiltrosHtml(total, visibles) {
+  const sel = (k, label, opts) => `<select onchange="csSetF('${k}', this.value)"><option value="">${label}</option>${opts.map(o => `<option value="${escapeAttr(o.v)}" ${csF[k] === o.v ? "selected" : ""}>${escapeHtml(o.l)}</option>`).join("")}</select>`;
+  const lin = ((listas.lineas && listas.lineas.length) ? listas.lineas : LINEAS_CODIGOS).map(l => ({ v: l, l }));
+  const cls = t => clsList(t).map(e => ({ v: e.codigo, l: e.nombre }));
+  const activo = Object.values(csF).some(Boolean);
+  return `<div class="mx-tools" style="margin:0 0 10px">
+    <input type="text" placeholder="Buscar producto o código…" value="${escapeAttr(csF.q)}" onchange="csSetF('q', this.value)" style="padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;min-width:170px">
+    ${sel("linea", "Línea: todas", [...lin, { v: "-", l: "Sin línea" }])}
+    ${sel("ang", "Ángulo: todos", [...cls("angulos"), { v: "-", l: "Sin ángulo" }])}
+    ${sel("fmt", "Formato: todos", [...cls("formatos"), { v: "-", l: "Sin formato" }])}
+    ${sel("cre", "Creadora: todas", cls("creadoras"))}
+    ${sel("pub", "Público: todos", [{ v: "Minorista", l: "Minorista" }, { v: "Mayorista", l: "Mayorista" }])}
+    ${activo ? `<button class="btn btn-ghost btn-sm" onclick="csF={linea:'',ang:'',fmt:'',pub:'',cre:'',q:''}; renderPorCampana()">Limpiar filtros</button><span>Mostrando ${visibles} de ${total} sin campaña</span>` : ""}
+  </div>`;
+}
 function renderPorCampana() {
   const el = document.getElementById("camp-list");
   if (!el) return;
@@ -2095,7 +2183,7 @@ function renderPorCampana() {
   activas.forEach(([id, c]) => { porKey[campKey(c)] = id; });
   const grupos = {}, orden = [];
   activas.forEach(([id, c]) => {
-    grupos[id] = { id, tipo: c.tipo || "", nombre: c.nombre, conjuntos: Array.isArray(c.conjuntos) ? c.conjuntos : Object.values(c.conjuntos || {}), items: [] };
+    grupos[id] = { id, tipo: c.tipo || "", nombre: c.nombre, linea: c.linea || "", conjuntos: Array.isArray(c.conjuntos) ? c.conjuntos : Object.values(c.conjuntos || {}), items: [] };
     orden.push(id);
   });
   const sin = [], apagados = [], noPaut = [];
@@ -2143,6 +2231,13 @@ function renderPorCampana() {
         </summary>
         <div class="cs-body">
           ${csGrupoHtml("Pautados", P)}${csGrupoHtml("Listos para usar", L)}${csGrupoHtml("En proceso", E)}
+          ${(() => {
+            if (!faltan || !cod || !g.linea) return "";
+            const disp = sin.filter(x => etapaPieza(x) === "listo" && x.linea === g.linea && x.anguloCod === cod);
+            return disp.length ? `<div><div class="cs-gtit">Listas de ${escapeHtml(g.linea)} · ${escapeHtml(clsNombre("angulos", cod))} sin campaña (${disp.length})</div>
+              ${esAriel() ? `<button class="btn btn-ghost btn-sm" style="margin:0 0 6px" onclick="mxMandar('${gid}','${escapeAttr(cod)}',${JSON.stringify(disp.slice(0, faltan).map(x => x.id)).replace(/"/g, "&quot;")})">→ Sumar ${Math.min(faltan, disp.length)} a este conjunto</button>` : ""}
+              <div class="cs-grid">${disp.map(csPiezaHtml).join("")}</div></div>` : "";
+          })()}
           ${faltan && cod ? `<div><div class="cs-grid"><div class="cs-pedir">Falta${faltan !== 1 ? "n" : ""} ${faltan} pieza${faltan !== 1 ? "s" : ""}.${!E.length && !L.length ? "<br>Nada listo ni en proceso." : ""}</div></div></div>` : ""}
         </div>
       </details>`;
@@ -2154,10 +2249,11 @@ function renderPorCampana() {
       ? `<div class="cs-conj">${clsList("angulos").map(a => `<button type="button" class="clas-btn ${g.conjuntos.includes(a.codigo) ? "on" : ""}" onclick="csToggleConj('${gid}','${escapeAttr(a.codigo)}')">${escapeHtml(a.nombre)}</button>`).join("")}</div>` : "";
     cuerpo += `<div class="cs-camp">
       <div class="cs-head">
-        <div class="cs-name">${g.tipo ? `<span class="camp-tipo">${escapeHtml(g.tipo)}</span>` : ""}${escapeHtml(g.nombre)}</div>
+        <div class="cs-name">${g.tipo ? `<span class="camp-tipo">${escapeHtml(g.tipo)}</span>` : ""}${g.linea ? `<span class="camp-lin">${escapeHtml(g.linea)}</span>` : ""}${escapeHtml(g.nombre)}</div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <span class="cs-meta">${g.virtual ? "No está en la lista de campañas" : `${g.conjuntos.length} conjunto${g.conjuntos.length !== 1 ? "s" : ""} · ${N} piezas por conjunto`}</span>
           ${pautadosCamp.length ? `<button class="btn btn-ghost btn-sm" title="Marcar como apagadas todas las piezas pautadas de esta campaña" onclick="csApagarCampana('${escapeAttr(gid)}')">🔴 Apagar todas</button>` : ""}
+          ${edit ? `<button class="btn btn-ghost btn-sm" title="Subir campaña" ${activas[0] && activas[0][0] === gid ? "disabled" : ""} onclick="moverCampana('${gid}', -1)">↑</button><button class="btn btn-ghost btn-sm" title="Bajar campaña" ${activas.length && activas[activas.length - 1][0] === gid ? "disabled" : ""} onclick="moverCampana('${gid}', 1)">↓</button>` : ""}
           ${edit ? `<button class="btn btn-ghost btn-sm" onclick="${csEditConj.has(gid) ? `csEditConj.delete('${gid}')` : `csEditConj.add('${gid}')`}; renderPorCampana()">${csEditConj.has(gid) ? "Listo" : "✎ Conjuntos"}</button>` : ""}
         </div>
       </div>
@@ -2210,7 +2306,8 @@ function renderPorCampana() {
       ${filas}
     </div>`;
   });
-  const sinL = sin.filter(it => etapaPieza(it) === "listo"), sinE = sin.filter(it => etapaPieza(it) === "proceso"), sinP = sin.filter(it => etapaPieza(it) === "pautado");
+  const sinF = csFiltrar(sin);
+  const sinL = sinF.filter(it => etapaPieza(it) === "listo"), sinE = sinF.filter(it => etapaPieza(it) === "proceso"), sinP = sinF.filter(it => etapaPieza(it) === "pautado");
   let html = `<div class="cs-tiles">
     <div class="cs-tile"><b>${totP}</b><span>Pautados</span></div>
     <div class="cs-tile"><b>${totL}</b><span>Listos para usar</span></div>
@@ -2221,6 +2318,8 @@ function renderPorCampana() {
       <summary><div class="cs-sname">${titulo}<small>${sub}</small></div><span></span><span class="cs-flecha">›</span></summary>
       <div class="cs-body"><div class="cs-grid">${arr.map(csPiezaHtml).join("")}</div></div>
     </details>` : "";
+  html += csFiltrosHtml(sin.length, sinF.length);
+  if (sin.length && !sinF.length) html += `<div class="empty-col" style="margin-bottom:12px">Ninguna pieza sin campaña coincide con esos filtros.</div>`;
   html += sinBloque("listos", "🆕 Listos para pautar", `${sinL.length} pieza${sinL.length !== 1 ? "s" : ""} sin campaña`, sinL, true, true);
   html += sinBloque("pautsin", "⚠️ Pautados sin campaña cargada", `${sinP.length} pieza${sinP.length !== 1 ? "s" : ""} · abrí cada una y cargale campaña, conjunto y anuncio`, sinP, true, false);
   html += sinBloque("proceso", "⏳ En proceso", `${sinE.length} pieza${sinE.length !== 1 ? "s" : ""} todavía no están listas`, sinE, false, false);
@@ -2238,6 +2337,115 @@ function renderPorCampana() {
     </details>`;
   }
   el.innerHTML = html;
+}
+
+// ---------- Matriz línea × ángulo ----------
+// Cada celda cuenta las piezas de esa línea y ángulo (sin apagadas, sin "no pautar", sin las que pauta solo Fede).
+// Para armar un conjunto hacen falta al menos 2 piezas listas.
+const MX_MIN = 2;
+let mxSel = "", mxTodas = false, mxPub = "";
+function mxPiezas() {
+  return Object.entries(items).map(([id, raw]) => ({ id, ...raw })).filter(it => {
+    if (it.pautaFede && !it.pautaAri) return false;
+    const et = etapaPieza(it);
+    if (et === "apagado" || et === "nopautar") return false;
+    if (mxPub && !(it.publico === mxPub || it.publico === "Ambos")) return false;
+    return true;
+  });
+}
+function mxEstado(P, L, E) {
+  if (P.length) return { c: "paut", t: "Pautado" };
+  if (L.length >= MX_MIN) return { c: "armable", t: "Armable" };
+  if (L.length === 1) return { c: "uno", t: "Falta 1" };
+  if (E.length) return { c: "proc", t: "En proceso" };
+  return { c: "vacio", t: "Grabar" };
+}
+function mxCampanasDeLinea(linea) { return campanasOrdenadas().filter(([, c]) => c.linea && c.linea === linea); }
+function renderMatriz() {
+  const el = document.getElementById("mx-wrap");
+  if (!el) return;
+  const angs = clsList("angulos");
+  const piezas = mxPiezas();
+  const lineasTodas = (listas.lineas && listas.lineas.length) ? listas.lineas : LINEAS_CODIGOS;
+  const conCosas = new Set(piezas.map(it => it.linea).filter(Boolean));
+  campanasOrdenadas().forEach(([, c]) => { if (c.linea) conCosas.add(c.linea); });
+  const lineas = mxTodas ? lineasTodas : lineasTodas.filter(l => conCosas.has(l));
+  const sinLinea = piezas.filter(it => !it.linea).length, sinAng = piezas.filter(it => it.linea && !it.anguloCod).length;
+  let armables = 0, vacios = 0;
+  const filas = lineas.map(l => {
+    const delLinea = piezas.filter(it => it.linea === l);
+    const camps = mxCampanasDeLinea(l);
+    const celdas = angs.map(a => {
+      const its = delLinea.filter(it => it.anguloCod === a.codigo);
+      const P = its.filter(it => etapaPieza(it) === "pautado"), L = its.filter(it => etapaPieza(it) === "listo"), E = its.filter(it => etapaPieza(it) === "proceso");
+      const st = mxEstado(P, L, E);
+      if (st.c === "armable") armables++;
+      if (st.c === "vacio") vacios++;
+      const key = l + "|" + a.codigo;
+      const num = its.length ? `${P.length}·${L.length}·${E.length}` : "—";
+      return `<td><button type="button" class="mx-cel ${st.c} ${mxSel === key ? "sel" : ""}" title="${escapeAttr(l + " · " + a.nombre)}: ${P.length} pautadas, ${L.length} listas, ${E.length} en proceso" onclick="mxElegir('${escapeAttr(key)}')"><b>${st.t}</b><span>${num}</span></button></td>`;
+    }).join("");
+    const campTxt = camps.length ? `<small>${camps.map(([, c]) => escapeHtml((c.tipo ? c.tipo + " · " : "") + c.nombre)).join("<br>")}</small>` : `<small class="sin">Sin campaña</small>`;
+    return `<tr><th class="mx-lin"><b>${escapeHtml(l)}</b>${campTxt}<small>${delLinea.length} pieza${delLinea.length !== 1 ? "s" : ""}</small></th>${celdas}</tr>`;
+  }).join("");
+  let html = `<div class="cs-tiles">
+    <div class="cs-tile"><b>${armables}</b><span>Conjuntos armables (${MX_MIN}+ listas)</span></div>
+    <div class="cs-tile"><b>${vacios}</b><span>Celdas sin contenido</span></div>
+    <div class="cs-tile ${sinLinea ? "alert" : ""}"><b>${sinLinea}</b><span>Piezas sin línea</span></div>
+    <div class="cs-tile ${sinAng ? "alert" : ""}"><b>${sinAng}</b><span>Piezas sin ángulo</span></div>
+  </div>
+  <div class="mx-tools">
+    <select onchange="mxPub=this.value; renderMatriz()"><option value="">Público: todos</option>${PUBLICOS.filter(x => x !== "Ambos").map(x => `<option ${mxPub === x ? "selected" : ""}>${x}</option>`).join("")}</select>
+    <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" ${mxTodas ? "checked" : ""} onchange="mxTodas=this.checked; renderMatriz()"> Mostrar líneas sin piezas</label>
+    <span>Los números son pautadas · listas · en proceso</span>
+  </div>`;
+  html += lineas.length && angs.length ? `<div class="mx-scroll"><table class="mx-tab"><thead><tr><th class="mx-lin">Línea</th>${angs.map(a => `<th>${escapeHtml(a.nombre)}</th>`).join("")}</tr></thead><tbody>${filas}</tbody></table></div>`
+    : `<div class="empty-col">Todavía no hay piezas con línea. Clasificalas en 🏷️ Clasificar o tildá "Mostrar líneas sin piezas".</div>`;
+  html += `<div class="mx-leg">
+    <span class="mx-cel paut" style="display:inline;cursor:default">Pautado: ya hay anuncios corriendo</span>
+    <span class="mx-cel armable" style="display:inline;cursor:default">Armable: ${MX_MIN}+ listas, podés abrir el conjunto</span>
+    <span class="mx-cel uno" style="display:inline;cursor:default">Falta 1: hay una sola lista</span>
+    <span class="mx-cel proc" style="display:inline;cursor:default">En proceso: nada listo todavía</span>
+    <span class="mx-cel vacio" style="display:inline;cursor:default">Grabar: no hay nada</span>
+  </div>`;
+  html += mxDetalleHtml(piezas);
+  el.innerHTML = html;
+}
+function mxElegir(key) { mxSel = mxSel === key ? "" : key; renderMatriz(); if (mxSel) setTimeout(() => { const d = document.getElementById("mx-det"); if (d) d.scrollIntoView({ behavior: "smooth", block: "nearest" }); }, 0); }
+function mxDetalleHtml(piezas) {
+  if (!mxSel) return "";
+  const [l, cod] = mxSel.split("|");
+  const its = piezas.filter(it => it.linea === l && it.anguloCod === cod);
+  const P = its.filter(it => etapaPieza(it) === "pautado"), L = its.filter(it => etapaPieza(it) === "listo"), E = its.filter(it => etapaPieza(it) === "proceso");
+  const camps = mxCampanasDeLinea(l);
+  const libres = L.filter(it => !(it.campanaDestino && campanasLista[it.campanaDestino]));
+  let acc = "";
+  if (esAriel() && libres.length) {
+    acc = camps.length
+      ? camps.map(([cid, c]) => `<button class="btn btn-primary btn-sm" onclick="mxMandar('${cid}','${escapeAttr(cod)}',${JSON.stringify(libres.map(x => x.id)).replace(/"/g, "&quot;")})">→ Mandar ${libres.length} lista${libres.length !== 1 ? "s" : ""} a ${escapeHtml(c.nombre)}</button>`).join(" ")
+      : `<span style="font-size:12px;color:var(--ink-soft)">Para mandarlas a una campaña, creá una campaña con línea ${escapeHtml(l)} en Editar listas → Campañas.</span>`;
+  }
+  const sugerir = !its.length ? `<div class="cs-pedir">No hay ninguna pieza de ${escapeHtml(l)} con ángulo ${escapeHtml(clsNombre("angulos", cod))}. Si querés testear este conjunto, pedí al menos ${MX_MIN} piezas en 📝 Planificar.</div>`
+    : (L.length + P.length < MX_MIN ? `<div class="cs-pedir">Para armar el conjunto faltan ${MX_MIN - L.length - P.length} pieza${MX_MIN - L.length - P.length !== 1 ? "s" : ""} lista${MX_MIN - L.length - P.length !== 1 ? "s" : ""}.</div>` : "");
+  return `<div class="mx-det" id="mx-det">
+    <div class="mx-det-head">
+      <div><h3>${escapeHtml(l)} · ${escapeHtml(clsNombre("angulos", cod))}</h3><p>${P.length} pautada${P.length !== 1 ? "s" : ""} · ${L.length} lista${L.length !== 1 ? "s" : ""} · ${E.length} en proceso</p></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${acc}<button class="btn btn-ghost btn-sm" onclick="mxElegir('${escapeAttr(mxSel)}')">Cerrar</button></div>
+    </div>
+    ${sugerir}
+    ${csGrupoHtml("Pautadas", P)}${csGrupoHtml("Listas para usar", L)}${csGrupoHtml("En proceso", E)}
+  </div>`;
+}
+// Asigna piezas a una campaña (campanaDestino) y suma el ángulo como conjunto si no estaba.
+function mxMandar(cid, cod, ids) {
+  if (!esAriel()) return;
+  const c = campanasLista[cid]; if (!c || !ids || !ids.length) return;
+  if (!confirm(`¿Mandar ${ids.length} pieza${ids.length !== 1 ? "s" : ""} a "${c.nombre}", conjunto ${clsNombre("angulos", cod)}?`)) return;
+  const U = {}, ahora = Date.now();
+  ids.forEach(id => { U[`items/${id}/campanaDestino`] = cid; U[`items/${id}/updatedAt`] = ahora; });
+  const act = Array.isArray(c.conjuntos) ? c.conjuntos.slice() : Object.values(c.conjuntos || {});
+  if (!act.includes(cod)) { act.push(cod); U[`listas/campanas/${cid}/conjuntos`] = act; }
+  db.ref(ROOT).update(U).then(() => ids.forEach(id => logAction(`mandó a ${c.nombre}`, items[id] || {})));
 }
 
 // ---------- Clasificación rápida ----------
